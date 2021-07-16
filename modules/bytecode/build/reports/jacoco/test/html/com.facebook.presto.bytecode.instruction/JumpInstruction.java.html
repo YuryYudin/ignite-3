@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JumpInstruction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.instruction</a> &gt; <span class="el_source">JumpInstruction.java</span></div><h1>JumpInstruction.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.instruction;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.OpCode;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+
+import static com.facebook.presto.bytecode.OpCode.GOTO;
+import static com.facebook.presto.bytecode.OpCode.IFEQ;
+import static com.facebook.presto.bytecode.OpCode.IFGE;
+import static com.facebook.presto.bytecode.OpCode.IFGT;
+import static com.facebook.presto.bytecode.OpCode.IFLE;
+import static com.facebook.presto.bytecode.OpCode.IFLT;
+import static com.facebook.presto.bytecode.OpCode.IFNE;
+import static com.facebook.presto.bytecode.OpCode.IFNONNULL;
+import static com.facebook.presto.bytecode.OpCode.IFNULL;
+import static com.facebook.presto.bytecode.OpCode.IF_ACMPEQ;
+import static com.facebook.presto.bytecode.OpCode.IF_ACMPNE;
+import static com.facebook.presto.bytecode.OpCode.IF_ICMPEQ;
+import static com.facebook.presto.bytecode.OpCode.IF_ICMPGT;
+import static com.facebook.presto.bytecode.OpCode.IF_ICMPLE;
+import static com.facebook.presto.bytecode.OpCode.IF_ICMPLT;
+import static com.facebook.presto.bytecode.OpCode.IF_ICMPNE;
+
+@SuppressWarnings(&quot;UnusedDeclaration&quot;)
+public class JumpInstruction
+    implements InstructionNode {
+    public static InstructionNode jump(LabelNode label) {
+<span class="fc" id="L44">        return new JumpInstruction(GOTO, label);</span>
+    }
+
+    public static InstructionNode jumpIfEqualZero(LabelNode label) {
+<span class="fc" id="L48">        return new JumpInstruction(IFEQ, label);</span>
+    }
+
+    public static InstructionNode jumpIfNotEqualZero(LabelNode label) {
+<span class="fc" id="L52">        return new JumpInstruction(IFNE, label);</span>
+    }
+
+    public static InstructionNode jumpIfLessThanZero(LabelNode label) {
+<span class="nc" id="L56">        return new JumpInstruction(IFLT, label);</span>
+    }
+
+    public static InstructionNode jumpIfGreaterThanZero(LabelNode label) {
+<span class="nc" id="L60">        return new JumpInstruction(IFGT, label);</span>
+    }
+
+    public static InstructionNode jumpIfLessThanOrEqualZero(LabelNode label) {
+<span class="nc" id="L64">        return new JumpInstruction(IFLE, label);</span>
+    }
+
+    public static InstructionNode jumpIfIntGreaterThanOrEqualZero(LabelNode label) {
+<span class="nc" id="L68">        return new JumpInstruction(IFGE, label);</span>
+    }
+
+    public static InstructionNode jumpIfIntEqual(LabelNode label) {
+<span class="nc" id="L72">        return new JumpInstruction(IF_ICMPEQ, label);</span>
+    }
+
+    public static InstructionNode jumpIfIntNotEqual(LabelNode label) {
+<span class="nc" id="L76">        return new JumpInstruction(IF_ICMPNE, label);</span>
+    }
+
+    public static InstructionNode jumpIfIntLessThan(LabelNode label) {
+<span class="nc" id="L80">        return new JumpInstruction(IF_ICMPLT, label);</span>
+    }
+
+    public static InstructionNode jumpIfIntGreaterThan(LabelNode label) {
+<span class="nc" id="L84">        return new JumpInstruction(IF_ICMPGT, label);</span>
+    }
+
+    public static InstructionNode jumpIfIntLessThanOrEqual(LabelNode label) {
+<span class="nc" id="L88">        return new JumpInstruction(IF_ICMPLE, label);</span>
+    }
+
+    public static InstructionNode jumpIfNull(LabelNode label) {
+<span class="nc" id="L92">        return new JumpInstruction(IFNULL, label);</span>
+    }
+
+    public static InstructionNode jumpIfNotNull(LabelNode label) {
+<span class="nc" id="L96">        return new JumpInstruction(IFNONNULL, label);</span>
+    }
+
+    public static InstructionNode jumpIfObjectSame(LabelNode label) {
+<span class="nc" id="L100">        return new JumpInstruction(IF_ACMPEQ, label);</span>
+    }
+
+    public static InstructionNode jumpIfObjectNotSame(LabelNode label) {
+<span class="nc" id="L104">        return new JumpInstruction(IF_ACMPNE, label);</span>
+    }
+
+    private final OpCode opCode;
+    private final LabelNode label;
+
+<span class="fc" id="L110">    public JumpInstruction(OpCode opCode, LabelNode label) {</span>
+<span class="fc" id="L111">        this.opCode = opCode;</span>
+<span class="fc" id="L112">        this.label = label;</span>
+<span class="fc" id="L113">    }</span>
+
+    public OpCode getOpCode() {
+<span class="nc" id="L116">        return opCode;</span>
+    }
+
+    public LabelNode getLabel() {
+<span class="nc" id="L120">        return label;</span>
+    }
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L125">        visitor.visitJumpInsn(opCode.getOpCode(), label.getLabel());</span>
+<span class="fc" id="L126">    }</span>
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L130">        return List.of();</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L135">        return visitor.visitJumpInstruction(parent, this);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IgniteCliSpec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.spec</a> &gt; <span class="el_source">IgniteCliSpec.java</span></div><h1>IgniteCliSpec.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.spec;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import io.micronaut.context.ApplicationContext;
+import org.apache.ignite.cli.CliPathsConfigLoader;
+import org.apache.ignite.cli.CommandFactory;
+import org.apache.ignite.cli.ErrorHandler;
+import org.apache.ignite.cli.HelpFactoryImpl;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.apache.ignite.cli.InteractiveWrapper;
+import org.apache.ignite.cli.builtins.module.ModuleRegistry;
+import org.apache.ignite.cli.common.IgniteCommand;
+import org.jline.terminal.Terminal;
+import picocli.CommandLine;
+
+/**
+ * Root command of Ignite CLI.
+ */
+@CommandLine.Command(
+    name = &quot;ignite&quot;,
+    description = &quot;Type @|green ignite &lt;COMMAND&gt;|@ @|yellow --help|@ to get help for any command.&quot;,
+    subcommands = {
+        InitIgniteCommandSpec.class,
+        ModuleCommandSpec.class,
+        NodeCommandSpec.class,
+        ConfigCommandSpec.class,
+    }
+)
+<span class="nc" id="L53">public class IgniteCliSpec extends CommandSpec {</span>
+    /** Interactive mode option. */
+    @CommandLine.Option(names = &quot;-i&quot;, hidden = true, required = false)
+    private boolean interactive;
+
+    @Inject
+    private Terminal terminal;
+
+    /** {@inheritDoc} */
+    @Override public void run() {
+<span class="nc" id="L63">        CommandLine cli = spec.commandLine();</span>
+
+<span class="nc" id="L65">        cli.getOut().print(banner());</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (interactive)</span>
+<span class="nc" id="L68">            new InteractiveWrapper(terminal).run(cli);</span>
+        else
+<span class="nc" id="L70">            cli.usage(cli.getOut());</span>
+<span class="nc" id="L71">    }</span>
+
+    /**
+     * Init Ignite command line with needed look&amp;amp;feel options
+     * and loads external extensions if any exists.
+     *
+     * @param applicationCtx DI application context.
+     * @return Initialized command line instance.
+     */
+    public static CommandLine initCli(ApplicationContext applicationCtx) {
+<span class="nc" id="L81">        CommandLine.IFactory factory = new CommandFactory(applicationCtx);</span>
+
+<span class="nc" id="L83">        ErrorHandler errorHnd = applicationCtx.createBean(ErrorHandler.class);</span>
+
+<span class="nc" id="L85">        CommandLine cli = new CommandLine(IgniteCliSpec.class, factory)</span>
+<span class="nc" id="L86">            .setExecutionExceptionHandler(errorHnd)</span>
+<span class="nc" id="L87">            .setParameterExceptionHandler(errorHnd);</span>
+
+<span class="nc" id="L89">        cli.setHelpFactory(new HelpFactoryImpl());</span>
+
+<span class="nc" id="L91">        cli.setColorScheme(new CommandLine.Help.ColorScheme.Builder()</span>
+<span class="nc" id="L92">            .commands(CommandLine.Help.Ansi.Style.fg_green)</span>
+<span class="nc" id="L93">            .options(CommandLine.Help.Ansi.Style.fg_yellow)</span>
+<span class="nc" id="L94">            .parameters(CommandLine.Help.Ansi.Style.fg_cyan)</span>
+<span class="nc" id="L95">            .errors(CommandLine.Help.Ansi.Style.fg_red, CommandLine.Help.Ansi.Style.bold)</span>
+<span class="nc" id="L96">            .build());</span>
+
+<span class="nc" id="L98">        applicationCtx.createBean(CliPathsConfigLoader.class)</span>
+<span class="nc" id="L99">            .loadIgnitePathsConfig()</span>
+<span class="nc" id="L100">            .ifPresent(ignitePaths -&gt;</span>
+<span class="nc" id="L101">                loadSubcommands(</span>
+                    cli,
+<span class="nc" id="L103">                    applicationCtx.createBean(ModuleRegistry.class)</span>
+<span class="nc" id="L104">                        .listInstalled()</span>
+                        .modules
+<span class="nc" id="L106">                        .stream()</span>
+<span class="nc" id="L107">                        .flatMap(m -&gt; m.cliArtifacts.stream())</span>
+<span class="nc" id="L108">                        .collect(Collectors.toList()))</span>
+            );
+<span class="nc" id="L110">        return cli;</span>
+    }
+
+    /**
+     * Loads external Ignite CLI commands from installed modules.
+     *
+     * @param cmdLine Command line
+     * @param cliLibs List of artifacts to load.
+     */
+    public static void loadSubcommands(CommandLine cmdLine, List&lt;Path&gt; cliLibs) {
+<span class="nc" id="L120">        URL[] urls = cliLibs.stream()</span>
+<span class="nc" id="L121">            .map(p -&gt; {</span>
+                try {
+<span class="nc" id="L123">                    return p.toUri().toURL();</span>
+                }
+<span class="nc" id="L125">                catch (MalformedURLException e) {</span>
+<span class="nc" id="L126">                    throw new IgniteCLIException(&quot;Can't convert cli module path to URL for loading by classloader&quot;);</span>
+                }
+<span class="nc" id="L128">            }).toArray(URL[]::new);</span>
+
+<span class="nc" id="L130">        ClassLoader clsLdr = new URLClassLoader(</span>
+            urls,
+<span class="nc" id="L132">            IgniteCliSpec.class.getClassLoader());</span>
+
+<span class="nc" id="L134">        ServiceLoader&lt;IgniteCommand&gt; ldr = ServiceLoader.load(IgniteCommand.class, clsLdr);</span>
+<span class="nc" id="L135">        ldr.reload();</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        for (IgniteCommand igniteCommand: ldr) {</span>
+<span class="nc" id="L138">            cmdLine.addSubcommand(igniteCommand);</span>
+<span class="nc" id="L139">        }</span>
+<span class="nc" id="L140">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

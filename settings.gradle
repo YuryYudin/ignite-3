@@ -1,0 +1,84 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+gradle.startParameter.continueOnFailure = true
+
+include ":modules:affinity"
+include ":modules:api"
+include ":modules:baseline"
+include ":modules:bytecode"
+include ":modules:calcite"
+include ":modules:cli"
+include ":modules:cli-common"
+include ":modules:client"
+include ":modules:client-common"
+include ":modules:client-handler"
+include ":modules:configuration"
+include ":modules:configuration-annotation-processor"
+include ":modules:configuration-api"
+include ":modules:core"
+include ":modules:metastorage"
+include ":modules:metastorage-client"
+include ":modules:metastorage-common"
+include ":modules:metastorage-server"
+include ":modules:network"
+include ":modules:network-annotation-processor"
+include ":modules:network-api"
+include ":modules:platforms"
+include ":modules:raft"
+include ":modules:raft-client"
+include ":modules:rest"
+include ":modules:rocksdb-common"
+include ":modules:runner"
+include ":modules:schema"
+include ":modules:storage-api"
+include ":modules:storage-rocksdb"
+include ":modules:table"
+include ":modules:transactions"
+include ":modules:vault"
+include ":parent"
+
+rootProject.name = 'apache-ignite'
+
+/*
+
+project(":modules:affinity").name = 'ignite-affinity'
+project(":modules:api").name = 'ignite-api'
+project(":modules:baseline").name = 'ignite-baseline'
+project(":modules:bytecode").name = 'ignite-bytecode'
+project(":modules:calcite").name = 'ignite-calcite'
+project(":modules:cli").name = 'ignite-cli'
+project(":modules:cli-common").name = 'ignite-cli-common'
+project(":modules:configuration").name = 'ignite-configuration'
+project(":modules:configuration-annotation-processor").name = 'ignite-configuration-annotation-processor'
+project(":modules:configuration-api").name = 'ignite-configuration-api'
+project(":modules:core").name = 'ignite-core'
+project(":modules:metastorage").name = 'ignite-metastorage'
+project(":modules:metastorage-client").name = 'ignite-metastorage-client'
+project(":modules:metastorage-server").name = 'ignite-metastorage-server'
+project(":modules:network").name = 'ignite-network'
+project(":modules:network-annotation-processor").name = 'ignite-network-annotation-processor'
+project(":modules:network-api").name = 'ignite-network-api'
+project(":modules:raft").name = 'ignite-raft'
+project(":modules:raft-client").name = 'ignite-raft-client'
+project(":modules:rest").name = 'ignite-rest'
+project(":modules:runner").name = 'ignite-runner'
+project(":modules:schema").name = 'ignite-schema'
+project(":modules:table").name = 'ignite-table'
+project(":modules:vault").name = 'ignite-vault'
+
+ */

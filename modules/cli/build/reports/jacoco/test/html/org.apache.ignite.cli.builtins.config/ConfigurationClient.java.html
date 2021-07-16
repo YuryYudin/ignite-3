@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfigurationClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.builtins.config</a> &gt; <span class="el_source">ConfigurationClient.java</span></div><h1>ConfigurationClient.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.builtins.config;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.jetbrains.annotations.Nullable;
+import picocli.CommandLine.Help.ColorScheme;
+
+/**
+ * Client to get/put HOCON based configuration from/to Ignite server nodes
+ */
+@Singleton
+public class ConfigurationClient {
+    /** Url for getting configuration from REST endpoint of the node. */
+    private static final String GET_URL = &quot;/management/v1/configuration/&quot;;
+
+    /** Url for setting configuration with REST endpoint of the node. */
+    private static final String SET_URL = &quot;/management/v1/configuration/&quot;;
+
+    /** Http client. */
+    private final HttpClient httpClient;
+
+    /** Mapper serialize/deserialize json values during communication with node REST endpoint. */
+    private final ObjectMapper mapper;
+
+    /**
+     * Creates new configuration client.
+     *
+     * @param httpClient Http client.
+     */
+    @Inject
+<span class="nc" id="L61">    public ConfigurationClient(HttpClient httpClient) {</span>
+<span class="nc" id="L62">        this.httpClient = httpClient;</span>
+<span class="nc" id="L63">        mapper = new ObjectMapper();</span>
+<span class="nc" id="L64">    }</span>
+
+    /**
+     * Gets server node configuration as a raw JSON string.
+     *
+     * @param host String representation of server node host.
+     * @param port Host REST port.
+     * @param rawHoconPath HOCON dot-delimited path of requested configuration.
+     * @return JSON string with node configuration.
+     */
+    public String get(
+        String host,
+        int port,
+        @Nullable String rawHoconPath) {
+        var req = HttpRequest
+<span class="nc" id="L79">            .newBuilder()</span>
+<span class="nc" id="L80">            .header(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (rawHoconPath == null)</span>
+<span class="nc" id="L83">            req.uri(URI.create(&quot;http://&quot; + host + &quot;:&quot; + port + GET_URL));</span>
+        else
+<span class="nc" id="L85">            req.uri(URI.create(&quot;http://&quot; + host + &quot;:&quot; + port + GET_URL +</span>
+                rawHoconPath));
+
+        try {
+<span class="nc" id="L89">            HttpResponse&lt;String&gt; res =</span>
+<span class="nc" id="L90">                httpClient.send(req.build(),</span>
+<span class="nc" id="L91">                    HttpResponse.BodyHandlers.ofString());</span>
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (res.statusCode() == HttpURLConnection.HTTP_OK)</span>
+<span class="nc" id="L94">                return mapper.writerWithDefaultPrettyPrinter()</span>
+<span class="nc" id="L95">                    .writeValueAsString(mapper.readValue(res.body(), JsonNode.class));</span>
+            else
+<span class="nc" id="L97">                throw error(&quot;Can't get configuration&quot;, res);</span>
+        }
+<span class="nc" id="L99">        catch (IOException | InterruptedException e) {</span>
+<span class="nc" id="L100">            throw new IgniteCLIException(&quot;Connection issues while trying to send http request&quot;);</span>
+        }
+    }
+
+    /**
+     * Sets node configuration from JSON string with configs.
+     *
+     * @param host String representation of server node host.
+     * @param port Host REST port.
+     * @param rawHoconData Valid HOCON represented as a string.
+     * @param out PrintWriter for printing user messages.
+     * @param cs ColorScheme to enrich user messages.
+     */
+    public void set(String host, int port, String rawHoconData, PrintWriter out, ColorScheme cs) {
+        var req = HttpRequest
+<span class="nc" id="L115">            .newBuilder()</span>
+<span class="nc" id="L116">            .POST(HttpRequest.BodyPublishers.ofString(renderJsonFromHocon(rawHoconData)))</span>
+<span class="nc" id="L117">            .header(&quot;Content-Type&quot;, &quot;application/json&quot;)</span>
+<span class="nc" id="L118">            .uri(URI.create(&quot;http://&quot; + host + &quot;:&quot; + port + SET_URL))</span>
+<span class="nc" id="L119">            .build();</span>
+
+        try {
+<span class="nc" id="L122">            HttpResponse&lt;String&gt; res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());</span>
+
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (res.statusCode() == HttpURLConnection.HTTP_OK) {</span>
+<span class="nc" id="L125">                out.println(&quot;Configuration was updated successfully.&quot;);</span>
+<span class="nc" id="L126">                out.println();</span>
+<span class="nc" id="L127">                out.println(&quot;Use the &quot; + cs.commandText(&quot;ignite config get&quot;) +</span>
+                    &quot; command to view the updated configuration.&quot;);
+            }
+            else
+<span class="nc" id="L131">                throw error(&quot;Failed to set configuration&quot;, res);</span>
+        }
+<span class="nc" id="L133">        catch (IOException | InterruptedException e) {</span>
+<span class="nc" id="L134">            throw new IgniteCLIException(&quot;Connection issues while trying to send http request&quot;);</span>
+<span class="nc" id="L135">        }</span>
+<span class="nc" id="L136">    }</span>
+
+    /**
+     * Prepares exception with message, enriched by HTTP response details.
+     *
+     * @param msg Base error message.
+     * @param res Http response, which cause the raising exce[tion.
+     * @return Exception with detailed message.
+     * @throws JsonProcessingException if response has incorrect error format.
+     */
+    private IgniteCLIException error(String msg, HttpResponse&lt;String&gt; res) throws JsonProcessingException {
+<span class="nc" id="L147">        var errorMsg = mapper.writerWithDefaultPrettyPrinter()</span>
+<span class="nc" id="L148">            .writeValueAsString(mapper.readValue(res.body(), JsonNode.class));</span>
+
+<span class="nc" id="L150">        return new IgniteCLIException(msg + &quot;\n\n&quot; + errorMsg);</span>
+    }
+
+    /**
+     * Produces JSON representation of any valid HOCON string.
+     *
+     * @param rawHoconData HOCON string.
+     * @return JSON representation of HOCON string.
+     */
+    private static String renderJsonFromHocon(String rawHoconData) {
+<span class="nc" id="L160">        return ConfigFactory.parseString(rawHoconData)</span>
+<span class="nc" id="L161">            .root().render(ConfigRenderOptions.concise());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

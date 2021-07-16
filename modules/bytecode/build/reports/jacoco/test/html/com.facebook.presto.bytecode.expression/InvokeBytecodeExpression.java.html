@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvokeBytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">InvokeBytecodeExpression.java</span></div><h1>InvokeBytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.Nullable;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
+class InvokeBytecodeExpression
+    extends BytecodeExpression {
+    public static InvokeBytecodeExpression createInvoke(
+        BytecodeExpression instance,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L38">        return new InvokeBytecodeExpression(</span>
+<span class="fc" id="L39">            requireNonNull(instance, &quot;instance is null&quot;),</span>
+<span class="fc" id="L40">            instance.getType(),</span>
+<span class="fc" id="L41">            requireNonNull(methodName, &quot;methodName is null&quot;),</span>
+<span class="fc" id="L42">            requireNonNull(returnType, &quot;returnType is null&quot;),</span>
+<span class="fc" id="L43">            requireNonNull(parameterTypes, &quot;parameterTypes is null&quot;),</span>
+<span class="fc" id="L44">            requireNonNull(parameters, &quot;parameters is null&quot;));</span>
+    }
+
+    @Nullable
+    private final BytecodeExpression instance;
+    private final ParameterizedType methodTargetType;
+    private final String methodName;
+    private final ParameterizedType returnType;
+    private final List&lt;BytecodeExpression&gt; parameters;
+    private final List&lt;ParameterizedType&gt; parameterTypes;
+
+    InvokeBytecodeExpression(
+        @Nullable BytecodeExpression instance,
+        ParameterizedType methodTargetType,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L62">        super(requireNonNull(returnType, &quot;returnType is null&quot;));</span>
+<span class="pc bpc" id="L63" title="1 of 4 branches missed.">        checkArgument(instance == null || !instance.getType().isPrimitive(), &quot;Type %s does not have methods&quot;, getType());</span>
+<span class="fc" id="L64">        this.instance = instance;</span>
+<span class="fc" id="L65">        this.methodTargetType = requireNonNull(methodTargetType, &quot;methodTargetType is null&quot;);</span>
+<span class="fc" id="L66">        this.methodName = requireNonNull(methodName, &quot;methodName is null&quot;);</span>
+<span class="fc" id="L67">        this.returnType = returnType;</span>
+<span class="fc" id="L68">        this.parameterTypes = List.copyOf(requireNonNull(parameterTypes, &quot;parameterTypes is null&quot;));</span>
+<span class="fc" id="L69">        this.parameters = List.copyOf(requireNonNull(parameters, &quot;parameters is null&quot;));</span>
+<span class="fc" id="L70">    }</span>
+
+    @Override
+    public BytecodeNode getBytecode(MethodGenerationContext generationContext) {
+<span class="fc" id="L74">        BytecodeBlock block = new BytecodeBlock();</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (instance != null) {</span>
+<span class="fc" id="L76">            block.append(instance);</span>
+        }
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (BytecodeExpression parameter : parameters) {</span>
+<span class="fc" id="L80">            block.append(parameter);</span>
+<span class="fc" id="L81">        }</span>
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L84">            return block.invokeStatic(methodTargetType, methodName, returnType, parameterTypes);</span>
+        }
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        else if (instance.getType().isInterface()) {</span>
+<span class="nc" id="L87">            return block.invokeInterface(methodTargetType, methodName, returnType, parameterTypes);</span>
+        }
+        else {
+<span class="fc" id="L90">            return block.invokeVirtual(methodTargetType, methodName, returnType, parameterTypes);</span>
+        }
+    }
+
+    @Override
+    protected String formatOneLine() {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L97">            return methodTargetType.getSimpleName() + &quot;.&quot; + methodName + &quot;(&quot; +</span>
+<span class="fc" id="L98">                parameters.stream().map(BytecodeExpression::toString).collect(Collectors.joining(&quot;, &quot;)) + &quot;)&quot;;</span>
+        }
+
+<span class="fc" id="L101">        return instance + &quot;.&quot; + methodName + &quot;(&quot; +</span>
+<span class="fc" id="L102">            parameters.stream().map(BytecodeExpression::toString).collect(Collectors.joining(&quot;, &quot;)) + &quot;)&quot;;</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (instance == null)</span>
+<span class="nc" id="L108">            return List.copyOf(parameters);</span>
+
+<span class="nc" id="L110">        final ArrayList&lt;BytecodeNode&gt; children = new ArrayList&lt;&gt;(parameters.size() + 1);</span>
+<span class="nc" id="L111">        children.add(instance);</span>
+<span class="nc" id="L112">        children.addAll(parameters);</span>
+<span class="nc" id="L113">        return Collections.unmodifiableList(children);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

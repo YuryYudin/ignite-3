@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModuleManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.builtins.module</a> &gt; <span class="el_source">ModuleManager.java</span></div><h1>ModuleManager.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.builtins.module;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.JarInputStream;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigValue;
+import org.apache.ignite.cli.CliVersionInfo;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.apache.ignite.cli.IgnitePaths;
+import picocli.CommandLine.Help.ColorScheme;
+
+/**
+ * Ignite distributive module manager.
+ * The main responsibilities:
+ * &lt;ul&gt;
+ *     &lt;li&gt;Add/remove standard Ignite server modules&lt;/li&gt;
+ *     &lt;li&gt;Add/remove any external server modules from maven repositories.&lt;/li&gt;
+ *     &lt;li&gt;Add/remove Ignite CLI modules.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+@Singleton
+public class ModuleManager {
+    /** Prefix to identify internal modules in builtin modules list. */
+    public static final String INTERNAL_MODULE_PREFIX = &quot;_&quot;;
+
+    /** Jar manifest key to identify the CLI module jar. */
+    public static final String CLI_MODULE_MANIFEST_HEADER = &quot;Apache-Ignite-CLI-Module&quot;;
+
+    /** Maven artifact resolver. */
+    private final MavenArtifactResolver mavenArtifactRslvr;
+
+    /** Current Ignite CLI version. */
+    private final CliVersionInfo cliVerInfo;
+
+    /** Storage of meta info of installed modules. */
+    private final ModuleRegistry moduleRegistry;
+
+    /** List of standard Ignite modules. */
+    private final List&lt;StandardModuleDefinition&gt; modules;
+
+    /** Print writer for output user messages. */
+    private PrintWriter out;
+
+    /** Color scheme to enrich user output. */
+    private ColorScheme cs;
+
+    /**
+     * Creates module manager instance.
+     *
+     * @param mavenArtifactRslvr Maven artifact resolver.
+     * @param cliVerInfo Current Ignite CLI version info.
+     * @param moduleRegistry Module storage.
+     */
+    @Inject
+    public ModuleManager(
+        MavenArtifactResolver mavenArtifactRslvr, CliVersionInfo cliVerInfo,
+<span class="nc" id="L86">        ModuleRegistry moduleRegistry) {</span>
+<span class="nc" id="L87">        modules = readBuiltinModules();</span>
+<span class="nc" id="L88">        this.mavenArtifactRslvr = mavenArtifactRslvr;</span>
+<span class="nc" id="L89">        this.cliVerInfo = cliVerInfo;</span>
+<span class="nc" id="L90">        this.moduleRegistry = moduleRegistry;</span>
+<span class="nc" id="L91">    }</span>
+
+    /**
+     * Sets print writer for any user messages.
+     *
+     * @param out PrintWriter
+     */
+    public void setOut(PrintWriter out) {
+<span class="nc" id="L99">        this.out = out;</span>
+
+<span class="nc" id="L101">        mavenArtifactRslvr.setOut(out);</span>
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Sets color scheme for enrhiching user output.
+     *
+     * @param cs ColorScheme
+     */
+    public void setColorScheme(ColorScheme cs) {
+<span class="nc" id="L110">        this.cs = cs;</span>
+<span class="nc" id="L111">    }</span>
+
+    /**
+     * Installs the CLI/server module by name to according directories from {@link IgnitePaths}.
+     *
+     * @param name Module name can be either fully qualified maven artifact name (groupId:artifactId:version)
+     *             or the name of the standard Ignite module.
+     * @param ignitePaths Ignite paths instance.
+     * @param repositories Custom maven repositories to resolve module from.
+     */
+    public void addModule(String name, IgnitePaths ignitePaths, List&lt;URL&gt; repositories) {
+<span class="nc" id="L122">        Path installPath = ignitePaths.libsDir();</span>
+
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (name.startsWith(&quot;mvn:&quot;)) {</span>
+<span class="nc" id="L125">            MavenCoordinates mavenCoordinates = MavenCoordinates.of(name);</span>
+
+            try {
+<span class="nc" id="L128">                ResolveResult resolveRes = mavenArtifactRslvr.resolve(</span>
+                    installPath,
+                    mavenCoordinates.grpId,
+                    mavenCoordinates.artifactId,
+                    mavenCoordinates.ver,
+                    repositories
+                );
+
+<span class="nc" id="L136">                String mvnName = String.join(&quot;:&quot;, mavenCoordinates.grpId,</span>
+                    mavenCoordinates.artifactId, mavenCoordinates.ver);
+
+<span class="nc" id="L139">                var isCliModule = isRootArtifactCliModule(</span>
+                    mavenCoordinates.artifactId, mavenCoordinates.ver,
+<span class="nc" id="L141">                    resolveRes.artifacts());</span>
+
+<span class="nc" id="L143">                moduleRegistry.saveModule(new ModuleRegistry.ModuleDefinition(</span>
+                    mvnName,
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                    (isCliModule) ? Collections.emptyList() : resolveRes.artifacts(),</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                    (isCliModule) ? resolveRes.artifacts() : Collections.emptyList(),</span>
+                    ModuleRegistry.SourceType.Maven,
+                    name
+                ));
+
+<span class="nc" id="L151">                out.println();</span>
+<span class="nc" id="L152">                out.println(&quot;New Maven dependency successfully added. To remove, type: &quot; +</span>
+<span class="nc" id="L153">                    cs.commandText(&quot;ignite module remove &quot;) + cs.parameterText(mvnName));</span>
+            }
+<span class="nc" id="L155">            catch (IOException e) {</span>
+<span class="nc" id="L156">                throw new IgniteCLIException(&quot;\nFailed to install &quot; + name, e);</span>
+<span class="nc" id="L157">            }</span>
+<span class="nc" id="L158">        }</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        else if (isBuiltinModuleName(name)) {</span>
+<span class="nc" id="L160">            StandardModuleDefinition moduleDesc = readBuiltinModules()</span>
+<span class="nc" id="L161">                .stream()</span>
+<span class="nc" id="L162">                .filter(m -&gt; m.name.equals(name))</span>
+<span class="nc" id="L163">                .findFirst().get();</span>
+
+<span class="nc" id="L165">            List&lt;ResolveResult&gt; libsResolveResults = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L167" title="All 2 branches missed.">            for (String artifact: moduleDesc.artifacts) {</span>
+<span class="nc" id="L168">                MavenCoordinates mavenCoordinates = MavenCoordinates.of(artifact, cliVerInfo.ver);</span>
+
+                try {
+<span class="nc" id="L171">                    libsResolveResults.add(mavenArtifactRslvr.resolve(</span>
+<span class="nc" id="L172">                        ignitePaths.libsDir(),</span>
+                        mavenCoordinates.grpId,
+                        mavenCoordinates.artifactId,
+                        mavenCoordinates.ver,
+                        repositories
+                    ));
+                }
+<span class="nc" id="L179">                catch (IOException e) {</span>
+<span class="nc" id="L180">                    throw new IgniteCLIException(&quot;\nFailed to install an Ignite module: &quot; + name, e);</span>
+<span class="nc" id="L181">                }</span>
+<span class="nc" id="L182">            }</span>
+
+<span class="nc" id="L184">            List&lt;ResolveResult&gt; cliResolvResults = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            for (String artifact: moduleDesc.cliArtifacts) {</span>
+<span class="nc" id="L187">                MavenCoordinates mavenCoordinates = MavenCoordinates.of(artifact, cliVerInfo.ver);</span>
+
+                try {
+<span class="nc" id="L190">                    cliResolvResults.add(mavenArtifactRslvr.resolve(</span>
+<span class="nc" id="L191">                        ignitePaths.cliLibsDir(),</span>
+                        mavenCoordinates.grpId,
+                        mavenCoordinates.artifactId,
+                        mavenCoordinates.ver,
+                        repositories
+                    ));
+                }
+<span class="nc" id="L198">                catch (IOException e) {</span>
+<span class="nc" id="L199">                    throw new IgniteCLIException(&quot;\nFailed to install a module &quot; + name, e);</span>
+<span class="nc" id="L200">                }</span>
+<span class="nc" id="L201">            }</span>
+
+            try {
+<span class="nc" id="L204">                moduleRegistry.saveModule(new ModuleRegistry.ModuleDefinition(</span>
+                    name,
+<span class="nc" id="L206">                    libsResolveResults.stream().flatMap(r -&gt; r.artifacts().stream()).collect(Collectors.toList()),</span>
+<span class="nc" id="L207">                    cliResolvResults.stream().flatMap(r -&gt; r.artifacts().stream()).collect(Collectors.toList()),</span>
+                    ModuleRegistry.SourceType.Standard,
+                    name
+                ));
+            }
+<span class="nc" id="L212">            catch (IOException e) {</span>
+<span class="nc" id="L213">                throw new IgniteCLIException(&quot;Error during saving the installed module info&quot;);</span>
+<span class="nc" id="L214">            }</span>
+
+<span class="nc" id="L216">        }</span>
+        else {
+<span class="nc" id="L218">            throw new IgniteCLIException(</span>
+                &quot;Module coordinates for non-standard modules must be started with mvn:|file://&quot;);
+        }
+<span class="nc" id="L221">    }</span>
+
+    /**
+     * Removes module by name.
+     *
+     * @param name Module name can be either the name of standard Ignite module
+     *             or the fully qualified maven artifact 'groupId:artifactId:version'.
+     * @return true if module was removed, false otherwise.
+     */
+    public boolean removeModule(String name) {
+        try {
+<span class="nc" id="L232">            return moduleRegistry.removeModule(name);</span>
+        }
+<span class="nc" id="L234">        catch (IOException e) {</span>
+<span class="nc" id="L235">            throw new IgniteCLIException(</span>
+                &quot;Can't remove module &quot; + name, e);
+        }
+    }
+
+    /**
+     * Returns builtin Ignite modules list.
+     * Builtin modules list packaged with CLI tool and so, depends only on its' version.
+     *
+     * @return Builtin modules list.
+     */
+    public List&lt;StandardModuleDefinition&gt; builtinModules() {
+<span class="nc" id="L247">        return Collections.unmodifiableList(modules);</span>
+    }
+
+    /**
+     * Checks if root artifact contains Jar manifest key, which marks it as CLI extension.
+     *
+     * @param artifactId Maven artifact id.
+     * @param ver Maven root artifact version.
+     * @param artifacts Paths for all dependencies' files of the artifact.
+     * @return true if the artifact has CLI mark, false otherwise.
+     * @throws IOException If can't read artifact manifest.
+     */
+    private boolean isRootArtifactCliModule(String artifactId, String ver, List&lt;Path&gt; artifacts) throws IOException {
+<span class="nc" id="L260">       var rootJarArtifactOpt = artifacts.stream()</span>
+<span class="nc" id="L261">           .filter(p -&gt; MavenArtifactResolver.fileNameByArtifactPattern(artifactId, ver).equals(p.getFileName().toString()))</span>
+<span class="nc" id="L262">           .findFirst();</span>
+
+<span class="nc bnc" id="L264" title="All 2 branches missed.">       if (rootJarArtifactOpt.isPresent()) {</span>
+<span class="nc" id="L265">           try (var input = new FileInputStream(rootJarArtifactOpt.get().toFile())) {</span>
+<span class="nc" id="L266">               var jarStream = new JarInputStream(input);</span>
+<span class="nc" id="L267">               var manifest = jarStream.getManifest();</span>
+
+<span class="nc" id="L269">               return &quot;true&quot;.equals(manifest.getMainAttributes().getValue(CLI_MODULE_MANIFEST_HEADER));</span>
+           }
+       }
+       else
+<span class="nc" id="L273">           return false;</span>
+    }
+
+    /**
+     * Checks if the module is a builtin Ignite module.
+     *
+     * @param name Module name.
+     * @return true if the module is a builtin Ignite module.
+     */
+    private boolean isBuiltinModuleName(String name) {
+<span class="nc" id="L283">        return readBuiltinModules().stream().anyMatch(m -&gt; m.name.equals(name));</span>
+    }
+
+    /**
+     * Reads builtin modules from builtin modules registry.
+     *
+     * @return List of builtin modules.
+     */
+    private static List&lt;StandardModuleDefinition&gt; readBuiltinModules() {
+<span class="nc" id="L292">        var cfg = ConfigFactory.load(&quot;builtin_modules.conf&quot;).getObject(&quot;modules&quot;);</span>
+
+<span class="nc" id="L294">        List&lt;StandardModuleDefinition&gt; modules = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        for (Map.Entry&lt;String, ConfigValue&gt; entry: cfg.entrySet()) {</span>
+<span class="nc" id="L297">            ConfigObject cfgObj = (ConfigObject) entry.getValue();</span>
+
+<span class="nc" id="L299">            modules.add(new StandardModuleDefinition(</span>
+<span class="nc" id="L300">                entry.getKey(),</span>
+<span class="nc" id="L301">                cfgObj.toConfig().getString(&quot;description&quot;),</span>
+<span class="nc" id="L302">                cfgObj.toConfig().getStringList(&quot;artifacts&quot;),</span>
+<span class="nc" id="L303">                cfgObj.toConfig().getStringList(&quot;cli-artifacts&quot;)</span>
+            ));
+<span class="nc" id="L305">        }</span>
+
+<span class="nc" id="L307">        return modules;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

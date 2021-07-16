@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassInfo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">ClassInfo.java</span></div><h1>ClassInfo.java</h1><pre class="source lang-java linenums">/***
+ * ASM tests
+ * Copyright (c) 2002-2005 France Telecom
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.facebook.presto.bytecode;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkState;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static com.facebook.presto.bytecode.ParameterizedType.typeFromPathName;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
+
+/**
+ * @author Eugene Kuleshov
+ */
+public class ClassInfo {
+    private final ClassInfoLoader loader;
+    private final ParameterizedType type;
+    private final int access;
+    private final ParameterizedType superClass;
+    private final List&lt;ParameterizedType&gt; interfaces;
+    private final List&lt;MethodNode&gt; methods;
+
+    public ClassInfo(ClassInfoLoader loader, ClassNode classNode) {
+<span class="nc" id="L57">        this(loader,</span>
+<span class="nc" id="L58">            typeFromPathName(classNode.name),</span>
+            classNode.access,
+<span class="nc bnc" id="L60" title="All 2 branches missed.">            classNode.superName == null ? null : typeFromPathName(classNode.superName),</span>
+<span class="nc" id="L61">            classNode.interfaces.stream().map(ParameterizedType::typeFromPathName).collect(Collectors.toList()),</span>
+            classNode.methods);
+<span class="nc" id="L63">    }</span>
+
+    public ClassInfo(ClassInfoLoader loader, Class&lt;?&gt; aClass) {
+<span class="nc" id="L66">        this(loader,</span>
+<span class="nc" id="L67">            type(aClass),</span>
+<span class="nc" id="L68">            aClass.getModifiers(),</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            aClass.getSuperclass() == null ? null : type(aClass.getSuperclass()),</span>
+<span class="nc" id="L70">            stream(aClass.getInterfaces()).map(ParameterizedType::type).collect(Collectors.toList()),</span>
+            null);
+<span class="nc" id="L72">    }</span>
+
+    public ClassInfo(ClassInfoLoader loader, ParameterizedType type, int access, ParameterizedType superClass,
+<span class="nc" id="L75">        Collection&lt;ParameterizedType&gt; interfaces, Collection&lt;MethodNode&gt; methods) {</span>
+<span class="nc" id="L76">        requireNonNull(loader, &quot;loader is null&quot;);</span>
+<span class="nc" id="L77">        requireNonNull(type, &quot;type is null&quot;);</span>
+<span class="nc" id="L78">        requireNonNull(interfaces, &quot;interfaces is null&quot;);</span>
+
+<span class="nc" id="L80">        this.loader = loader;</span>
+<span class="nc" id="L81">        this.type = type;</span>
+<span class="nc" id="L82">        this.access = access;</span>
+<span class="nc" id="L83">        this.superClass = superClass;</span>
+<span class="nc" id="L84">        this.interfaces = List.copyOf(interfaces);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (methods != null) {</span>
+<span class="nc" id="L86">            this.methods = List.copyOf(methods);</span>
+        }
+        else {
+<span class="nc" id="L89">            this.methods = null;</span>
+        }
+<span class="nc" id="L91">    }</span>
+
+    public ParameterizedType getType() {
+<span class="nc" id="L94">        return type;</span>
+    }
+
+    public int getModifiers() {
+<span class="nc" id="L98">        return access;</span>
+    }
+
+    public ClassInfo getSuperclass() {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (superClass == null) {</span>
+<span class="nc" id="L103">            return null;</span>
+        }
+<span class="nc" id="L105">        return loader.loadClassInfo(superClass);</span>
+    }
+
+    public List&lt;ClassInfo&gt; getInterfaces() {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (interfaces == null) {</span>
+<span class="nc" id="L110">            return List.of();</span>
+        }
+<span class="nc" id="L112">        return interfaces.stream().map(loader::loadClassInfo).collect(Collectors.toList());</span>
+    }
+
+    public List&lt;MethodNode&gt; getMethods() {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        checkState(methods != null, &quot;Methods were not loaded for type %s&quot;, type);</span>
+<span class="nc" id="L117">        return methods;</span>
+    }
+
+    boolean isInterface() {
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        return (getModifiers() &amp; Opcodes.ACC_INTERFACE) &gt; 0;</span>
+    }
+
+    private boolean implementsInterface(ClassInfo that) {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (ClassInfo classInfo = this; classInfo != null; classInfo = classInfo.getSuperclass()) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            for (ClassInfo anInterface : classInfo.getInterfaces()) {</span>
+<span class="nc bnc" id="L127" title="All 4 branches missed.">                if (anInterface.type.equals(that.type) || anInterface.implementsInterface(that)) {</span>
+<span class="nc" id="L128">                    return true;</span>
+                }
+<span class="nc" id="L130">            }</span>
+        }
+<span class="nc" id="L132">        return false;</span>
+    }
+
+    private boolean isSubclassOf(ClassInfo that) {
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        for (ClassInfo classInfo = this; classInfo != null; classInfo = classInfo.getSuperclass()) {</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            if (classInfo.getSuperclass() != null &amp;&amp;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                classInfo.getSuperclass().type.equals(that.type)) {</span>
+<span class="nc" id="L139">                return true;</span>
+            }
+        }
+<span class="nc" id="L142">        return false;</span>
+    }
+
+    public boolean isAssignableFrom(ClassInfo that) {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (this == that) {</span>
+<span class="nc" id="L147">            return true;</span>
+        }
+
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (that.isSubclassOf(this)) {</span>
+<span class="nc" id="L151">            return true;</span>
+        }
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (that.implementsInterface(this)) {</span>
+<span class="nc" id="L155">            return true;</span>
+        }
+
+<span class="nc bnc" id="L158" title="All 4 branches missed.">        if (that.isInterface() &amp;&amp; getType().equals(type(Object.class))) {</span>
+<span class="nc" id="L159">            return true;</span>
+        }
+
+<span class="nc" id="L162">        return false;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L167">        return type.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

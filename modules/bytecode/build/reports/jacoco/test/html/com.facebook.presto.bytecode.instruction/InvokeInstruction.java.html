@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvokeInstruction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.instruction</a> &gt; <span class="el_source">InvokeInstruction.java</span></div><h1>InvokeInstruction.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.instruction;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodDefinition;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.OpCode;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.MethodDefinition.methodDescription;
+import static com.facebook.presto.bytecode.OpCode.INVOKEDYNAMIC;
+import static com.facebook.presto.bytecode.OpCode.INVOKEINTERFACE;
+import static com.facebook.presto.bytecode.OpCode.INVOKESPECIAL;
+import static com.facebook.presto.bytecode.OpCode.INVOKESTATIC;
+import static com.facebook.presto.bytecode.OpCode.INVOKEVIRTUAL;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static java.util.Objects.requireNonNull;
+
+@SuppressWarnings(&quot;UnusedDeclaration&quot;)
+public class InvokeInstruction
+    implements InstructionNode {
+    //
+    // Invoke Static
+    //
+
+    public static InstructionNode invokeStatic(Method method) {
+<span class="nc" id="L51">        return invoke(INVOKESTATIC, method);</span>
+    }
+
+    public static InstructionNode invokeStatic(MethodDefinition method) {
+<span class="nc" id="L55">        return invoke(INVOKESTATIC, method);</span>
+    }
+
+    public static InstructionNode invokeStatic(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Class&lt;?&gt;... parameterTypes) {
+<span class="fc" id="L60">        return invoke(INVOKESTATIC, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeStatic(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L65">        return invoke(INVOKESTATIC, target, name, returnType, parameterTypes);</span>
+    }
+
+    public static InstructionNode invokeStatic(ParameterizedType target, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="fc" id="L70">        return invoke(INVOKESTATIC, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeStatic(ParameterizedType target, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L75">        return invoke(INVOKESTATIC, target, name, returnType, parameterTypes);</span>
+    }
+
+    //
+    // Invoke Virtual
+    //
+
+    public static InstructionNode invokeVirtual(Method method) {
+<span class="nc" id="L83">        return invoke(INVOKEVIRTUAL, method);</span>
+    }
+
+    public static InstructionNode invokeVirtual(MethodDefinition method) {
+<span class="nc" id="L87">        return invoke(INVOKEVIRTUAL, method);</span>
+    }
+
+    public static InstructionNode invokeVirtual(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Class&lt;?&gt;... parameterTypes) {
+<span class="fc" id="L92">        return invoke(INVOKEVIRTUAL, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeVirtual(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L97">        return invoke(INVOKEVIRTUAL, target, name, returnType, parameterTypes);</span>
+    }
+
+    public static InstructionNode invokeVirtual(ParameterizedType target, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="fc" id="L102">        return invoke(INVOKEVIRTUAL, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeVirtual(ParameterizedType target, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L107">        return invoke(INVOKEVIRTUAL, target, name, returnType, parameterTypes);</span>
+    }
+
+    //
+    // Invoke Interface
+    //
+
+    public static InstructionNode invokeInterface(Method method) {
+<span class="nc" id="L115">        return invoke(INVOKEINTERFACE, method);</span>
+    }
+
+    public static InstructionNode invokeInterface(MethodDefinition method) {
+<span class="nc" id="L119">        return invoke(INVOKEINTERFACE, method);</span>
+    }
+
+    public static InstructionNode invokeInterface(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Class&lt;?&gt;... parameterTypes) {
+<span class="nc" id="L124">        return invoke(INVOKEINTERFACE, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeInterface(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L129">        return invoke(INVOKEINTERFACE, target, name, returnType, parameterTypes);</span>
+    }
+
+    public static InstructionNode invokeInterface(ParameterizedType target, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="nc" id="L134">        return invoke(INVOKEINTERFACE, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeInterface(ParameterizedType target, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="nc" id="L139">        return invoke(INVOKEINTERFACE, target, name, returnType, parameterTypes);</span>
+    }
+
+    //
+    // Invoke Constructor
+    //
+
+    public static InstructionNode invokeConstructor(Constructor&lt;?&gt; constructor) {
+<span class="nc" id="L147">        return invokeConstructor(constructor.getDeclaringClass(), constructor.getParameterTypes());</span>
+    }
+
+    public static InstructionNode invokeConstructor(Class&lt;?&gt; target, Class&lt;?&gt;... parameterTypes) {
+<span class="nc" id="L151">        return invokeConstructor(type(target), Arrays.stream(parameterTypes).map(ParameterizedType::type).collect(Collectors.toList()));</span>
+    }
+
+    public static InstructionNode invokeConstructor(Class&lt;?&gt; target, Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L155">        return invokeConstructor(type(target), parameterTypes.stream().map(ParameterizedType::type).collect(Collectors.toList()));</span>
+    }
+
+    public static InstructionNode invokeConstructor(ParameterizedType target, ParameterizedType... parameterTypes) {
+<span class="nc" id="L159">        return invokeConstructor(target, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeConstructor(ParameterizedType target,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L164">        return invokeSpecial(target, &quot;&lt;init&gt;&quot;, type(void.class), parameterTypes);</span>
+    }
+
+    //
+    // Invoke Special
+    //
+
+    public static InstructionNode invokeSpecial(Method method) {
+<span class="nc" id="L172">        return invoke(INVOKESPECIAL, method);</span>
+    }
+
+    public static InstructionNode invokeSpecial(MethodDefinition method) {
+<span class="nc" id="L176">        return invoke(INVOKESPECIAL, method);</span>
+    }
+
+    public static InstructionNode invokeSpecial(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Class&lt;?&gt;... parameterTypes) {
+<span class="nc" id="L181">        return invoke(INVOKESPECIAL, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeSpecial(Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L186">        return invoke(INVOKESPECIAL, target, name, returnType, parameterTypes);</span>
+    }
+
+    public static InstructionNode invokeSpecial(ParameterizedType target, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="nc" id="L191">        return invoke(INVOKESPECIAL, target, name, returnType, List.of(parameterTypes));</span>
+    }
+
+    public static InstructionNode invokeSpecial(ParameterizedType target, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L196">        return invoke(INVOKESPECIAL, target, name, returnType, parameterTypes);</span>
+    }
+
+    //
+    // Generic
+    //
+
+    private static InstructionNode invoke(OpCode invocationType, Method method) {
+<span class="nc" id="L204">        return new InvokeInstruction(invocationType,</span>
+<span class="nc" id="L205">            type(method.getDeclaringClass()),</span>
+<span class="nc" id="L206">            method.getName(),</span>
+<span class="nc" id="L207">            type(method.getReturnType()),</span>
+<span class="nc" id="L208">            Arrays.stream(method.getParameterTypes()).map(ParameterizedType::type).collect(Collectors.toList()));</span>
+    }
+
+    private static InstructionNode invoke(OpCode invocationType, MethodDefinition method) {
+<span class="nc" id="L212">        return new InvokeInstruction(invocationType,</span>
+<span class="nc" id="L213">            method.getDeclaringClass().getType(),</span>
+<span class="nc" id="L214">            method.getName(),</span>
+<span class="nc" id="L215">            method.getReturnType(),</span>
+<span class="nc" id="L216">            method.getParameterTypes());</span>
+    }
+
+    private static InstructionNode invoke(OpCode invocationType, ParameterizedType target, String name,
+        ParameterizedType returnType, Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L221">        return new InvokeInstruction(invocationType,</span>
+            target,
+            name,
+            returnType,
+            parameterTypes);
+    }
+
+    private static InstructionNode invoke(OpCode invocationType, Class&lt;?&gt; target, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="fc" id="L230">        return new InvokeInstruction(invocationType,</span>
+<span class="fc" id="L231">            type(target),</span>
+            name,
+<span class="fc" id="L233">            type(returnType),</span>
+<span class="fc" id="L234">            parameterTypes.stream().map(ParameterizedType::type).collect(Collectors.toList()));</span>
+    }
+
+    //
+    // Invoke Dynamic
+    //
+
+    public static InstructionNode invokeDynamic(String name,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Method bootstrapMethod,
+        Collection&lt;Object&gt; bootstrapArguments) {
+<span class="fc" id="L246">        return new InvokeDynamicInstruction(name,</span>
+            returnType,
+            parameterTypes,
+            bootstrapMethod,
+<span class="fc" id="L250">            List.copyOf(bootstrapArguments));</span>
+    }
+
+    public static InstructionNode invokeDynamic(String name,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Method bootstrapMethod,
+        Object... bootstrapArguments) {
+<span class="nc" id="L258">        return new InvokeDynamicInstruction(name,</span>
+            returnType,
+            parameterTypes,
+            bootstrapMethod,
+<span class="nc" id="L262">            List.of(bootstrapArguments));</span>
+    }
+
+    public static InstructionNode invokeDynamic(String name,
+        MethodType methodType,
+        Method bootstrapMethod,
+        Collection&lt;Object&gt; bootstrapArguments) {
+<span class="nc" id="L269">        return new InvokeDynamicInstruction(name,</span>
+<span class="nc" id="L270">            type(methodType.returnType()),</span>
+<span class="nc" id="L271">            methodType.parameterList().stream().map(ParameterizedType::type).collect(Collectors.toList()),</span>
+            bootstrapMethod,
+<span class="nc" id="L273">            List.copyOf(bootstrapArguments));</span>
+    }
+
+    public static InstructionNode invokeDynamic(String name,
+        MethodType methodType,
+        Method bootstrapMethod,
+        Object... bootstrapArguments) {
+<span class="nc" id="L280">        return new InvokeDynamicInstruction(name,</span>
+<span class="nc" id="L281">            type(methodType.returnType()),</span>
+<span class="nc" id="L282">            methodType.parameterList().stream().map(ParameterizedType::type).collect(Collectors.toList()),</span>
+            bootstrapMethod,
+<span class="nc" id="L284">            List.of(bootstrapArguments));</span>
+    }
+
+    private final OpCode opCode;
+    private final ParameterizedType target;
+    private final String name;
+    private final ParameterizedType returnType;
+    private final List&lt;ParameterizedType&gt; parameterTypes;
+
+    public InvokeInstruction(OpCode opCode,
+        ParameterizedType target,
+        String name,
+        ParameterizedType returnType,
+<span class="fc" id="L297">        Collection&lt;ParameterizedType&gt; parameterTypes) {</span>
+<span class="fc" id="L298">        checkUnqualifiedName(name);</span>
+<span class="fc" id="L299">        this.opCode = opCode;</span>
+<span class="fc" id="L300">        this.target = target;</span>
+<span class="fc" id="L301">        this.name = name;</span>
+<span class="fc" id="L302">        this.returnType = returnType;</span>
+<span class="fc" id="L303">        this.parameterTypes = List.copyOf(parameterTypes);</span>
+<span class="fc" id="L304">    }</span>
+
+    public OpCode getOpCode() {
+<span class="nc" id="L307">        return opCode;</span>
+    }
+
+    public ParameterizedType getTarget() {
+<span class="nc" id="L311">        return target;</span>
+    }
+
+    public String getName() {
+<span class="fc" id="L315">        return name;</span>
+    }
+
+    public ParameterizedType getReturnType() {
+<span class="nc" id="L319">        return returnType;</span>
+    }
+
+    public List&lt;ParameterizedType&gt; getParameterTypes() {
+<span class="nc" id="L323">        return parameterTypes;</span>
+    }
+
+    public String getMethodDescription() {
+<span class="fc" id="L327">        return methodDescription(returnType, parameterTypes);</span>
+    }
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L332">        visitor.visitMethodInsn(opCode.getOpCode(), target.getClassName(), name, getMethodDescription(), target.isInterface());</span>
+<span class="fc" id="L333">    }</span>
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L337">        return List.of();</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L342">        return visitor.visitInvoke(parent, this);</span>
+    }
+
+    public static class InvokeDynamicInstruction
+        extends InvokeInstruction {
+        private final Method bootstrapMethod;
+        private final List&lt;Object&gt; bootstrapArguments;
+
+        public InvokeDynamicInstruction(String name,
+            ParameterizedType returnType,
+            Collection&lt;ParameterizedType&gt; parameterTypes,
+            Method bootstrapMethod,
+            List&lt;Object&gt; bootstrapArguments) {
+<span class="fc" id="L355">            super(INVOKEDYNAMIC, null, name, returnType, parameterTypes);</span>
+<span class="fc" id="L356">            this.bootstrapMethod = bootstrapMethod;</span>
+<span class="fc" id="L357">            this.bootstrapArguments = List.copyOf(bootstrapArguments);</span>
+<span class="fc" id="L358">        }</span>
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L362">            Handle bootstrapMethodHandle = new Handle(Opcodes.H_INVOKESTATIC,</span>
+<span class="fc" id="L363">                type(bootstrapMethod.getDeclaringClass()).getClassName(),</span>
+<span class="fc" id="L364">                bootstrapMethod.getName(),</span>
+<span class="fc" id="L365">                methodDescription(</span>
+<span class="fc" id="L366">                    bootstrapMethod.getReturnType(),</span>
+<span class="fc" id="L367">                    bootstrapMethod.getParameterTypes()),</span>
+                false);
+
+<span class="fc" id="L370">            visitor.visitInvokeDynamicInsn(getName(),</span>
+<span class="fc" id="L371">                getMethodDescription(),</span>
+                bootstrapMethodHandle,
+<span class="fc" id="L373">                bootstrapArguments.toArray());</span>
+<span class="fc" id="L374">        }</span>
+
+        public Method getBootstrapMethod() {
+<span class="nc" id="L377">            return bootstrapMethod;</span>
+        }
+
+        public List&lt;Object&gt; getBootstrapArguments() {
+<span class="nc" id="L381">            return bootstrapArguments;</span>
+        }
+
+        @Override
+        public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L386">            return List.of();</span>
+        }
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L391">            return visitor.visitInvokeDynamic(parent, this);</span>
+        }
+    }
+
+    private static void checkUnqualifiedName(String name) {
+        // JVM Specification 4.2.2 Unqualified Names
+<span class="fc" id="L397">        requireNonNull(name, &quot;name is null&quot;);</span>
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">        checkArgument(!name.isEmpty(), &quot;name is empty&quot;);</span>
+<span class="pc bpc" id="L399" title="1 of 4 branches missed.">        if (&quot;&lt;init&gt;&quot;.equals(name) || &quot;&lt;clinit&gt;&quot;.equals(name)) {</span>
+<span class="fc" id="L400">            return;</span>
+        }
+
+<span class="pc bpc" id="L403" title="1 of 2 branches missed.">        checkArgument(!name.matches(&quot;.*[.;\\[/&lt;&gt;].*&quot;), &quot;invalid name: %s&quot;, name);</span>
+<span class="fc" id="L404">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,41 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:51+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 15
+
+Apache Licensed: 15
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/integrationTest/java/org/apache/ignite/internal/vault/persistence/PersistencePropertiesVaultServiceTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/integrationTest/java/org/apache/ignite/internal/vault/persistence/PersistentVaultServiceTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/test/java/org/apache/ignite/internal/vault/VaultServiceTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/test/java/org/apache/ignite/internal/vault/VaultManagerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/test/java/org/apache/ignite/internal/vault/CompletableFutureMatcher.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/test/java/org/apache/ignite/internal/vault/inmemory/InMemoryVaultServiceTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/main/java/org/apache/ignite/internal/vault/VaultEntry.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/main/java/org/apache/ignite/internal/vault/persistence/RocksIteratorAdapter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/main/java/org/apache/ignite/internal/vault/persistence/PersistentVaultService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/main/java/org/apache/ignite/internal/vault/VaultManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/main/java/org/apache/ignite/internal/vault/inmemory/InMemoryVaultService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/src/main/java/org/apache/ignite/internal/vault/VaultService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/vault/pom.xml
+ 
+*****************************************************

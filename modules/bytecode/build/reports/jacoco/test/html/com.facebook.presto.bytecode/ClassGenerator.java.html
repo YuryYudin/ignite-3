@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">ClassGenerator.java</span></div><h1>ClassGenerator.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandle;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassTooLargeException;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodTooLargeException;
+import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceClassVisitor;
+
+import static com.facebook.presto.bytecode.ClassInfoLoader.createClassInfoLoader;
+import static com.facebook.presto.bytecode.ParameterizedType.typeFromJavaClassName;
+import static java.io.Writer.nullWriter;
+import static java.nio.file.Files.createDirectories;
+import static java.util.Objects.requireNonNull;
+
+public class ClassGenerator
+{
+    private final DynamicClassLoader classLoader;
+    private final boolean fakeLineNumbers;
+    private final boolean runAsmVerifier;
+    private final boolean dumpRawBytecode;
+    private final Writer output;
+    private final Optional&lt;Path&gt; dumpClassPath;
+
+    public static ClassGenerator classGenerator(ClassLoader parentClassLoader)
+    {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (parentClassLoader instanceof DynamicClassLoader)</span>
+<span class="fc" id="L54">            return classGenerator((DynamicClassLoader)parentClassLoader);</span>
+
+<span class="fc" id="L56">        return classGenerator(parentClassLoader, Map.of());</span>
+    }
+
+    public static ClassGenerator classGenerator(ClassLoader parentClassLoader, Map&lt;Long, MethodHandle&gt; callSiteBindings)
+    {
+<span class="fc" id="L61">        return classGenerator(new DynamicClassLoader(parentClassLoader, callSiteBindings));</span>
+    }
+
+    public static ClassGenerator classGenerator(DynamicClassLoader classLoader)
+    {
+<span class="fc" id="L66">        return new ClassGenerator(classLoader, false, false, false, nullWriter(), Optional.empty());</span>
+    }
+
+    private ClassGenerator(
+            DynamicClassLoader classLoader,
+            boolean fakeLineNumbers,
+            boolean runAsmVerifier,
+            boolean dumpRawBytecode,
+            Writer output,
+            Optional&lt;Path&gt; dumpClassPath)
+<span class="fc" id="L76">    {</span>
+<span class="fc" id="L77">        this.classLoader = requireNonNull(classLoader, &quot;classLoader is null&quot;);</span>
+<span class="fc" id="L78">        this.fakeLineNumbers = fakeLineNumbers;</span>
+<span class="fc" id="L79">        this.runAsmVerifier = runAsmVerifier;</span>
+<span class="fc" id="L80">        this.dumpRawBytecode = dumpRawBytecode;</span>
+<span class="fc" id="L81">        this.output = requireNonNull(output, &quot;output is null&quot;);</span>
+<span class="fc" id="L82">        this.dumpClassPath = requireNonNull(dumpClassPath, &quot;dumpClassPath is null&quot;);</span>
+<span class="fc" id="L83">    }</span>
+
+    public ClassGenerator fakeLineNumbers(boolean fakeLineNumbers)
+    {
+<span class="fc" id="L87">        return new ClassGenerator(classLoader, fakeLineNumbers, runAsmVerifier, dumpRawBytecode, output, dumpClassPath);</span>
+    }
+
+    public ClassGenerator runAsmVerifier(boolean runAsmVerifier)
+    {
+<span class="fc" id="L92">        return new ClassGenerator(classLoader, fakeLineNumbers, runAsmVerifier, dumpRawBytecode, output, dumpClassPath);</span>
+    }
+
+    public ClassGenerator dumpRawBytecode(boolean dumpRawBytecode)
+    {
+<span class="fc" id="L97">        return new ClassGenerator(classLoader, fakeLineNumbers, runAsmVerifier, dumpRawBytecode, output, dumpClassPath);</span>
+    }
+
+    public ClassGenerator outputTo(Writer output)
+    {
+<span class="fc" id="L102">        return new ClassGenerator(classLoader, fakeLineNumbers, runAsmVerifier, dumpRawBytecode, output, dumpClassPath);</span>
+    }
+
+    public ClassGenerator dumpClassFilesTo(Path dumpClassPath)
+    {
+<span class="fc" id="L107">        return dumpClassFilesTo(Optional.of(dumpClassPath));</span>
+    }
+
+    public ClassGenerator dumpClassFilesTo(Optional&lt;Path&gt; dumpClassPath)
+    {
+<span class="fc" id="L112">        return new ClassGenerator(classLoader, fakeLineNumbers, runAsmVerifier, dumpRawBytecode, output, dumpClassPath);</span>
+    }
+
+    public &lt;T&gt; Class&lt;? extends T&gt; defineClass(ClassDefinition classDefinition, Class&lt;T&gt; superType)
+    {
+<span class="fc" id="L117">        Map&lt;String, Class&lt;?&gt;&gt; classes = defineClasses(List.of(classDefinition));</span>
+
+<span class="fc" id="L119">        return classes.values().stream().findFirst().get().asSubclass(superType);</span>
+    }
+
+    public Map&lt;String, Class&lt;?&gt;&gt; defineClasses(List&lt;ClassDefinition&gt; classDefinitions)
+    {
+<span class="fc" id="L124">        ClassInfoLoader classInfoLoader = createClassInfoLoader(classDefinitions, classLoader);</span>
+<span class="fc" id="L125">        Map&lt;String, byte[]&gt; bytecodes = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        for (ClassDefinition classDefinition : classDefinitions) {</span>
+            // We call the simpler class writer first to get any errors out using simpler setting.
+            // This helps when we have large queries that can potentially cause COMPUTE_FRAMES
+            // (used by SmartClassWriter for doing more thorough analysis)
+<span class="fc" id="L131">            ClassWriter simpleClassWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);</span>
+<span class="fc" id="L132">            classDefinition.visit(simpleClassWriter);</span>
+            try {
+<span class="fc" id="L134">                simpleClassWriter.toByteArray();</span>
+            }
+<span class="nc" id="L136">            catch (ClassTooLargeException | MethodTooLargeException largeCodeException) {</span>
+<span class="nc" id="L137">                throw new ByteCodeTooLargeException(largeCodeException);</span>
+            }
+<span class="nc" id="L139">            catch (RuntimeException e) {</span>
+<span class="nc" id="L140">                throw new CompilationException(&quot;Error compiling class: &quot; + classDefinition.getName(), e);</span>
+<span class="fc" id="L141">            }</span>
+
+<span class="fc" id="L143">            ClassWriter writer = new SmartClassWriter(classInfoLoader);</span>
+
+            try {
+<span class="fc bfc" id="L146" title="All 2 branches covered.">                classDefinition.visit(fakeLineNumbers ? new AddFakeLineNumberClassVisitor(writer) : writer);</span>
+            }
+<span class="nc" id="L148">            catch (IndexOutOfBoundsException | NegativeArraySizeException e) {</span>
+<span class="nc" id="L149">                StringWriter out = new StringWriter();</span>
+<span class="nc" id="L150">                classDefinition.visit(new TraceClassVisitor(null, new Textifier(), new PrintWriter(out)));</span>
+<span class="nc" id="L151">                throw new IllegalArgumentException(&quot;Error processing class definition:\n&quot; + out, e);</span>
+<span class="fc" id="L152">            }</span>
+
+            byte[] bytecode;
+            try {
+<span class="fc" id="L156">                bytecode = writer.toByteArray();</span>
+            }
+<span class="nc" id="L158">            catch (ClassTooLargeException | MethodTooLargeException largeCodeException) {</span>
+<span class="nc" id="L159">                throw new ByteCodeTooLargeException(largeCodeException);</span>
+            }
+<span class="nc" id="L161">            catch (RuntimeException e) {</span>
+<span class="nc" id="L162">                throw new CompilationException(&quot;Error compiling class: &quot; + classDefinition.getName(), e);</span>
+<span class="fc" id="L163">            }</span>
+
+<span class="fc" id="L165">            bytecodes.put(classDefinition.getType().getJavaClassName(), bytecode);</span>
+
+<span class="fc bfc" id="L167" title="All 2 branches covered.">            if (runAsmVerifier) {</span>
+<span class="fc" id="L168">                ClassReader reader = new ClassReader(bytecode);</span>
+<span class="fc" id="L169">                CheckClassAdapter.verify(reader, classLoader, true, new PrintWriter(output));</span>
+            }
+<span class="fc" id="L171">        }</span>
+
+<span class="fc" id="L173">        dumpClassPath.ifPresent(path -&gt; bytecodes.forEach((className, bytecode) -&gt; {</span>
+<span class="fc" id="L174">            String name = typeFromJavaClassName(className).getClassName() + &quot;.class&quot;;</span>
+<span class="fc" id="L175">            Path file = path.resolve(name).toAbsolutePath();</span>
+            try {
+<span class="fc" id="L177">                createDirectories(file.getParent());</span>
+<span class="fc" id="L178">                Files.write(file, bytecode);</span>
+            }
+<span class="nc" id="L180">            catch (IOException e) {</span>
+<span class="nc" id="L181">                throw new UncheckedIOException(&quot;Failed to write generated class file: &quot; + file, e);</span>
+<span class="fc" id="L182">            }</span>
+<span class="fc" id="L183">        }));</span>
+
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        if (dumpRawBytecode) {</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">            for (byte[] bytecode : bytecodes.values()) {</span>
+<span class="fc" id="L187">                ClassReader classReader = new ClassReader(bytecode);</span>
+<span class="fc" id="L188">                classReader.accept(new TraceClassVisitor(new PrintWriter(output)), ClassReader.EXPAND_FRAMES);</span>
+<span class="fc" id="L189">            }</span>
+        }
+
+<span class="fc" id="L192">        Map&lt;String, Class&lt;?&gt;&gt; classes = classLoader.defineClasses(bytecodes);</span>
+
+        try {
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            for (Class&lt;?&gt; clazz : classes.values()) {</span>
+<span class="fc" id="L196">                Class.forName(clazz.getName(), true, clazz.getClassLoader());</span>
+<span class="fc" id="L197">            }</span>
+<span class="nc" id="L198">        } catch (ClassNotFoundException | VerifyError e) {</span>
+<span class="nc" id="L199">            throw new RuntimeException(e);</span>
+<span class="fc" id="L200">        }</span>
+
+<span class="fc" id="L202">        return classes;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

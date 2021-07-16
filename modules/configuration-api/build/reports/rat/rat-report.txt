@@ -1,0 +1,53 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 27
+
+Apache Licensed: 27
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/annotation/ConfigValue.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/annotation/Value.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/annotation/ConfigurationType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/annotation/Config.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/annotation/ConfigurationRoot.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/annotation/NamedConfigValue.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/ConfigurationChangeException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/NamedListView.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/notifications/ConfigurationNamedListListener.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/notifications/ConfigurationListener.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/notifications/ConfigurationNotificationEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/ConfigurationProperty.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/RootKey.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/ConfigurationValue.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/ConfigurationTree.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/NamedListChange.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/Immutable.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/ValidationContext.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/ValidationIssue.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/Max.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/Min.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/ConfigurationValidationException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/validation/Validator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/src/main/java/org/apache/ignite/configuration/NamedConfigurationTree.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/configuration-api/pom.xml
+ 
+*****************************************************

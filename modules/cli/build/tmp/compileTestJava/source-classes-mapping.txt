@@ -1,0 +1,24 @@
+org/apache/ignite/cli/package-info.java
+ org.apache.ignite.cli.package-info
+org/apache/ignite/cli/AbstractCliTest.java
+ org.apache.ignite.cli.AbstractCliTest
+org/apache/ignite/cli/builtins/init/InitIgniteCommandTest.java
+ org.apache.ignite.cli.builtins.init.InitIgniteCommandTest
+org/apache/ignite/cli/builtins/module/package-info.java
+ org.apache.ignite.cli.builtins.module.package-info
+org/apache/ignite/cli/ui/package-info.java
+ org.apache.ignite.cli.ui.package-info
+org/apache/ignite/cli/builtins/module/ModuleMangerTest.java
+ org.apache.ignite.cli.builtins.module.ModuleMangerTest
+org/apache/ignite/cli/IgniteCliInterfaceTest.java
+ org.apache.ignite.cli.IgniteCliInterfaceTest
+ org.apache.ignite.cli.IgniteCliInterfaceTest$Config
+ org.apache.ignite.cli.IgniteCliInterfaceTest$Init
+ org.apache.ignite.cli.IgniteCliInterfaceTest$Module
+ org.apache.ignite.cli.IgniteCliInterfaceTest$Node
+org/apache/ignite/cli/builtins/init/package-info.java
+ org.apache.ignite.cli.builtins.init.package-info
+org/apache/ignite/cli/ui/SpinnerTest.java
+ org.apache.ignite.cli.ui.SpinnerTest
+org/apache/ignite/cli/ui/ProgressBarTest.java
+ org.apache.ignite.cli.ui.ProgressBarTest

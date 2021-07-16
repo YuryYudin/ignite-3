@@ -1,0 +1,180 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: "pmd"
+apply plugin: "jacoco"
+apply plugin: "com.github.spotbugs"
+apply plugin: "checkstyle"
+apply plugin: "org.nosphere.apache.rat"
+
+repositories {
+  mavenLocal()
+  maven {
+    url = uri('https://repository.apache.org/snapshots')
+  }
+
+  maven {
+    url = uri('https://repo.maven.apache.org/maven2')
+  }
+}
+
+dependencies {
+  def projectPlatform = platform(project(":parent"))
+  compileOnly(projectPlatform)
+  annotationProcessor(projectPlatform)
+  testCompileOnly(projectPlatform)
+  testAnnotationProcessor(projectPlatform)
+  implementation(projectPlatform)
+  testImplementation(projectPlatform)
+
+  compileOnly("org.jetbrains:annotations:16.0.2")
+
+  compileOnly("com.github.spotbugs:spotbugs-annotations")
+  annotationProcessor("com.github.spotbugs:spotbugs-annotations")
+  testCompileOnly("com.github.spotbugs:spotbugs-annotations")
+  testAnnotationProcessor("com.github.spotbugs:spotbugs-annotations")
+
+  implementation("org.slf4j:slf4j-api")
+  implementation("org.apache.logging.log4j:log4j-slf4j-impl")
+  implementation("org.slf4j:jul-to-slf4j")
+
+  implementation("com.google.code.findbugs:jsr305")
+
+  testImplementation("org.hamcrest:hamcrest-library")
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.mockito:mockito-junit-jupiter')
+
+  testImplementation("org.junit.jupiter:junit-jupiter-engine")
+  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testImplementation("org.junit.jupiter:junit-jupiter-params")
+}
+
+configurations {
+  implementation.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+  implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
+
+tasks.withType(Test) {
+  testLogging {
+    afterSuite { desc, result ->
+      if (!desc.parent) {
+        def elapsedTime = result.getEndTime() - result.getStartTime()
+        println "Result: ${result.resultType}. " +
+                "Tests: ${result.testCount}, " +
+                "Passed: ${result.successfulTestCount}, " +
+                "Failed: ${result.failedTestCount}, " +
+                "Skipped: ${result.skippedTestCount}, " +
+                "Time: ${elapsedTime / 1000}s"
+      }
+    }
+    events 'skipped', 'failed', 'passed'
+    exceptionFormat = 'full'
+    showStandardStreams = true
+  }
+}
+
+test {
+  test {
+    useJUnitPlatform()
+    maxHeapSize "16g"
+    reports {
+      html.setEnabled(!jenkinsBuild)
+      junitXml.setEnabled(jenkinsBuild)
+    }
+  }
+}
+test.finalizedBy(jacocoTestReport)
+
+pmd {
+  ignoreFailures = false
+  consoleOutput = true
+  reportsDir = file("$buildDir/reports/pmd")
+//  sourceSets = [sourceSets.main]
+  toolVersion = "6.25.0"
+
+  ruleSetFiles = files("$rootDir/check-rules/pmd-rules.xml")
+  ruleSets = [] // no defaults, all rules should be explicitly set in rules file
+  incrementalAnalysis = true
+}
+
+jacoco {
+  toolVersion = "0.8.5+"
+}
+
+spotbugs {
+  toolVersion = "4.0.6"
+}
+
+def enableSpotbugsConsoleOutput(String sourceSetName) {
+  def spotbugsTask = tasks.findByName("spotbugs${sourceSetName.capitalize()}")
+  spotbugsTask.configure {
+    reports {
+      html.setEnabled(!jenkinsBuild)
+      xml.setEnabled(jenkinsBuild)
+    }
+  }
+}
+
+sourceSets.each {
+  enableSpotbugsConsoleOutput(it.name)
+}
+
+tasks.withType(JavaCompile) {
+  //options.compilerArgs.addAll(['-parameters', '-Xlint:all', '-Xlint:-path', '-Xlint:-processing', '-Xlint:-options'])
+  sourceCompatibility = '11'
+  targetCompatibility = '11'
+}
+
+tasks.withType(Checkstyle) {
+  reports {
+    html.setEnabled(!jenkinsBuild)
+    xml.setEnabled(jenkinsBuild)
+  }
+}
+
+tasks.withType(Jar) {
+  archivesBaseName = "${rootProject.name}-${project.name}"
+}
+
+checkstyle {
+  configFile = file("${rootDir}/check-rules/checkstyle-rules.xml")
+  configProperties = ["checkstyle.suppressions.file": file("${rootDir}/check-rules/checkstyle-suppressions.xml")]
+  showViolations = true
+  toolVersion = "8.41"
+  maxWarnings = 0
+}
+
+tasks.rat {
+  // List of Gradle exclude directives, defaults to ['**/.gradle/**']
+  excludes.add("**/target/**")
+  excludes.add("**/*.md")
+  excludes.add("docs/assets/images/**")
+  excludes.add("docs/assets/js/anchor.min.js")
+  excludes.add("**/*.json")
+  excludes.add("modules/cli/src/**/resources//builtin_modules.conf")
+  excludes.add("**/*.iml")
+  excludes.add("**/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfo.java")
+  excludes.add("**/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfoLoader.java")
+  excludes.add("**/META-INF/services/**")
+  excludes.add("**/build/**")
+
+  // Fail the build on rat errors, defaults to true
+  failOnError.set(false)
+
+  // Prints the list of files with unapproved licences to the console, defaults to false
+  verbose.set(true)
+}

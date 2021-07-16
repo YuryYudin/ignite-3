@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MavenCoordinates.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.builtins.module</a> &gt; <span class="el_source">MavenCoordinates.java</span></div><h1>MavenCoordinates.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.builtins.module;
+
+import org.apache.ignite.cli.IgniteCLIException;
+
+/**
+ * Simple wrapper of maven artifact coordinates groupid:artifactd:version.
+ */
+public class MavenCoordinates {
+    /** Group id */
+    public final String grpId;
+
+    /** Artifact id */
+    public final String artifactId;
+
+    /** Artifact version */
+    public final String ver;
+
+    /**
+     * Creates maven coordinates.
+     *
+     * @param grpId Maven group id.
+     * @param artifactId Maven artifact id.
+     * @param ver Maven version.
+     */
+<span class="nc" id="L42">    public MavenCoordinates(String grpId, String artifactId, String ver) {</span>
+<span class="nc" id="L43">        this.grpId = grpId;</span>
+<span class="nc" id="L44">        this.artifactId = artifactId;</span>
+<span class="nc" id="L45">        this.ver = ver;</span>
+<span class="nc" id="L46">    }</span>
+
+    /**
+     * Creates instance from raw string 'groupdId:artifactId:version'.
+     *
+     * @param mvnStr Raw maven artifactd string in format 'groupdId:artifactId:version'.
+     * @return Maven coordinates instance.
+     */
+    public static MavenCoordinates of(String mvnStr) {
+<span class="nc" id="L55">        String[] coords = mvnStr.split(&quot;:&quot;);</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (coords.length == 4)</span>
+<span class="nc" id="L58">            return new MavenCoordinates(coords[1], coords[2], coords[3]);</span>
+        else
+<span class="nc" id="L60">            throw new IgniteCLIException(&quot;Incorrect maven coordinates &quot; + mvnStr);</span>
+    }
+
+    /**
+     * Creates instance from raw string 'groupdId:artifactId'.
+     * Artifact version will be received separately.
+     *
+     * @param mvnStr Raw maven artifactd string in format 'groupdId:artifactId'.
+     * @param ver Version of maven artifact.
+     * @return Maven coordinates instance.
+     */
+    static MavenCoordinates of(String mvnStr, String ver) {
+<span class="nc" id="L72">        return of(mvnStr + &quot;:&quot; + ver);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,34 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 8
+
+Apache Licensed: 8
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/src/test/java/org/apache/ignite/internal/metastorage/WatchAggregatorTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/src/main/java/org/apache/ignite/internal/metastorage/MetaStorageManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/src/main/java/org/apache/ignite/internal/metastorage/watch/KeyCriterion.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/src/main/java/org/apache/ignite/internal/metastorage/watch/WatchAggregator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/src/main/java/org/apache/ignite/internal/metastorage/watch/AggregatedWatch.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage/pom.xml
+ 
+*****************************************************

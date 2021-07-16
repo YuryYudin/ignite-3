@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NewArrayBytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">NewArrayBytecodeExpression.java</span></div><h1>NewArrayBytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import com.facebook.presto.bytecode.instruction.TypeInstruction;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.Nullable;
+
+import static com.facebook.presto.bytecode.ArrayOpCode.getArrayOpCode;
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.expression.BytecodeExpressions.constantInt;
+import static java.util.Objects.requireNonNull;
+
+class NewArrayBytecodeExpression
+    extends BytecodeExpression {
+    private final BytecodeExpression length;
+    private final ParameterizedType elementType;
+
+    @Nullable
+    private final List&lt;BytecodeExpression&gt; elements;
+
+    NewArrayBytecodeExpression(ParameterizedType type, int length) {
+<span class="fc" id="L40">        this(type, constantInt(length));</span>
+<span class="fc" id="L41">    }</span>
+
+    NewArrayBytecodeExpression(ParameterizedType type, BytecodeExpression length) {
+<span class="fc" id="L44">        this(type, length, null);</span>
+<span class="fc" id="L45">    }</span>
+
+    NewArrayBytecodeExpression(ParameterizedType type, Collection&lt;BytecodeExpression&gt; elements) {
+<span class="fc" id="L48">        this(type, constantInt(elements.size()), elements);</span>
+<span class="fc" id="L49">    }</span>
+
+    private NewArrayBytecodeExpression(ParameterizedType type, BytecodeExpression length,
+        Collection&lt;BytecodeExpression&gt; elements) {
+<span class="fc" id="L53">        super(type);</span>
+<span class="fc" id="L54">        requireNonNull(type, &quot;type is null&quot;);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        checkArgument(type.getArrayComponentType() != null, &quot;type %s must be array type&quot;, type);</span>
+<span class="fc" id="L56">        this.elementType = type.getArrayComponentType();</span>
+<span class="fc" id="L57">        this.length = requireNonNull(length, &quot;length is null&quot;);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        this.elements = (elements == null) ? null : List.copyOf(elements);</span>
+<span class="fc" id="L59">    }</span>
+
+    @Override
+    public BytecodeNode getBytecode(MethodGenerationContext generationContext) {
+        BytecodeBlock bytecodeBlock;
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (elementType.isPrimitive()) {</span>
+<span class="fc" id="L65">            bytecodeBlock = new BytecodeBlock()</span>
+<span class="fc" id="L66">                .append(length)</span>
+<span class="fc" id="L67">                .append(TypeInstruction.newPrimitiveArray(elementType));</span>
+        }
+        else {
+<span class="fc" id="L70">            bytecodeBlock = new BytecodeBlock()</span>
+<span class="fc" id="L71">                .append(length)</span>
+<span class="fc" id="L72">                .append(TypeInstruction.newObjectArray(elementType));</span>
+        }
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (elements != null) {</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            for (int i = 0; i &lt; elements.size(); i++) {</span>
+<span class="fc" id="L76">                BytecodeExpression element = elements.get(i);</span>
+<span class="fc" id="L77">                bytecodeBlock</span>
+<span class="fc" id="L78">                    .dup()</span>
+<span class="fc" id="L79">                    .append(constantInt(i))</span>
+<span class="fc" id="L80">                    .append(element)</span>
+<span class="fc" id="L81">                    .append(getArrayOpCode(elementType).getStore());</span>
+            }
+        }
+<span class="fc" id="L84">        return bytecodeBlock;</span>
+    }
+
+    @Override
+    protected String formatOneLine() {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (elements == null) {</span>
+<span class="fc" id="L90">            return &quot;new &quot; + elementType.getSimpleName() + &quot;[&quot; + length + &quot;]&quot;;</span>
+        }
+<span class="fc" id="L92">        return &quot;new &quot; + elementType.getSimpleName() + &quot;[] {&quot; + elements.stream().map(BytecodeExpression::toString).collect(Collectors.joining(&quot;, &quot;)) + &quot;}&quot;;</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L97">        return List.of();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

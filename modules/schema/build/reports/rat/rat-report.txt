@@ -1,0 +1,117 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:51+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 91
+
+Apache Licensed: 91
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/RowTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/SchemaDescriptorTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/TestUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/SchemaRegistryImplTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/RowAssemblerAdvancedSchemaTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/RowAssemblerSimpleSchemaTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/ColumnsTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/configuration/TestConfigurationStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/configuration/SchemaDescriptorConverterTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/configuration/SchemaConfigurationConverterTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/marshaller/reflection/FieldAccessorTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/marshaller/JavaSerializerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/SchemaConfigurationTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/builder/PrimaryKeyBuilderTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/builder/PartialIndexBuilderTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/builder/TableColumnBuilderTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/builder/SchemaTableBuilderTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/builder/HashIndexBuilderTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/builder/SortedIndexBuilderTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/ExpandableByteBufTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/NativeTypeTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/schema/ColumnTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/test/java/org/apache/ignite/internal/benchmarks/SerializerBenchmarkTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/AssemblyException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/event/SchemaEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/event/SchemaEventParameters.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/ExpandableByteBuf.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/modification/TableModificationBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/modification/AlterColumnBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/SchemaDescriptor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/Column.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/VarlenNativeType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/SchemaRegistry.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/ByteBufferRow.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/SortedIndexColumnImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/IndexColumnImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/ColumnImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/PartialIndexImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/PrimaryIndexImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/SortedIndexImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/InvalidTypeException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/NativeTypeSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/SchemaTableImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/NumericNativeType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/NativeTypes.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/registry/SchemaRegistrationConflictException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/registry/SchemaRegistryImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/registry/SchemaRegistryException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/registry/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/Columns.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/Row.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/RowAssembler.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/configuration/SchemaConfigurationConverter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/configuration/SchemaTableValidatorImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/configuration/SchemaDescriptorConverter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/BinaryMode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/SerializerFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/reflection/JavaSerializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/reflection/Marshaller.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/reflection/JavaSerializerFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/reflection/FieldAccessor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/Serializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/AbstractSerializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/MarshallerUtil.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/asm/IdentityMarshallerCodeGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/asm/ColumnAccessCodeGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/asm/ObjectMarshallerCodeGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/asm/AsmSerializerGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/asm/MarshallerCodeGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/marshaller/SerializationException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/BitmaskNativeType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/BinaryRow.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/HashIndexImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/SchemaManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/PrimaryKeyBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/HashIndexBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/AbstractIndexBuilder.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/PartialIndexBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/TableColumnBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/SchemaTableBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/builder/SortedIndexBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/AbstractSchemaObject.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/schema/NativeType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/util/Pair.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/util/Factory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/internal/util/ObjectFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/src/main/java/org/apache/ignite/schema/SchemaBuilders.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/schema/pom.xml
+ 
+*****************************************************

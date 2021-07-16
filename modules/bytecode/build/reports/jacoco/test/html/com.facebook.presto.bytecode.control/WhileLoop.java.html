@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WhileLoop.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.control</a> &gt; <span class="el_source">WhileLoop.java</span></div><h1>WhileLoop.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.control;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.instruction.LabelNode;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkState;
+
+public class WhileLoop
+    implements FlowControl {
+    private final String comment;
+<span class="nc" id="L29">    private final BytecodeBlock condition = new BytecodeBlock();</span>
+<span class="nc" id="L30">    private final BytecodeBlock body = new BytecodeBlock();</span>
+
+<span class="nc" id="L32">    private final LabelNode continueLabel = new LabelNode(&quot;continue&quot;);</span>
+<span class="nc" id="L33">    private final LabelNode endLabel = new LabelNode(&quot;end&quot;);</span>
+
+<span class="nc" id="L35">    public WhileLoop() {</span>
+<span class="nc" id="L36">        this.comment = null;</span>
+<span class="nc" id="L37">    }</span>
+
+<span class="nc" id="L39">    public WhileLoop(String format, Object... args) {</span>
+<span class="nc" id="L40">        this.comment = String.format(format, args);</span>
+<span class="nc" id="L41">    }</span>
+
+    @Override
+    public String getComment() {
+<span class="nc" id="L45">        return comment;</span>
+    }
+
+    public LabelNode getContinueLabel() {
+<span class="nc" id="L49">        return continueLabel;</span>
+    }
+
+    public LabelNode getEndLabel() {
+<span class="nc" id="L53">        return endLabel;</span>
+    }
+
+    public BytecodeBlock condition() {
+<span class="nc" id="L57">        return condition;</span>
+    }
+
+    public WhileLoop condition(BytecodeNode node) {
+<span class="nc" id="L61">        checkState(condition.isEmpty(), &quot;condition already set&quot;);</span>
+<span class="nc" id="L62">        condition.append(node);</span>
+<span class="nc" id="L63">        return this;</span>
+    }
+
+    public BytecodeBlock body() {
+<span class="nc" id="L67">        return body;</span>
+    }
+
+    public WhileLoop body(BytecodeNode node) {
+<span class="nc" id="L71">        checkState(body.isEmpty(), &quot;body already set&quot;);</span>
+<span class="nc" id="L72">        body.append(node);</span>
+<span class="nc" id="L73">        return this;</span>
+    }
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        checkState(!condition.isEmpty(), &quot;WhileLoop does not have a condition set&quot;);</span>
+
+<span class="nc" id="L80">        BytecodeBlock block = new BytecodeBlock()</span>
+<span class="nc" id="L81">            .visitLabel(continueLabel)</span>
+<span class="nc" id="L82">            .append(condition)</span>
+<span class="nc" id="L83">            .ifZeroGoto(endLabel)</span>
+<span class="nc" id="L84">            .append(body)</span>
+<span class="nc" id="L85">            .gotoLabel(continueLabel)</span>
+<span class="nc" id="L86">            .visitLabel(endLabel);</span>
+
+<span class="nc" id="L88">        block.accept(visitor, generationContext);</span>
+<span class="nc" id="L89">    }</span>
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L93">        return List.of(condition, body);</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L98">        return visitor.visitWhile(parent, this);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

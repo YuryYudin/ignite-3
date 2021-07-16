@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldInstruction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.instruction</a> &gt; <span class="el_source">FieldInstruction.java</span></div><h1>FieldInstruction.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.instruction;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.OpCode;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+
+import static com.facebook.presto.bytecode.OpCode.GETFIELD;
+import static com.facebook.presto.bytecode.OpCode.GETSTATIC;
+import static com.facebook.presto.bytecode.OpCode.PUTFIELD;
+import static com.facebook.presto.bytecode.OpCode.PUTSTATIC;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+
+public abstract class FieldInstruction
+    implements InstructionNode {
+    public static FieldInstruction getFieldInstruction(Field field) {
+<span class="nc" id="L35">        boolean isStatic = Modifier.isStatic(field.getModifiers());</span>
+<span class="nc" id="L36">        return new GetFieldInstruction(isStatic, type(field.getDeclaringClass()), field.getName(), type(field.getType()));</span>
+    }
+
+    public static FieldInstruction putFieldInstruction(Field field) {
+<span class="nc" id="L40">        boolean isStatic = Modifier.isStatic(field.getModifiers());</span>
+<span class="nc" id="L41">        return new PutFieldInstruction(isStatic, type(field.getDeclaringClass()), field.getName(), type(field.getType()));</span>
+    }
+
+    public static FieldInstruction getFieldInstruction(ParameterizedType classType, String fieldName,
+        ParameterizedType fieldType) {
+<span class="fc" id="L46">        return new GetFieldInstruction(false, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction getFieldInstruction(Class&lt;?&gt; classType, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc" id="L50">        return new GetFieldInstruction(false, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction putFieldInstruction(ParameterizedType classType, String fieldName,
+        ParameterizedType fieldType) {
+<span class="fc" id="L55">        return new PutFieldInstruction(false, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction putFieldInstruction(Class&lt;?&gt; classType, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc" id="L59">        return new PutFieldInstruction(false, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction getStaticInstruction(ParameterizedType classType, String fieldName,
+        ParameterizedType fieldType) {
+<span class="fc" id="L64">        return new GetFieldInstruction(true, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction getStaticInstruction(Class&lt;?&gt; classType, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="fc" id="L68">        return new GetFieldInstruction(true, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction putStaticInstruction(ParameterizedType classType, String fieldName,
+        ParameterizedType fieldType) {
+<span class="fc" id="L73">        return new PutFieldInstruction(true, classType, fieldName, fieldType);</span>
+    }
+
+    public static FieldInstruction putStaticInstruction(Class&lt;?&gt; classType, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc" id="L77">        return new PutFieldInstruction(true, classType, fieldName, fieldType);</span>
+    }
+
+    private final boolean isStatic;
+
+    private final OpCode opCode;
+
+    private final ParameterizedType classType;
+
+    private final String fieldName;
+
+    private final ParameterizedType fieldType;
+
+    private FieldInstruction(boolean isStatic, OpCode opCode, ParameterizedType classType, String fieldName,
+<span class="fc" id="L91">        ParameterizedType fieldType) {</span>
+<span class="fc" id="L92">        this.isStatic = isStatic;</span>
+<span class="fc" id="L93">        this.opCode = opCode;</span>
+<span class="fc" id="L94">        this.classType = classType;</span>
+<span class="fc" id="L95">        this.fieldName = fieldName;</span>
+<span class="fc" id="L96">        this.fieldType = fieldType;</span>
+<span class="fc" id="L97">    }</span>
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L101">        visitor.visitFieldInsn(opCode.getOpCode(), classType.getClassName(), fieldName, fieldType.getType());</span>
+<span class="fc" id="L102">    }</span>
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L106">        return List.of();</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L111">        return visitor.visitFieldInstruction(parent, this);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L116">        return getClass().getSimpleName() +</span>
+            &quot;{isStatic=&quot; + isStatic +
+            &quot;, classType=&quot; + classType +
+            &quot;, fieldName=&quot; + fieldName +
+            &quot;, fieldType=&quot; + fieldType + '}';
+    }
+
+    public static class GetFieldInstruction
+        extends FieldInstruction {
+        public GetFieldInstruction(boolean isStatic, ParameterizedType classType, String fieldName,
+            ParameterizedType fieldType) {
+<span class="fc bfc" id="L127" title="All 2 branches covered.">            super(isStatic, isStatic ? GETSTATIC : GETFIELD, classType, fieldName, fieldType);</span>
+<span class="fc" id="L128">        }</span>
+
+        public GetFieldInstruction(boolean isStatic, Class&lt;?&gt; classType, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">            super(isStatic, isStatic ? GETSTATIC : GETFIELD, type(classType), fieldName, type(fieldType));</span>
+<span class="fc" id="L132">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L136">            return visitor.visitGetField(parent, this);</span>
+        }
+    }
+
+    public static class PutFieldInstruction
+        extends FieldInstruction {
+        public PutFieldInstruction(boolean isStatic, ParameterizedType classType, String fieldName,
+            ParameterizedType fieldType) {
+<span class="fc bfc" id="L144" title="All 2 branches covered.">            super(isStatic, isStatic ? PUTSTATIC : PUTFIELD, classType, fieldName, fieldType);</span>
+<span class="fc" id="L145">        }</span>
+
+        public PutFieldInstruction(boolean isStatic, Class&lt;?&gt; classType, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">            super(isStatic, isStatic ? PUTSTATIC : PUTFIELD, type(classType), fieldName, type(fieldType));</span>
+<span class="nc" id="L149">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L153">            return visitor.visitPutField(parent, this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

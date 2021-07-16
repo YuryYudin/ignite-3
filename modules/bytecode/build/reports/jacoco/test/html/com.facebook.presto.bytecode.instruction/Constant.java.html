@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Constant.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.instruction</a> &gt; <span class="el_source">Constant.java</span></div><h1>Constant.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.instruction;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeUtils;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+
+import static com.facebook.presto.bytecode.OpCode.ACONST_NULL;
+import static com.facebook.presto.bytecode.OpCode.BIPUSH;
+import static com.facebook.presto.bytecode.OpCode.DCONST_0;
+import static com.facebook.presto.bytecode.OpCode.DCONST_1;
+import static com.facebook.presto.bytecode.OpCode.FCONST_0;
+import static com.facebook.presto.bytecode.OpCode.FCONST_1;
+import static com.facebook.presto.bytecode.OpCode.FCONST_2;
+import static com.facebook.presto.bytecode.OpCode.ICONST_0;
+import static com.facebook.presto.bytecode.OpCode.ICONST_1;
+import static com.facebook.presto.bytecode.OpCode.ICONST_2;
+import static com.facebook.presto.bytecode.OpCode.ICONST_3;
+import static com.facebook.presto.bytecode.OpCode.ICONST_4;
+import static com.facebook.presto.bytecode.OpCode.ICONST_5;
+import static com.facebook.presto.bytecode.OpCode.ICONST_M1;
+import static com.facebook.presto.bytecode.OpCode.LCONST_0;
+import static com.facebook.presto.bytecode.OpCode.LCONST_1;
+import static com.facebook.presto.bytecode.OpCode.SIPUSH;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static com.facebook.presto.bytecode.instruction.FieldInstruction.getStaticInstruction;
+import static com.facebook.presto.bytecode.instruction.InvokeInstruction.invokeStatic;
+import static java.util.Objects.requireNonNull;
+
+@SuppressWarnings(&quot;UnusedDeclaration&quot;)
+<span class="fc" id="L48">public abstract class Constant</span>
+    implements InstructionNode {
+    public static Constant loadNull() {
+<span class="fc" id="L51">        return new NullConstant();</span>
+    }
+
+    public static Constant loadBoolean(boolean value) {
+<span class="fc" id="L55">        return new BooleanConstant(value);</span>
+    }
+
+    public static Constant loadBoxedBoolean(boolean value) {
+<span class="nc" id="L59">        return new BoxedBooleanConstant(value);</span>
+    }
+
+    public static Constant loadInt(int value) {
+<span class="fc" id="L63">        return new IntConstant(value);</span>
+    }
+
+    public static Constant loadBoxedInt(int value) {
+<span class="nc" id="L67">        return new BoxedIntegerConstant(value);</span>
+    }
+
+    public static Constant loadFloat(float value) {
+<span class="fc" id="L71">        return new FloatConstant(value);</span>
+    }
+
+    public static Constant loadBoxedFloat(float value) {
+<span class="nc" id="L75">        return new BoxedFloatConstant(value);</span>
+    }
+
+    public static Constant loadLong(long value) {
+<span class="fc" id="L79">        return new LongConstant(value);</span>
+    }
+
+    public static Constant loadBoxedLong(long value) {
+<span class="nc" id="L83">        return new BoxedLongConstant(value);</span>
+    }
+
+    public static Constant loadDouble(double value) {
+<span class="fc" id="L87">        return new DoubleConstant(value);</span>
+    }
+
+    public static Constant loadBoxedDouble(double value) {
+<span class="nc" id="L91">        return new BoxedDoubleConstant(value);</span>
+    }
+
+    public static Constant loadNumber(Number value) {
+<span class="nc" id="L95">        requireNonNull(value, &quot;value is null&quot;);</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (value instanceof Byte) {</span>
+<span class="nc" id="L97">            return loadInt((value).intValue());</span>
+        }
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (value instanceof Short) {</span>
+<span class="nc" id="L100">            return loadInt((value).intValue());</span>
+        }
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (value instanceof Integer) {</span>
+<span class="nc" id="L103">            return loadInt((Integer)value);</span>
+        }
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (value instanceof Long) {</span>
+<span class="nc" id="L106">            return loadLong((Long)value);</span>
+        }
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (value instanceof Float) {</span>
+<span class="nc" id="L109">            return loadFloat((Float)value);</span>
+        }
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (value instanceof Double) {</span>
+<span class="nc" id="L112">            return loadDouble((Double)value);</span>
+        }
+<span class="nc" id="L114">        throw new IllegalStateException(&quot;Unsupported number type &quot; + value.getClass().getSimpleName());</span>
+    }
+
+    public static Constant loadString(String value) {
+<span class="fc" id="L118">        requireNonNull(value, &quot;value is null&quot;);</span>
+<span class="fc" id="L119">        return new StringConstant(value);</span>
+    }
+
+    public static Constant loadClass(Class&lt;?&gt; value) {
+<span class="fc" id="L123">        requireNonNull(value, &quot;value is null&quot;);</span>
+<span class="fc" id="L124">        return new ClassConstant(type(value));</span>
+    }
+
+    public static Constant loadClass(ParameterizedType value) {
+<span class="nc" id="L128">        requireNonNull(value, &quot;value is null&quot;);</span>
+<span class="nc" id="L129">        return new ClassConstant(value);</span>
+    }
+
+    public abstract Object getValue();
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L136">        return List.of();</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L141">        return visitor.visitConstant(parent, this);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L146">        return getClass().getSimpleName() + &quot;{value=&quot; + getValue() + '}';</span>
+    }
+
+<span class="fc" id="L149">    public static class NullConstant</span>
+        extends Constant {
+        @Override
+        public Object getValue() {
+<span class="fc" id="L153">            return null;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L158">            visitor.visitInsn(ACONST_NULL.getOpCode());</span>
+<span class="fc" id="L159">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L163">            return visitor.visitConstant(parent, this);</span>
+        }
+    }
+
+    public static class BooleanConstant
+        extends Constant {
+        private final boolean value;
+
+<span class="fc" id="L171">        private BooleanConstant(boolean value) {</span>
+<span class="fc" id="L172">            this.value = value;</span>
+<span class="fc" id="L173">        }</span>
+
+        @Override
+        public Boolean getValue() {
+<span class="fc" id="L177">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L182" title="All 2 branches covered.">            if (value) {</span>
+<span class="fc" id="L183">                visitor.visitInsn(ICONST_1.getOpCode());</span>
+            }
+            else {
+<span class="fc" id="L186">                visitor.visitInsn(ICONST_0.getOpCode());</span>
+            }
+<span class="fc" id="L188">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L192">            return visitor.visitBooleanConstant(parent, this);</span>
+        }
+    }
+
+    public static class BoxedBooleanConstant
+        extends Constant {
+        private final boolean value;
+
+<span class="nc" id="L200">        private BoxedBooleanConstant(boolean value) {</span>
+<span class="nc" id="L201">            this.value = value;</span>
+<span class="nc" id="L202">        }</span>
+
+        @Override
+        public Boolean getValue() {
+<span class="nc" id="L206">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            if (value) {</span>
+<span class="nc" id="L212">                getStaticInstruction(Boolean.class, &quot;TRUE&quot;, Boolean.class).accept(visitor, generationContext);</span>
+            }
+            else {
+<span class="nc" id="L215">                getStaticInstruction(Boolean.class, &quot;FALSE&quot;, Boolean.class).accept(visitor, generationContext);</span>
+            }
+<span class="nc" id="L217">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L221">            return visitor.visitBoxedBooleanConstant(parent, this);</span>
+        }
+    }
+
+    public static class IntConstant
+        extends Constant {
+        private final int value;
+
+<span class="fc" id="L229">        private IntConstant(int value) {</span>
+<span class="fc" id="L230">            this.value = value;</span>
+<span class="fc" id="L231">        }</span>
+
+        @Override
+        public Integer getValue() {
+<span class="fc" id="L235">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L240" title="All 4 branches covered.">            if (value &lt;= Byte.MAX_VALUE &amp;&amp; value &gt;= Byte.MIN_VALUE) {</span>
+<span class="pc bpc" id="L241" title="1 of 8 branches missed.">                switch (value) {</span>
+                    case -1:
+<span class="nc" id="L243">                        visitor.visitInsn(ICONST_M1.getOpCode());</span>
+<span class="nc" id="L244">                        break;</span>
+                    case 0:
+<span class="fc" id="L246">                        visitor.visitInsn(ICONST_0.getOpCode());</span>
+<span class="fc" id="L247">                        break;</span>
+                    case 1:
+<span class="fc" id="L249">                        visitor.visitInsn(ICONST_1.getOpCode());</span>
+<span class="fc" id="L250">                        break;</span>
+                    case 2:
+<span class="fc" id="L252">                        visitor.visitInsn(ICONST_2.getOpCode());</span>
+<span class="fc" id="L253">                        break;</span>
+                    case 3:
+<span class="fc" id="L255">                        visitor.visitInsn(ICONST_3.getOpCode());</span>
+<span class="fc" id="L256">                        break;</span>
+                    case 4:
+<span class="fc" id="L258">                        visitor.visitInsn(ICONST_4.getOpCode());</span>
+<span class="fc" id="L259">                        break;</span>
+                    case 5:
+<span class="fc" id="L261">                        visitor.visitInsn(ICONST_5.getOpCode());</span>
+<span class="fc" id="L262">                        break;</span>
+                    default:
+<span class="fc" id="L264">                        visitor.visitIntInsn(BIPUSH.getOpCode(), value);</span>
+<span class="fc" id="L265">                        break;</span>
+                }
+            }
+<span class="fc bfc" id="L268" title="All 4 branches covered.">            else if (value &lt;= Short.MAX_VALUE &amp;&amp; value &gt;= Short.MIN_VALUE) {</span>
+<span class="fc" id="L269">                visitor.visitIntInsn(SIPUSH.getOpCode(), value);</span>
+            }
+            else {
+<span class="fc" id="L272">                visitor.visitLdcInsn(value);</span>
+            }
+<span class="fc" id="L274">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L278">            return visitor.visitIntConstant(parent, this);</span>
+        }
+    }
+
+    public static class BoxedIntegerConstant
+        extends Constant {
+        private final int value;
+
+<span class="nc" id="L286">        private BoxedIntegerConstant(int value) {</span>
+<span class="nc" id="L287">            this.value = value;</span>
+<span class="nc" id="L288">        }</span>
+
+        @Override
+        public Integer getValue() {
+<span class="nc" id="L292">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc" id="L297">            loadInt(value).accept(visitor, generationContext);</span>
+<span class="nc" id="L298">            invokeStatic(Integer.class, &quot;valueOf&quot;, Integer.class, int.class).accept(visitor, generationContext);</span>
+<span class="nc" id="L299">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L303">            return visitor.visitBoxedIntegerConstant(parent, this);</span>
+        }
+    }
+
+    public static class FloatConstant
+        extends Constant {
+        private final float value;
+
+<span class="fc" id="L311">        private FloatConstant(float value) {</span>
+<span class="fc" id="L312">            this.value = value;</span>
+<span class="fc" id="L313">        }</span>
+
+        @Override
+        public Float getValue() {
+<span class="fc" id="L317">            return value;</span>
+        }
+
+        @Override
+        @SuppressWarnings(&quot;FloatingPointEquality&quot;)
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+            // We can not use &quot;value == 0.0&quot; because when value is &quot;-0.0&quot; the expression
+            // will evaluate to true and we would convert &quot;-0.0&quot; to &quot;0.0&quot; which is
+            // not the same value
+<span class="fc bfc" id="L326" title="All 2 branches covered.">            if (Float.floatToIntBits(value) == Float.floatToIntBits(0.0f)) {</span>
+<span class="fc" id="L327">                visitor.visitInsn(FCONST_0.getOpCode());</span>
+            }
+<span class="pc bpc" id="L329" title="1 of 2 branches missed.">            else if (value == 1.0f) {</span>
+<span class="nc" id="L330">                visitor.visitInsn(FCONST_1.getOpCode());</span>
+            }
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">            else if (value == 2.0f) {</span>
+<span class="nc" id="L333">                visitor.visitInsn(FCONST_2.getOpCode());</span>
+            }
+            else {
+<span class="fc" id="L336">                visitor.visitLdcInsn(value);</span>
+            }
+<span class="fc" id="L338">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L342">            return visitor.visitFloatConstant(parent, this);</span>
+        }
+    }
+
+    public static class BoxedFloatConstant
+        extends Constant {
+        private final float value;
+
+<span class="nc" id="L350">        private BoxedFloatConstant(float value) {</span>
+<span class="nc" id="L351">            this.value = value;</span>
+<span class="nc" id="L352">        }</span>
+
+        @Override
+        public Float getValue() {
+<span class="nc" id="L356">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc" id="L361">            loadFloat(value).accept(visitor, generationContext);</span>
+<span class="nc" id="L362">            invokeStatic(Float.class, &quot;valueOf&quot;, Float.class, float.class).accept(visitor, generationContext);</span>
+<span class="nc" id="L363">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L367">            return visitor.visitBoxedFloatConstant(parent, this);</span>
+        }
+    }
+
+    public static class LongConstant
+        extends Constant {
+        private final long value;
+
+<span class="fc" id="L375">        private LongConstant(long value) {</span>
+<span class="fc" id="L376">            this.value = value;</span>
+<span class="fc" id="L377">        }</span>
+
+        @Override
+        public Long getValue() {
+<span class="fc" id="L381">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L386" title="All 2 branches covered.">            if (value == 0) {</span>
+<span class="fc" id="L387">                visitor.visitInsn(LCONST_0.getOpCode());</span>
+            }
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">            else if (value == 1) {</span>
+<span class="nc" id="L390">                visitor.visitInsn(LCONST_1.getOpCode());</span>
+            }
+            else {
+<span class="fc" id="L393">                visitor.visitLdcInsn(value);</span>
+            }
+<span class="fc" id="L395">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L399">            return visitor.visitLongConstant(parent, this);</span>
+        }
+    }
+
+    public static class BoxedLongConstant
+        extends Constant {
+        private final long value;
+
+<span class="nc" id="L407">        private BoxedLongConstant(long value) {</span>
+<span class="nc" id="L408">            this.value = value;</span>
+<span class="nc" id="L409">        }</span>
+
+        @Override
+        public Long getValue() {
+<span class="nc" id="L413">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc" id="L418">            loadLong(value).accept(visitor, generationContext);</span>
+<span class="nc" id="L419">            invokeStatic(Long.class, &quot;valueOf&quot;, Long.class, long.class).accept(visitor, generationContext);</span>
+<span class="nc" id="L420">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L424">            return visitor.visitBoxedLongConstant(parent, this);</span>
+        }
+    }
+
+    public static class DoubleConstant
+        extends Constant {
+        private final double value;
+
+<span class="fc" id="L432">        private DoubleConstant(double value) {</span>
+<span class="fc" id="L433">            this.value = value;</span>
+<span class="fc" id="L434">        }</span>
+
+        @Override
+        public Double getValue() {
+<span class="fc" id="L438">            return value;</span>
+        }
+
+        @Override
+        @SuppressWarnings(&quot;FloatingPointEquality&quot;)
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+            // We can not use &quot;value == 0.0&quot; because when value is &quot;-0.0&quot; the expression
+            // will evaluate to true and we would convert &quot;-0.0&quot; to &quot;0.0&quot; which is
+            // not the same value
+<span class="fc bfc" id="L447" title="All 2 branches covered.">            if (Double.doubleToLongBits(value) == Double.doubleToLongBits(0.0)) {</span>
+<span class="fc" id="L448">                visitor.visitInsn(DCONST_0.getOpCode());</span>
+            }
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">            else if (value == 1.0) {</span>
+<span class="nc" id="L451">                visitor.visitInsn(DCONST_1.getOpCode());</span>
+            }
+            else {
+<span class="fc" id="L454">                visitor.visitLdcInsn(value);</span>
+            }
+<span class="fc" id="L456">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L460">            return visitor.visitDoubleConstant(parent, this);</span>
+        }
+    }
+
+    public static class BoxedDoubleConstant
+        extends Constant {
+        private final double value;
+
+<span class="nc" id="L468">        private BoxedDoubleConstant(double value) {</span>
+<span class="nc" id="L469">            this.value = value;</span>
+<span class="nc" id="L470">        }</span>
+
+        @Override
+        public Double getValue() {
+<span class="nc" id="L474">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc" id="L479">            loadDouble(value).accept(visitor, generationContext);</span>
+<span class="nc" id="L480">            invokeStatic(Double.class, &quot;valueOf&quot;, Double.class, double.class).accept(visitor, generationContext);</span>
+<span class="nc" id="L481">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L485">            return visitor.visitBoxedDoubleConstant(parent, this);</span>
+        }
+    }
+
+    public static class StringConstant
+        extends Constant {
+        private final String value;
+
+<span class="fc" id="L493">        private StringConstant(String value) {</span>
+<span class="fc" id="L494">            this.value = value;</span>
+<span class="fc" id="L495">        }</span>
+
+        @Override
+        public String getValue() {
+<span class="fc" id="L499">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L504">            visitor.visitLdcInsn(value);</span>
+<span class="fc" id="L505">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L509">            return visitor.visitStringConstant(parent, this);</span>
+        }
+    }
+
+    public static class ClassConstant
+        extends Constant {
+        private final ParameterizedType value;
+
+<span class="fc" id="L517">        private ClassConstant(ParameterizedType value) {</span>
+<span class="fc" id="L518">            this.value = value;</span>
+<span class="fc" id="L519">        }</span>
+
+        @Override
+        public ParameterizedType getValue() {
+<span class="fc" id="L523">            return value;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L528" title="All 2 branches covered.">            if (value.isPrimitive()) {</span>
+<span class="fc" id="L529">                Class&lt;?&gt; wrapper = BytecodeUtils.wrap(value.getPrimitiveType());</span>
+<span class="fc" id="L530">                getStaticInstruction(wrapper, &quot;TYPE&quot;, Class.class).accept(visitor, generationContext);</span>
+<span class="fc" id="L531">            }</span>
+            else {
+<span class="fc" id="L533">                visitor.visitLdcInsn(Type.getType(value.getType()));</span>
+            }
+<span class="fc" id="L535">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L539">            return visitor.visitClassConstant(parent, this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

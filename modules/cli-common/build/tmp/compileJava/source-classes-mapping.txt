@@ -1,0 +1,4 @@
+org/apache/ignite/cli/common/package-info.java
+ org.apache.ignite.cli.common.package-info
+org/apache/ignite/cli/common/IgniteCommand.java
+ org.apache.ignite.cli.common.IgniteCommand

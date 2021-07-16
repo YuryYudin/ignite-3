@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CliPathsConfigLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli</a> &gt; <span class="el_source">CliPathsConfigLoader.java</span></div><h1>CliPathsConfigLoader.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Properties;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.apache.ignite.cli.builtins.SystemPathResolver;
+
+/**
+ * Due to the nature of Ignite CLI tool it can be runned in the environment without ignitecfg file at all.
+ * This class created to simplify the managing of the different cases:
+ * &lt;ul&gt;
+ *     &lt;li&gt;When user download binary and run it to manage any existence remote cluster&lt;/li&gt;
+ *     &lt;li&gt;When user download binary and run 'init' to deploy Ignite distribution on the current machine&lt;/li&gt;
+ *     &lt;li&gt;When user install it by system package&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+@Singleton
+public class CliPathsConfigLoader {
+    /** System paths' resolver. */
+    private final SystemPathResolver pathRslvr;
+
+    /** Ignite CLI tool version. */
+    private final String ver;
+
+    /**
+     * Creates new loader.
+     *
+     * @param pathRslvr System paths' resolver.
+     * @param cliVerInfo CLI version info provider.
+     */
+    @Inject
+    public CliPathsConfigLoader(
+        SystemPathResolver pathRslvr,
+        CliVersionInfo cliVerInfo
+<span class="nc" id="L57">    ) {</span>
+<span class="nc" id="L58">        this.pathRslvr = pathRslvr;</span>
+<span class="nc" id="L59">        ver = cliVerInfo.ver;</span>
+<span class="nc" id="L60">    }</span>
+
+    /**
+     * Loads Ignite paths config from file if exists.
+     *
+     * @return IgnitePaths if config file exists, empty otherwise.
+     */
+    public Optional&lt;IgnitePaths&gt; loadIgnitePathsConfig() {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (configFilePath().toFile().exists())</span>
+<span class="nc" id="L69">            return Optional.of(readConfigFile(configFilePath(), ver));</span>
+
+<span class="nc" id="L71">        return Optional.empty();</span>
+    }
+
+    /**
+     * Loads Ignite paths configuration if config file exists or failed otherwise.
+     *
+     * @return IgnitePaths or throw exception, if no config file exists.
+     */
+    public IgnitePaths loadIgnitePathsOrThrowError() {
+<span class="nc" id="L80">        Optional&lt;IgnitePaths&gt; ignitePaths = loadIgnitePathsConfig();</span>
+
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (ignitePaths.isPresent()) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if (!ignitePaths.get().validateDirs()) {</span>
+<span class="nc" id="L84">                throw new IgniteCLIException(&quot;Some required directories are absent. &quot; +</span>
+                    &quot;Try to run 'init' command to fix the issue.&quot;);
+            }
+
+<span class="nc" id="L88">            return ignitePaths.get();</span>
+        }
+        else
+<span class="nc" id="L91">            throw new IgniteCLIException(&quot;To execute node module/node management commands you must run 'init' first&quot;);</span>
+    }
+
+    /**
+     * @return Path to Ignite CLI config file.
+     */
+    public Path configFilePath() {
+<span class="nc" id="L98">        return pathRslvr.osHomeDirectoryPath().resolve(&quot;.ignitecfg&quot;);</span>
+    }
+
+    /**
+     * Reads Ignite CLI configuration file and prepare {@link IgnitePaths} instance.
+     *
+     * @param cfgPath Path to config file.
+     * @param ver Ignite CLI version.
+     * @return IgnitePaths with resolved directories of current Ignite distribution.
+     */
+    private static IgnitePaths readConfigFile(Path cfgPath, String ver) {
+<span class="nc" id="L109">        try (InputStream inputStream = new FileInputStream(cfgPath.toFile())) {</span>
+<span class="nc" id="L110">            Properties props = new Properties();</span>
+<span class="nc" id="L111">            props.load(inputStream);</span>
+
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            if ((props.getProperty(&quot;bin&quot;) == null) ||</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                (props.getProperty(&quot;work&quot;) == null) ||</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">                (props.getProperty(&quot;config&quot;) == null) ||</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">                (props.getProperty(&quot;log&quot;) == null) )</span>
+<span class="nc" id="L117">                throw new IgniteCLIException(&quot;Config file has wrong format. &quot; +</span>
+                    &quot;It must contain correct paths to bin, work, config and log dirs&quot;);
+
+<span class="nc" id="L120">            return new IgnitePaths(</span>
+<span class="nc" id="L121">                Path.of(props.getProperty(&quot;bin&quot;)),</span>
+<span class="nc" id="L122">                Path.of(props.getProperty(&quot;work&quot;)),</span>
+<span class="nc" id="L123">                Path.of(props.getProperty(&quot;config&quot;)),</span>
+<span class="nc" id="L124">                Path.of(props.getProperty(&quot;log&quot;)),</span>
+                ver);
+        }
+<span class="nc" id="L127">        catch (IOException e) {</span>
+<span class="nc" id="L128">            throw new IgniteCLIException(&quot;Can't read config file&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

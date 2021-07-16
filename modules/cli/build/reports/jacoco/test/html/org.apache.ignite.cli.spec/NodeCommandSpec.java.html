@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NodeCommandSpec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.spec</a> &gt; <span class="el_source">NodeCommandSpec.java</span></div><h1>NodeCommandSpec.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.spec;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.util.List;
+import javax.inject.Inject;
+import org.apache.ignite.cli.CliPathsConfigLoader;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.apache.ignite.cli.IgnitePaths;
+import org.apache.ignite.cli.Table;
+import org.apache.ignite.cli.builtins.node.NodeManager;
+import picocli.CommandLine;
+import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Help.ColorScheme;
+
+/**
+ * Commands for start/stop/list Ignite nodes on the current machine.
+ */
+@CommandLine.Command(
+    name = &quot;node&quot;,
+    description = &quot;Manages locally running Ignite nodes.&quot;,
+    subcommands = {
+        NodeCommandSpec.StartNodeCommandSpec.class,
+        NodeCommandSpec.StopNodeCommandSpec.class,
+        NodeCommandSpec.NodesClasspathCommandSpec.class,
+        NodeCommandSpec.ListNodesCommandSpec.class
+    }
+)
+<span class="nc" id="L47">public class NodeCommandSpec extends CategorySpec {</span>
+    /**
+     * Starts Ignite node command.
+     */
+    @CommandLine.Command(name = &quot;start&quot;, description = &quot;Starts an Ignite node locally.&quot;)
+<span class="nc" id="L52">    public static class StartNodeCommandSpec extends CommandSpec {</span>
+
+        /** Loader for Ignite distributive paths. */
+        @Inject
+        private CliPathsConfigLoader cliPathsCfgLdr;
+
+        /** Node manager. */
+        @Inject
+        private NodeManager nodeMgr;
+
+        /** Consistent id, which will be used by new node. */
+        @CommandLine.Parameters(paramLabel = &quot;name&quot;, description = &quot;Name of the new node&quot;)
+        public String nodeName;
+
+        /** Path to node config. */
+        @CommandLine.Option(names = &quot;--config&quot;, description = &quot;Configuration file to start the node with&quot;)
+        private Path configPath;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+<span class="nc" id="L72">            IgnitePaths ignitePaths = cliPathsCfgLdr.loadIgnitePathsOrThrowError();</span>
+
+<span class="nc" id="L74">            PrintWriter out = spec.commandLine().getOut();</span>
+<span class="nc" id="L75">            ColorScheme cs = spec.commandLine().getColorScheme();</span>
+
+<span class="nc" id="L77">            NodeManager.RunningNode node = nodeMgr.start(nodeName, ignitePaths.logDir,</span>
+<span class="nc" id="L78">                ignitePaths.cliPidsDir(),</span>
+                configPath,
+                out);
+
+<span class="nc" id="L82">            out.println();</span>
+<span class="nc" id="L83">            out.println(&quot;Node is successfully started. To stop, type &quot; +</span>
+<span class="nc" id="L84">                cs.commandText(&quot;ignite node stop &quot;) + cs.parameterText(node.name));</span>
+<span class="nc" id="L85">            out.println();</span>
+
+<span class="nc" id="L87">            Table tbl = new Table(0, cs);</span>
+
+<span class="nc" id="L89">            tbl.addRow(&quot;@|bold Node name|@&quot;, node.name);</span>
+<span class="nc" id="L90">            tbl.addRow(&quot;@|bold PID|@&quot;, node.pid);</span>
+<span class="nc" id="L91">            tbl.addRow(&quot;@|bold Log File|@&quot;, node.logFile);</span>
+
+<span class="nc" id="L93">            out.println(tbl);</span>
+<span class="nc" id="L94">        }</span>
+    }
+
+    /**
+     * Command for stopping Ignite node on the current machine.
+     */
+    @CommandLine.Command(name = &quot;stop&quot;, description = &quot;Stops a locally running Ignite node.&quot;)
+<span class="nc" id="L101">    public static class StopNodeCommandSpec extends CommandSpec {</span>
+        /** Node manager. */
+        @Inject
+        private NodeManager nodeMgr;
+
+        /** Loader for Ignite distributive paths. */
+        @Inject
+        private CliPathsConfigLoader cliPathsCfgLdr;
+
+        /** Consistent ids of nodes to stop. */
+        @CommandLine.Parameters(
+            arity = &quot;1..*&quot;,
+            paramLabel = &quot;consistent-ids&quot;,
+            description = &quot;Consistent IDs of the nodes to stop (space separated list)&quot;
+        )
+        private List&lt;String&gt; consistentIds;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+<span class="nc" id="L120">            IgnitePaths ignitePaths = cliPathsCfgLdr.loadIgnitePathsOrThrowError();</span>
+
+<span class="nc" id="L122">            PrintWriter out = spec.commandLine().getOut();</span>
+<span class="nc" id="L123">            ColorScheme cs = spec.commandLine().getColorScheme();</span>
+
+<span class="nc" id="L125">            consistentIds.forEach(p -&gt; {</span>
+<span class="nc" id="L126">                out.print(&quot;Stopping locally running node with consistent ID &quot; + cs.parameterText(p) + &quot;... &quot;);</span>
+
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                if (nodeMgr.stopWait(p, ignitePaths.cliPidsDir()))</span>
+<span class="nc" id="L129">                    out.println(cs.text(&quot;@|bold,green Done!|@&quot;));</span>
+                else
+<span class="nc" id="L131">                    out.println(cs.text(&quot;@|bold,red Failed|@&quot;));</span>
+<span class="nc" id="L132">            });</span>
+<span class="nc" id="L133">        }</span>
+    }
+
+    /**
+     * Command for listing the running nodes.
+     */
+    @CommandLine.Command(name = &quot;list&quot;, description = &quot;Shows the list of currently running local Ignite nodes.&quot;)
+<span class="nc" id="L140">    public static class ListNodesCommandSpec extends CommandSpec {</span>
+        /** Node manager. */
+        @Inject
+        private NodeManager nodeMgr;
+
+        /** Loader for Ignite distributive paths. */
+        @Inject
+        private CliPathsConfigLoader cliPathsCfgLdr;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+<span class="nc" id="L151">            IgnitePaths paths = cliPathsCfgLdr.loadIgnitePathsOrThrowError();</span>
+
+<span class="nc" id="L153">            List&lt;NodeManager.RunningNode&gt; nodes = nodeMgr.getRunningNodes(paths.logDir, paths.cliPidsDir());</span>
+
+<span class="nc" id="L155">            PrintWriter out = spec.commandLine().getOut();</span>
+<span class="nc" id="L156">            ColorScheme cs = spec.commandLine().getColorScheme();</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (nodes.isEmpty()) {</span>
+<span class="nc" id="L159">                out.println(&quot;Currently, there are no locally running nodes.&quot;);</span>
+<span class="nc" id="L160">                out.println();</span>
+<span class="nc" id="L161">                out.println(&quot;Use the &quot; + cs.commandText(&quot;ignite node start&quot;)</span>
+                    + &quot; command to start a new node.&quot;);
+            }
+            else {
+<span class="nc" id="L165">                out.println(&quot;Currently, there are &quot; +</span>
+<span class="nc" id="L166">                    cs.text(&quot;@|bold &quot; + nodes.size() + &quot;|@&quot;) + &quot; locally running nodes.&quot;);</span>
+<span class="nc" id="L167">                out.println();</span>
+
+<span class="nc" id="L169">                Table tbl = new Table(0, cs);</span>
+
+<span class="nc" id="L171">                tbl.addRow(&quot;@|bold Consistent ID|@&quot;, &quot;@|bold PID|@&quot;, &quot;@|bold Log File|@&quot;);</span>
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">                for (NodeManager.RunningNode node : nodes)</span>
+<span class="nc" id="L174">                    tbl.addRow(node.name, node.pid, node.logFile);</span>
+
+<span class="nc" id="L176">                out.println(tbl);</span>
+            }
+<span class="nc" id="L178">        }</span>
+    }
+
+    /**
+     * Command for reading the current classpath of Ignite nodes.
+     */
+    @CommandLine.Command(name = &quot;classpath&quot;, description = &quot;Shows the current classpath used by the Ignite nodes.&quot;)
+<span class="nc" id="L185">    public static class NodesClasspathCommandSpec extends CommandSpec {</span>
+        /** Node manager. */
+        @Inject
+        private NodeManager nodeMgr;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+            try {
+<span class="nc" id="L193">                List&lt;String&gt; items = nodeMgr.classpathItems();</span>
+
+<span class="nc" id="L195">                PrintWriter out = spec.commandLine().getOut();</span>
+
+<span class="nc" id="L197">                out.println(Ansi.AUTO.string(&quot;@|bold Current Ignite node classpath:|@&quot;));</span>
+
+<span class="nc bnc" id="L199" title="All 2 branches missed.">                for (String item : items)</span>
+<span class="nc" id="L200">                    out.println(&quot;    &quot; + item);</span>
+            }
+<span class="nc" id="L202">            catch (IOException e) {</span>
+<span class="nc" id="L203">                throw new IgniteCLIException(&quot;Can't get current classpath&quot;, e);</span>
+<span class="nc" id="L204">            }</span>
+<span class="nc" id="L205">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

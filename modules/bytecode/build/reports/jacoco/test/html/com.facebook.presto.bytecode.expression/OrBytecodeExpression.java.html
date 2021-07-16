@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrBytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">OrBytecodeExpression.java</span></div><h1>OrBytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.instruction.LabelNode;
+import java.util.List;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static java.util.Objects.requireNonNull;
+
+class OrBytecodeExpression
+    extends BytecodeExpression {
+    private final BytecodeExpression left;
+    private final BytecodeExpression right;
+
+    OrBytecodeExpression(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L32">        super(type(boolean.class));</span>
+<span class="fc" id="L33">        this.left = requireNonNull(left, &quot;left is null&quot;);</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        checkArgument(left.getType().getPrimitiveType() == boolean.class, &quot;Expected left to be type boolean but is %s&quot;, left.getType());</span>
+<span class="fc" id="L35">        this.right = requireNonNull(right, &quot;right is null&quot;);</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        checkArgument(right.getType().getPrimitiveType() == boolean.class, &quot;Expected right to be type boolean but is %s&quot;, right.getType());</span>
+<span class="fc" id="L37">    }</span>
+
+    @Override
+    public BytecodeNode getBytecode(MethodGenerationContext generationContext) {
+<span class="fc" id="L41">        LabelNode trueLabel = new LabelNode(&quot;true&quot;);</span>
+<span class="fc" id="L42">        LabelNode endLabel = new LabelNode(&quot;end&quot;);</span>
+<span class="fc" id="L43">        return new BytecodeBlock()</span>
+<span class="fc" id="L44">            .append(left)</span>
+<span class="fc" id="L45">            .ifTrueGoto(trueLabel)</span>
+<span class="fc" id="L46">            .append(right)</span>
+<span class="fc" id="L47">            .ifTrueGoto(trueLabel)</span>
+<span class="fc" id="L48">            .push(false)</span>
+<span class="fc" id="L49">            .gotoLabel(endLabel)</span>
+<span class="fc" id="L50">            .visitLabel(trueLabel)</span>
+<span class="fc" id="L51">            .push(true)</span>
+<span class="fc" id="L52">            .visitLabel(endLabel);</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L57">        return List.of(left, right);</span>
+    }
+
+    @Override
+    protected String formatOneLine() {
+<span class="fc" id="L62">        return &quot;(&quot; + left + &quot; || &quot; + right + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

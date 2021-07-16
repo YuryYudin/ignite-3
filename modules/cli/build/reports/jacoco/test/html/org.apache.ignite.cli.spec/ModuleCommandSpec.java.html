@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModuleCommandSpec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.spec</a> &gt; <span class="el_source">ModuleCommandSpec.java</span></div><h1>ModuleCommandSpec.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.spec;
+
+import java.io.PrintWriter;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import org.apache.ignite.cli.CliPathsConfigLoader;
+import org.apache.ignite.cli.Table;
+import org.apache.ignite.cli.builtins.module.MavenCoordinates;
+import org.apache.ignite.cli.builtins.module.ModuleManager;
+import org.apache.ignite.cli.builtins.module.ModuleRegistry;
+import org.apache.ignite.cli.builtins.module.StandardModuleDefinition;
+import org.apache.ignite.cli.common.IgniteCommand;
+import picocli.CommandLine;
+import picocli.CommandLine.Help.ColorScheme;
+
+/**
+ * Commands for managing Ignite modules.
+ */
+@CommandLine.Command(
+    name = &quot;module&quot;,
+    description = &quot;Manages optional Ignite modules and additional Maven dependencies.&quot;,
+    subcommands = {
+        ModuleCommandSpec.ListModuleCommandSpec.class,
+        ModuleCommandSpec.AddModuleCommandSpec.class,
+        ModuleCommandSpec.RemoveModuleCommandSpec.class
+    }
+)
+<span class="nc" id="L49">public class ModuleCommandSpec extends CategorySpec implements IgniteCommand {</span>
+    /** Command for add Ignite modules. */
+    @CommandLine.Command(
+        name = &quot;add&quot;,
+        description = &quot;Adds an optional Ignite module or an additional Maven dependency.&quot;
+    )
+<span class="nc" id="L55">    public static class AddModuleCommandSpec extends CommandSpec {</span>
+
+        /** Module manager. */
+        @Inject
+        private ModuleManager moduleMgr;
+
+        /** Loader of ignite distribution paths' confg. */
+        @Inject
+        private CliPathsConfigLoader cliPathsCfgLdr;
+
+        /** Command option for setting custom maven repository for module lookup. */
+        @CommandLine.Option(
+            names = &quot;--repo&quot;,
+            description = &quot;Additional Maven repository URL&quot;
+        )
+        private URL[] urls;
+
+        /** Module name command parameter. */
+        @CommandLine.Parameters(
+            paramLabel = &quot;module&quot;,
+            description = &quot;Optional Ignite module name or Maven dependency coordinates (mvn:groupId:artifactId:version)&quot;
+        )
+        private String moduleName;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+<span class="nc" id="L81">            var ignitePaths = cliPathsCfgLdr.loadIgnitePathsOrThrowError();</span>
+
+<span class="nc" id="L83">            moduleMgr.setOut(spec.commandLine().getOut());</span>
+<span class="nc" id="L84">            moduleMgr.setColorScheme(spec.commandLine().getColorScheme());</span>
+
+<span class="nc" id="L86">            moduleMgr.addModule(moduleName,</span>
+                ignitePaths,
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                (urls == null) ? Collections.emptyList() : Arrays.asList(urls));</span>
+<span class="nc" id="L89">        }</span>
+    }
+
+    /**
+     * Command for removing installed Ignite modules.
+     */
+    @CommandLine.Command(
+        name = &quot;remove&quot;,
+        description = &quot;Removes an optional Ignite module or an additional Maven dependency.&quot;
+    )
+<span class="nc" id="L99">    public static class RemoveModuleCommandSpec extends CommandSpec {</span>
+
+        /** Module manager. */
+        @Inject
+        private ModuleManager moduleMgr;
+
+        /** Module name command parameter. */
+        @CommandLine.Parameters(
+            paramLabel = &quot;module&quot;,
+            description = &quot;Optional Ignite module name or Maven dependency coordinates (groupId:artifactId:version)&quot;
+        )
+        private String moduleName;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+<span class="nc" id="L114">            PrintWriter out = spec.commandLine().getOut();</span>
+<span class="nc" id="L115">            ColorScheme cs = spec.commandLine().getColorScheme();</span>
+
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            if (moduleMgr.removeModule(moduleName))</span>
+<span class="nc" id="L118">                out.println(&quot;Module &quot; + cs.parameterText(moduleName) + &quot; was removed successfully.&quot;);</span>
+            else
+<span class="nc" id="L120">                out.println(&quot;Nothing to do: module &quot; + cs.parameterText(moduleName) + &quot; is not yet added.&quot;);</span>
+<span class="nc" id="L121">        }</span>
+    }
+
+    /**
+     * Shows available and installed Ignite modules.
+     */
+    @CommandLine.Command(
+        name = &quot;list&quot;,
+        description = &quot;Shows the list of Ignite modules and Maven dependencies.&quot;
+    )
+<span class="nc" id="L131">    public static class ListModuleCommandSpec extends CommandSpec {</span>
+        /** Module manager. */
+        @Inject
+        private ModuleManager moduleMgr;
+
+        /** Module registry. */
+        @Inject
+        private ModuleRegistry moduleRegistry;
+
+        /** {@inheritDoc} */
+        @Override public void run() {
+<span class="nc" id="L142">            var installedModules = new LinkedHashMap&lt;String, ModuleRegistry.ModuleDefinition&gt;();</span>
+
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            for (var m: moduleRegistry</span>
+<span class="nc" id="L145">                .listInstalled()</span>
+                .modules
+            ) {
+<span class="nc" id="L148">                installedModules.put(m.name, m);</span>
+<span class="nc" id="L149">            }</span>
+
+<span class="nc" id="L151">            PrintWriter out = spec.commandLine().getOut();</span>
+<span class="nc" id="L152">            ColorScheme cs = spec.commandLine().getColorScheme();</span>
+
+<span class="nc" id="L154">            var builtinModules = moduleMgr.builtinModules()</span>
+<span class="nc" id="L155">                .stream()</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                .filter(m -&gt; !m.name.startsWith(ModuleManager.INTERNAL_MODULE_PREFIX))</span>
+<span class="nc" id="L157">                .map(m -&gt; new StandardModuleView(m, installedModules.containsKey(m.name)))</span>
+<span class="nc" id="L158">                .collect(Collectors.toList());</span>
+
+<span class="nc" id="L160">            out.println(cs.text(&quot;@|bold Optional Ignite Modules|@&quot;));</span>
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (builtinModules.isEmpty())</span>
+<span class="nc" id="L163">                out.println(&quot;    Currently, there are no optional Ignite modules available for installation.&quot;);</span>
+            else {
+<span class="nc" id="L165">                Table table = new Table(0, cs);</span>
+
+<span class="nc" id="L167">                table.addRow(&quot;@|bold Name|@&quot;, &quot;@|bold Description|@&quot;, &quot;@|bold Installed?|@&quot;);</span>
+
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                for (StandardModuleView m : builtinModules) {</span>
+<span class="nc" id="L170">                    table.addRow(m.standardModuleDefinition.name, m.standardModuleDefinition.desc,</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                        m.installed ? &quot;Yes&quot; : &quot;No&quot;);</span>
+<span class="nc" id="L172">                }</span>
+
+<span class="nc" id="L174">                out.println(table);</span>
+            }
+
+<span class="nc" id="L177">            out.println();</span>
+<span class="nc" id="L178">            out.println(cs.text(&quot;@|bold Additional Maven Dependencies|@&quot;));</span>
+
+<span class="nc" id="L180">            var externalInstalledModules = installedModules.values().stream()</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                .filter(m -&gt; !(m.type == ModuleRegistry.SourceType.Standard))</span>
+<span class="nc" id="L182">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            if (externalInstalledModules.isEmpty()) {</span>
+<span class="nc" id="L185">                out.println(&quot;    No additional Maven dependencies installed. Use the &quot; +</span>
+<span class="nc" id="L186">                    cs.commandText(&quot;ignite module add&quot;) + &quot; command to add a dependency.&quot;);</span>
+            }
+            else {
+<span class="nc" id="L189">                Table table = new Table(0, cs);</span>
+
+<span class="nc" id="L191">                table.addRow(&quot;@|bold Group ID|@&quot;, &quot;@|bold Artifact ID|@&quot;, &quot;@|bold Version|@&quot;);</span>
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                for (ModuleRegistry.ModuleDefinition m :externalInstalledModules) {</span>
+<span class="nc" id="L194">                    MavenCoordinates mvn = MavenCoordinates.of(&quot;mvn:&quot; + m.name);</span>
+
+<span class="nc" id="L196">                    table.addRow(mvn.grpId, mvn.artifactId, mvn.ver);</span>
+<span class="nc" id="L197">                }</span>
+
+<span class="nc" id="L199">                out.println(table);</span>
+<span class="nc" id="L200">                out.println(&quot;Type &quot; + cs.commandText(&quot;ignite module remove&quot;) + &quot; &quot; +</span>
+<span class="nc" id="L201">                    cs.parameterText(&quot;&lt;groupId&gt;:&lt;artifactId&gt;:&lt;version&gt;&quot;) + &quot; to remove a dependency.&quot;);</span>
+            }
+<span class="nc" id="L203">        }</span>
+
+        /**
+         * Simple tuple-like wrapper for (StandardModuleDefinition, installed) pairs.
+         */
+        private static class StandardModuleView {
+            /** Module definition. */
+            private final StandardModuleDefinition standardModuleDefinition;
+
+            /** Installed flag. */
+            private final boolean installed;
+
+            /**
+             * Creates (moduleDefinition, installed) pair.
+             *
+             * @param standardModuleDefinition Module definition.
+             * @param installed true if module already installed, false otherwise.
+             */
+<span class="nc" id="L221">            private StandardModuleView(StandardModuleDefinition standardModuleDefinition, boolean installed) {</span>
+<span class="nc" id="L222">                this.standardModuleDefinition = standardModuleDefinition;</span>
+<span class="nc" id="L223">                this.installed = installed;</span>
+<span class="nc" id="L224">            }</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

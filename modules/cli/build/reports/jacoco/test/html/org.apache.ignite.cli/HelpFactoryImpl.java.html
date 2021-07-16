@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HelpFactoryImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli</a> &gt; <span class="el_source">HelpFactoryImpl.java</span></div><h1>HelpFactoryImpl.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.ignite.cli.spec.SpecAdapter;
+import picocli.CommandLine;
+import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Help.ColorScheme;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
+
+/**
+ * Implementation of Picocli factory for help message formatting.
+ */
+<span class="nc bnc" id="L35" title="All 2 branches missed.">public class HelpFactoryImpl implements CommandLine.IHelpFactory {</span>
+    /** Section key banner. */
+    public static final String SECTION_KEY_BANNER = &quot;banner&quot;;
+
+    /** Section key parameter option table. */
+    public static final String SECTION_KEY_PARAMETER_OPTION_TABLE = &quot;paramsOptsTable&quot;;
+
+    /** {@inheritDoc} */
+    @Override public CommandLine.Help create(CommandLine.Model.CommandSpec cmdSpec, ColorScheme cs) {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        boolean hasCommands = !cmdSpec.subcommands().isEmpty();</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        boolean hasOptions = cmdSpec.options().stream().anyMatch(o -&gt; !o.hidden());</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        boolean hasParameters = cmdSpec.positionalParameters().stream().anyMatch(o -&gt; !o.hidden());</span>
+
+        // Any command can have either subcommands or options/parameters, but not both.
+<span class="nc bnc" id="L49" title="All 8 branches missed.">        assert !(hasCommands &amp;&amp; (hasOptions || hasParameters));</span>
+
+<span class="nc" id="L51">        cmdSpec.usageMessage().sectionKeys(Arrays.asList(</span>
+            SECTION_KEY_BANNER,
+            CommandLine.Model.UsageMessageSpec.SECTION_KEY_SYNOPSIS,
+            CommandLine.Model.UsageMessageSpec.SECTION_KEY_DESCRIPTION,
+            CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST,
+            SECTION_KEY_PARAMETER_OPTION_TABLE
+        ));
+
+<span class="nc" id="L59">        var sectionMap = new HashMap&lt;String, CommandLine.IHelpSectionRenderer&gt;();</span>
+
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (cmdSpec.commandLine().isUsageHelpRequested()) {</span>
+<span class="nc" id="L62">            sectionMap.put(SECTION_KEY_BANNER,</span>
+                help -&gt; {
+<span class="nc bnc" id="L64" title="All 4 branches missed.">                    assert help.commandSpec().commandLine().getCommand() instanceof SpecAdapter;</span>
+
+<span class="nc" id="L66">                    return ((SpecAdapter)help.commandSpec().commandLine().getCommand()).banner();</span>
+                }
+            );
+        }
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (!hasCommands) {</span>
+<span class="nc" id="L72">            sectionMap.put(CommandLine.Model.UsageMessageSpec.SECTION_KEY_SYNOPSIS,</span>
+                help -&gt; {
+<span class="nc" id="L74">                    StringBuilder sb = new StringBuilder();</span>
+
+<span class="nc" id="L76">                    List&lt;Ansi.IStyle&gt; boldCmdStyle = new ArrayList&lt;&gt;(cs.commandStyles());</span>
+
+<span class="nc" id="L78">                    boldCmdStyle.add(Ansi.Style.bold);</span>
+
+<span class="nc" id="L80">                    sb.append(cs.apply(help.commandSpec().qualifiedName(), boldCmdStyle));</span>
+
+<span class="nc bnc" id="L82" title="All 2 branches missed.">                    if (hasOptions)</span>
+<span class="nc" id="L83">                        sb.append(cs.optionText(&quot; [OPTIONS]&quot;));</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                    if (hasParameters) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                        for (PositionalParamSpec parameter : cmdSpec.positionalParameters())</span>
+<span class="nc" id="L87">                            sb.append(' ').append(cs.parameterText(parameter.paramLabel()));</span>
+                    }
+
+<span class="nc" id="L90">                    sb.append(&quot;\n\n&quot;);</span>
+
+<span class="nc" id="L92">                    return sb.toString();</span>
+                }
+            );
+        }
+
+<span class="nc" id="L97">        sectionMap.put(CommandLine.Model.UsageMessageSpec.SECTION_KEY_DESCRIPTION,</span>
+<span class="nc" id="L98">            help -&gt; Ansi.AUTO.string(help.description() + '\n'));</span>
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (hasCommands) {</span>
+<span class="nc" id="L101">            sectionMap.put(CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST, help -&gt; {</span>
+<span class="nc" id="L102">                Table tbl = new Table(0, cs);</span>
+
+<span class="nc" id="L104">                tbl.addSection(&quot;@|bold COMMANDS|@&quot;);</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">                for (Map.Entry&lt;String, CommandLine.Help&gt; entry : help.subcommands().entrySet()) {</span>
+<span class="nc" id="L107">                    String name = entry.getKey();</span>
+
+<span class="nc" id="L109">                    CommandLine.Help cmd = entry.getValue();</span>
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                    if (cmd.subcommands().isEmpty())</span>
+<span class="nc" id="L112">                        tbl.addRow(cs.commandText(name), cmd.description().trim());</span>
+                    else {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                        for (Map.Entry&lt;String, CommandLine.Help&gt; subEntry : cmd.subcommands().entrySet()) {</span>
+<span class="nc" id="L115">                            String subName = subEntry.getKey();</span>
+
+<span class="nc" id="L117">                            CommandLine.Help subCmd = subEntry.getValue();</span>
+
+                            // Further hierarchy is prohibited.
+<span class="nc bnc" id="L120" title="All 4 branches missed.">                            assert subCmd.subcommands().isEmpty();</span>
+
+<span class="nc" id="L122">                            tbl.addRow(cs.commandText(name + &quot; &quot; + subName), subCmd.description().trim());</span>
+<span class="nc" id="L123">                        }</span>
+                    }
+<span class="nc" id="L125">                }</span>
+
+<span class="nc" id="L127">                return tbl.toString() + &quot;\n&quot;;</span>
+            });
+        }
+<span class="nc bnc" id="L130" title="All 4 branches missed.">        else if (hasParameters || hasOptions) {</span>
+<span class="nc" id="L131">            sectionMap.put(SECTION_KEY_PARAMETER_OPTION_TABLE, help -&gt; {</span>
+<span class="nc" id="L132">                Table tbl = new Table(0, cs);</span>
+
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                if (hasParameters) {</span>
+<span class="nc" id="L135">                    tbl.addSection(&quot;@|bold REQUIRED PARAMETERS|@&quot;);</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                    for (PositionalParamSpec param : help.commandSpec().positionalParameters()) {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                        if (!param.hidden()) {</span>
+                            // TODO: IGNITE-14022 Support multiple-line descriptions.
+<span class="nc bnc" id="L140" title="All 4 branches missed.">                            assert param.description().length == 1;</span>
+
+<span class="nc" id="L142">                            tbl.addRow(cs.parameterText(param.paramLabel()), param.description()[0]);</span>
+                        }
+<span class="nc" id="L144">                    }</span>
+                }
+
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                if (hasOptions) {</span>
+<span class="nc" id="L148">                    tbl.addSection(&quot;@|bold OPTIONS|@&quot;);</span>
+
+<span class="nc bnc" id="L150" title="All 2 branches missed.">                    for (OptionSpec option : help.commandSpec().options()) {</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">                        if (!option.hidden()) {</span>
+                            // TODO: IGNITE-14022 Support multiple names.
+<span class="nc bnc" id="L153" title="All 4 branches missed.">                            assert option.names().length == 1;</span>
+                            // TODO: IGNITE-14022 Support multiple-line descriptions.
+<span class="nc bnc" id="L155" title="All 4 branches missed.">                            assert option.description().length == 1;</span>
+
+<span class="nc" id="L157">                            tbl.addRow(</span>
+<span class="nc" id="L158">                                cs.optionText(option.names()[0] + '=' + option.paramLabel()),</span>
+<span class="nc" id="L159">                                option.description()[0]);</span>
+                        }
+<span class="nc" id="L161">                    }</span>
+                }
+
+<span class="nc" id="L164">                return tbl.toString() + &quot;\n&quot;;</span>
+            });
+        }
+
+<span class="nc" id="L168">        cmdSpec.usageMessage().sectionMap(sectionMap);</span>
+
+<span class="nc" id="L170">        return new CommandLine.Help(cmdSpec, cs);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

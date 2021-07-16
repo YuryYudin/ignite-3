@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Spinner.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.ui</a> &gt; <span class="el_source">Spinner.java</span></div><h1>Spinner.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.ui;
+
+import java.io.PrintWriter;
+
+/**
+ * Simple ASCII spinner.
+ * It should be used for processes with unknown duration instead of {@link ProgressBar}
+ */
+public class Spinner implements AutoCloseable {
+    /** Writer for display spinner. */
+    private final PrintWriter out;
+
+    /** Text prefix for spinner. */
+    private final String spinnerPrefixText;
+
+    /** Spinner cycle counter. */
+    private int spinnerCnt;
+
+    /**
+     * @param out Writer to display spinner.
+     */
+    public Spinner(PrintWriter out) {
+<span class="nc" id="L40">        this(out, &quot;&quot;);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * @param out Writer to display spinner.
+     * @param spinnerPrefixText Spinner prefix text.
+     */
+<span class="fc" id="L47">    public Spinner(PrintWriter out, String spinnerPrefixText) {</span>
+<span class="fc" id="L48">        this.out = out;</span>
+<span class="fc" id="L49">        this.spinnerPrefixText = spinnerPrefixText;</span>
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * Spin one more time.
+     */
+    public void spin() {
+<span class="fc" id="L56">        out.print(&quot;\r&quot; + spinnerPrefixText + &quot;.&quot;.repeat(1 + spinnerCnt % 3) + &quot; &quot;.repeat(2 - spinnerCnt % 3));</span>
+<span class="fc" id="L57">        out.flush();</span>
+
+        // Reset counter to protect it from overflow.
+<span class="fc" id="L60">        spinnerCnt = 1 + spinnerCnt % 3;</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override public void close() {
+<span class="fc" id="L67">        out.print(&quot;\r&quot; + spinnerPrefixText + &quot;...&quot;);</span>
+<span class="fc" id="L68">        out.println();</span>
+
+<span class="fc" id="L70">        out.flush();</span>
+<span class="fc" id="L71">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

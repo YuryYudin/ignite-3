@@ -1,0 +1,34 @@
+com/facebook/presto/bytecode/expression/TestNewInstanceBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestNewInstanceBytecodeExpression
+com/facebook/presto/bytecode/expression/TestComparisonBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestComparisonBytecodeExpression
+com/facebook/presto/bytecode/expression/TestInvokeBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestInvokeBytecodeExpression
+com/facebook/presto/bytecode/expression/TestConstantBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestConstantBytecodeExpression
+com/facebook/presto/bytecode/expression/TestSetVariableBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestSetVariableBytecodeExpression
+com/facebook/presto/bytecode/expression/TestLogicalBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestLogicalBytecodeExpression
+com/facebook/presto/bytecode/expression/TestSetFieldBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestSetFieldBytecodeExpression
+com/facebook/presto/bytecode/expression/TestInvokeDynamicBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestInvokeDynamicBytecodeExpression
+com/facebook/presto/bytecode/expression/TestPopBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestPopBytecodeExpression
+com/facebook/presto/bytecode/expression/TestArithmeticBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestArithmeticBytecodeExpression
+com/facebook/presto/bytecode/expression/TestArrayBytecodeExpressions.java
+ com.facebook.presto.bytecode.expression.TestArrayBytecodeExpressions
+com/facebook/presto/bytecode/expression/TestGetFieldBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestGetFieldBytecodeExpression
+com/facebook/presto/bytecode/TestClassGenerator.java
+ com.facebook.presto.bytecode.TestClassGenerator
+com/facebook/presto/bytecode/expression/TestCastBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestCastBytecodeExpression
+com/facebook/presto/bytecode/expression/TestInlineIfBytecodeExpression.java
+ com.facebook.presto.bytecode.expression.TestInlineIfBytecodeExpression
+com/facebook/presto/bytecode/expression/BytecodeExpressionAssertions.java
+ com.facebook.presto.bytecode.expression.BytecodeExpressionAssertions
+com/facebook/presto/bytecode/TestBytecodeUtils.java
+ com.facebook.presto.bytecode.TestBytecodeUtils

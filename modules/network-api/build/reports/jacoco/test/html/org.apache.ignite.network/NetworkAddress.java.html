@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NetworkAddress.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">network-api</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.network</a> &gt; <span class="el_source">NetworkAddress.java</span></div><h1>NetworkAddress.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.network;
+
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * A representation of a network address including a host name and a port.
+ */
+public class NetworkAddress implements Serializable {
+    /** Regexp for parsing strings in the &quot;host:port&quot; format. */
+<span class="fc" id="L31">    private static final Pattern ADDRESS_PATTERN = Pattern.compile(&quot;(.+):(\\d+)&quot;);</span>
+
+    /** Host. */
+    private final String host;
+
+    /** Port. */
+    private final int port;
+
+    /**
+     * @param host Host.
+     * @param port Port.
+     */
+<span class="fc" id="L43">    public NetworkAddress(String host, int port) {</span>
+<span class="fc" id="L44">        this.host = host;</span>
+<span class="fc" id="L45">        this.port = port;</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Parses a {@code NetworkAddress} from a string in the &quot;host:port&quot; format.
+     *
+     * @param addrStr String in &quot;host:port&quot; format.
+     * @return Parsed address.
+     * @throws IllegalArgumentException If the provided string does not match the required format.
+     */
+    public static NetworkAddress from(String addrStr) {
+<span class="fc" id="L56">        Matcher matcher = ADDRESS_PATTERN.matcher(addrStr);</span>
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (!matcher.matches())</span>
+<span class="fc" id="L59">            throw new IllegalArgumentException(&quot;Unable to parse the network address from: &quot; + addrStr);</span>
+
+<span class="fc" id="L61">        String host = matcher.group(1);</span>
+
+<span class="fc" id="L63">        String portStr = matcher.group(2);</span>
+
+        int port;
+
+        try {
+<span class="fc" id="L68">            port = Integer.parseInt(portStr);</span>
+<span class="nc" id="L69">        } catch (NumberFormatException ex) {</span>
+<span class="nc" id="L70">            throw new IllegalArgumentException(&quot;Illegal port format: &quot; + portStr, ex);</span>
+<span class="fc" id="L71">        }</span>
+
+<span class="fc" id="L73">        return new NetworkAddress(host, port);</span>
+    }
+
+    /**
+     * Creates a {@code NetworkAddress} from a {@link InetSocketAddress}.
+     *
+     * @param addr Address.
+     */
+    public static NetworkAddress from(InetSocketAddress addr) {
+<span class="fc" id="L82">        return new NetworkAddress(addr.getHostName(), addr.getPort());</span>
+    }
+
+    /**
+     * @return Host name.
+     */
+    public String host() {
+<span class="fc" id="L89">        return host;</span>
+    }
+
+    /**
+     * @return Port.
+     */
+    public int port() {
+<span class="fc" id="L96">        return port;</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override public boolean equals(Object o) {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (this == o)</span>
+<span class="nc" id="L102">            return true;</span>
+<span class="nc bnc" id="L103" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass())</span>
+<span class="nc" id="L104">            return false;</span>
+<span class="nc" id="L105">        NetworkAddress address = (NetworkAddress)o;</span>
+<span class="nc bnc" id="L106" title="All 4 branches missed.">        return port == address.port &amp;&amp; host.equals(address.host);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override public int hashCode() {
+<span class="nc" id="L111">        return Objects.hash(host, port);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override public String toString() {
+<span class="nc" id="L116">        return host + &quot;:&quot; + port;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

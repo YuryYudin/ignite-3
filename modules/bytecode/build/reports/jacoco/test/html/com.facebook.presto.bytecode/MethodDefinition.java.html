@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MethodDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">MethodDefinition.java</span></div><h1>MethodDefinition.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.facebook.presto.bytecode;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.tree.InsnNode;
+
+import static com.facebook.presto.bytecode.Access.STATIC;
+import static com.facebook.presto.bytecode.Access.toAccessModifier;
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static org.objectweb.asm.Opcodes.RETURN;
+
+@SuppressWarnings(&quot;UnusedDeclaration&quot;)
+public class MethodDefinition {
+    private final Scope scope;
+    private final ClassDefinition declaringClass;
+    private final EnumSet&lt;Access&gt; access;
+    private final String name;
+<span class="fc" id="L39">    private final List&lt;AnnotationDefinition&gt; annotations = new ArrayList&lt;&gt;();</span>
+    private final ParameterizedType returnType;
+    private final List&lt;Parameter&gt; parameters;
+    private final List&lt;ParameterizedType&gt; parameterTypes;
+    private final List&lt;List&lt;AnnotationDefinition&gt;&gt; parameterAnnotations;
+<span class="fc" id="L44">    private final List&lt;ParameterizedType&gt; exceptions = new ArrayList&lt;&gt;();</span>
+
+    private final BytecodeBlock body;
+    private String comment;
+
+    public MethodDefinition(
+        ClassDefinition declaringClass,
+        EnumSet&lt;Access&gt; access,
+        String name,
+        ParameterizedType returnType,
+        Parameter... parameters) {
+<span class="nc" id="L55">        this(declaringClass, access, name, returnType, List.of(parameters));</span>
+<span class="nc" id="L56">    }</span>
+
+    public MethodDefinition(
+        ClassDefinition declaringClass,
+        EnumSet&lt;Access&gt; access,
+        String name,
+        ParameterizedType returnType,
+<span class="fc" id="L63">        Collection&lt;Parameter&gt; parameters) {</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        checkArgument(parameters.size() &lt;= 254, &quot;Too many parameters for method&quot;);</span>
+
+<span class="fc" id="L66">        this.declaringClass = declaringClass;</span>
+<span class="fc" id="L67">        body = new BytecodeBlock();</span>
+
+<span class="fc" id="L69">        this.access = access;</span>
+<span class="fc" id="L70">        this.name = name;</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        this.returnType = returnType != null ? returnType : type(void.class);</span>
+<span class="fc" id="L72">        this.parameters = List.copyOf(parameters);</span>
+<span class="fc" id="L73">        this.parameterTypes = parameters.stream().map(Parameter::getType).collect(Collectors.toList());</span>
+<span class="fc" id="L74">        this.parameterAnnotations = parameters.stream().map(p -&gt; new ArrayList&lt;AnnotationDefinition&gt;()).collect(Collectors.toList());</span>
+<span class="fc" id="L75">        Optional&lt;ParameterizedType&gt; thisType = Optional.empty();</span>
+<span class="pc bpc" id="L76" title="2 of 4 branches missed.">        if (!declaringClass.isInterface() &amp;&amp; !access.contains(STATIC)) {</span>
+<span class="nc" id="L77">            thisType = Optional.of(declaringClass.getType());</span>
+        }
+<span class="fc" id="L79">        scope = new Scope(thisType, parameters);</span>
+<span class="fc" id="L80">    }</span>
+
+    public ClassDefinition getDeclaringClass() {
+<span class="fc" id="L83">        return declaringClass;</span>
+    }
+
+    public List&lt;AnnotationDefinition&gt; getAnnotations() {
+<span class="fc" id="L87">        return List.copyOf(annotations);</span>
+    }
+
+    public List&lt;AnnotationDefinition&gt; getParameterAnnotations(int index) {
+<span class="nc" id="L91">        return List.copyOf(parameterAnnotations.get(index));</span>
+    }
+
+    public EnumSet&lt;Access&gt; getAccess() {
+<span class="nc" id="L95">        return access;</span>
+    }
+
+    public String getName() {
+<span class="fc" id="L99">        return name;</span>
+    }
+
+    public ParameterizedType getReturnType() {
+<span class="fc" id="L103">        return returnType;</span>
+    }
+
+    public List&lt;Parameter&gt; getParameters() {
+<span class="nc" id="L107">        return parameters;</span>
+    }
+
+    public List&lt;ParameterizedType&gt; getParameterTypes() {
+<span class="fc" id="L111">        return parameterTypes;</span>
+    }
+
+    public List&lt;ParameterizedType&gt; getExceptions() {
+<span class="nc" id="L115">        return exceptions;</span>
+    }
+
+    public MethodDefinition addException(Class&lt;? extends Throwable&gt; exceptionClass) {
+<span class="nc" id="L119">        exceptions.add(type(exceptionClass));</span>
+<span class="nc" id="L120">        return this;</span>
+    }
+
+    public MethodDefinition comment(String format, Object... args) {
+<span class="nc" id="L124">        this.comment = String.format(format, args);</span>
+<span class="nc" id="L125">        return this;</span>
+    }
+
+    public String getComment() {
+<span class="fc" id="L129">        return comment;</span>
+    }
+
+    public Scope getScope() {
+<span class="fc" id="L133">        return scope;</span>
+    }
+
+    public Variable getThis() {
+<span class="nc" id="L137">        return scope.getThis();</span>
+    }
+
+    public String getMethodDescriptor() {
+<span class="fc" id="L141">        return methodDescription(returnType, parameterTypes);</span>
+    }
+
+    public BytecodeBlock getBody() {
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        if (declaringClass.isInterface()) {</span>
+<span class="nc" id="L146">            throw new IllegalAccessError(&quot;Interface does not have method body&quot;);</span>
+        }
+<span class="fc" id="L148">        return body;</span>
+    }
+
+    public AnnotationDefinition declareAnnotation(Class&lt;?&gt; type) {
+<span class="nc" id="L152">        AnnotationDefinition annotationDefinition = new AnnotationDefinition(type);</span>
+<span class="nc" id="L153">        annotations.add(annotationDefinition);</span>
+<span class="nc" id="L154">        return annotationDefinition;</span>
+    }
+
+    public AnnotationDefinition declareAnnotation(ParameterizedType type) {
+<span class="nc" id="L158">        AnnotationDefinition annotationDefinition = new AnnotationDefinition(type);</span>
+<span class="nc" id="L159">        annotations.add(annotationDefinition);</span>
+<span class="nc" id="L160">        return annotationDefinition;</span>
+    }
+
+    public AnnotationDefinition declareParameterAnnotation(Class&lt;?&gt; type, int parameterIndex) {
+<span class="nc" id="L164">        AnnotationDefinition annotationDefinition = new AnnotationDefinition(type);</span>
+<span class="nc" id="L165">        parameterAnnotations.get(parameterIndex).add(annotationDefinition);</span>
+<span class="nc" id="L166">        return annotationDefinition;</span>
+    }
+
+    public AnnotationDefinition declareParameterAnnotation(ParameterizedType type, int parameterIndex) {
+<span class="nc" id="L170">        AnnotationDefinition annotationDefinition = new AnnotationDefinition(type);</span>
+<span class="nc" id="L171">        parameterAnnotations.get(parameterIndex).add(annotationDefinition);</span>
+<span class="nc" id="L172">        return annotationDefinition;</span>
+    }
+
+    public void visit(ClassVisitor visitor) {
+<span class="fc" id="L176">        visit(visitor, false);</span>
+<span class="fc" id="L177">    }</span>
+
+    public void visit(ClassVisitor visitor, boolean addReturn) {
+<span class="fc" id="L180">        String[] exceptions = new String[this.exceptions.size()];</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        for (int i = 0; i &lt; exceptions.length; i++) {</span>
+<span class="nc" id="L182">            exceptions[i] = this.exceptions.get(i).getClassName();</span>
+        }
+
+<span class="fc" id="L185">        MethodVisitor methodVisitor = visitor.visitMethod(toAccessModifier(access),</span>
+            name,
+<span class="fc" id="L187">            getMethodDescriptor(),</span>
+<span class="fc" id="L188">            genericMethodSignature(returnType, parameterTypes),</span>
+            exceptions);
+
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        if (methodVisitor == null) {</span>
+<span class="nc" id="L192">            return;</span>
+        }
+
+        // visit method annotations
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">        for (AnnotationDefinition annotation : annotations) {</span>
+<span class="nc" id="L197">            annotation.visitMethodAnnotation(methodVisitor);</span>
+<span class="nc" id="L198">        }</span>
+
+        // visit parameter annotations
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        for (int parameterIndex = 0; parameterIndex &lt; parameterAnnotations.size(); parameterIndex++) {</span>
+<span class="fc" id="L202">            List&lt;AnnotationDefinition&gt; parameterAnnotations1 = this.parameterAnnotations.get(parameterIndex);</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">            for (AnnotationDefinition parameterAnnotation : parameterAnnotations1) {</span>
+<span class="nc" id="L204">                parameterAnnotation.visitParameterAnnotation(parameterIndex, methodVisitor);</span>
+<span class="nc" id="L205">            }</span>
+        }
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">        if (!declaringClass.isInterface()) {</span>
+            // visit code
+<span class="fc" id="L209">            methodVisitor.visitCode();</span>
+
+            // visit instructions
+<span class="fc" id="L212">            MethodGenerationContext generationContext = new MethodGenerationContext(methodVisitor);</span>
+<span class="fc" id="L213">            generationContext.enterScope(scope);</span>
+<span class="fc" id="L214">            body.accept(methodVisitor, generationContext);</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">            if (addReturn) {</span>
+<span class="fc" id="L216">                new InsnNode(RETURN).accept(methodVisitor);</span>
+            }
+<span class="fc" id="L218">            generationContext.exitScope(scope);</span>
+        }
+        // done
+<span class="fc" id="L221">        methodVisitor.visitMaxs(-1, -1);</span>
+<span class="fc" id="L222">        methodVisitor.visitEnd();</span>
+<span class="fc" id="L223">    }</span>
+
+    public String toSourceString() {
+<span class="fc" id="L226">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L227">        sb.append(access.stream().map(Access::toString).collect(Collectors.joining(&quot; &quot;)))</span>
+<span class="fc" id="L228">            .append(' ');</span>
+<span class="fc" id="L229">        sb.append(returnType.getJavaClassName()).append(' ');</span>
+<span class="fc" id="L230">        sb.append(name).append('(');</span>
+<span class="fc" id="L231">        sb.append(parameters.stream().map(Parameter::getSourceString).collect(Collectors.joining(&quot;, &quot;)))</span>
+<span class="fc" id="L232">            .append(')');</span>
+<span class="fc" id="L233">        return sb.toString();</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L238">        return toSourceString();</span>
+    }
+
+    public static String methodDescription(Class&lt;?&gt; returnType, Class&lt;?&gt;... parameterTypes) {
+<span class="fc" id="L242">        return methodDescription(returnType, List.of(parameterTypes));</span>
+    }
+
+    public static String methodDescription(Class&lt;?&gt; returnType, List&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="fc" id="L246">        return methodDescription(</span>
+<span class="fc" id="L247">            type(returnType),</span>
+<span class="fc" id="L248">            parameterTypes.stream().map(ParameterizedType::type).collect(Collectors.toList()));</span>
+    }
+
+    public static String methodDescription(
+        ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="nc" id="L254">        return methodDescription(returnType, List.of(parameterTypes));</span>
+    }
+
+    public static String methodDescription(
+        ParameterizedType returnType,
+        List&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L260">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L261">        sb.append(&quot;(&quot;);</span>
+<span class="fc" id="L262">        sb.append(parameterTypes.stream().map(ParameterizedType::getType).collect(Collectors.joining(&quot;&quot;)));</span>
+<span class="fc" id="L263">        sb.append(&quot;)&quot;);</span>
+<span class="fc" id="L264">        sb.append(returnType.getType());</span>
+<span class="fc" id="L265">        return sb.toString();</span>
+    }
+
+    public static String genericMethodSignature(
+        ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="nc" id="L271">        return genericMethodSignature(returnType, List.of(parameterTypes));</span>
+    }
+
+    public static String genericMethodSignature(
+        ParameterizedType returnType,
+        List&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L277">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L278">        sb.append(&quot;(&quot;);</span>
+<span class="fc" id="L279">        sb.append(parameterTypes.stream().map(ParameterizedType::toString).collect(Collectors.joining(&quot;&quot;)));</span>
+<span class="fc" id="L280">        sb.append(&quot;)&quot;);</span>
+<span class="fc" id="L281">        sb.append(returnType);</span>
+<span class="fc" id="L282">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

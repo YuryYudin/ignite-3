@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Table.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli</a> &gt; <span class="el_source">Table.java</span></div><h1>Table.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import picocli.CommandLine.Help.Ansi.Text;
+import picocli.CommandLine.Help.ColorScheme;
+
+/**
+ * Basic implementation of an ascii table. Supports styling via {@link ColorScheme}.
+ */
+public class Table {
+    /** Indent size. */
+    private final int indent;
+
+    /** Color scheme for table output. */
+    private final ColorScheme cs;
+
+    /** Table data */
+<span class="nc" id="L37">    private final Collection&lt;Row&gt; data = new ArrayList&lt;&gt;();</span>
+
+    /** Columns lengths. */
+    private int[] lengths;
+
+    /**
+     * Creates a new table.
+     *
+     * @param indent Left-side indentation (i.e. the provided number of spaces will be added to every line in the
+     *               output).
+     * @param cs     Color scheme.
+     */
+<span class="nc" id="L49">    public Table(int indent, ColorScheme cs) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (indent &lt; 0)</span>
+<span class="nc" id="L51">            throw new IllegalArgumentException(&quot;Indent can't be negative.&quot;);</span>
+
+<span class="nc" id="L53">        this.indent = indent;</span>
+<span class="nc" id="L54">        this.cs = cs;</span>
+<span class="nc" id="L55">    }</span>
+
+    /**
+     * Adds a row.
+     *
+     * @param items List of items in the row. Every item is converted to a string and styled based on the provided
+     *              {@link ColorScheme}. If an instance of {@link Text} is provided, it is added as-is.
+     */
+    public void addRow(Object... items) {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (lengths == null)</span>
+<span class="nc" id="L65">            lengths = new int[items.length];</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        else if (items.length != lengths.length)</span>
+<span class="nc" id="L67">            throw new IllegalArgumentException(&quot;Wrong number of items.&quot;);</span>
+
+<span class="nc" id="L69">        Text[] row = new Text[items.length];</span>
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        for (int i = 0; i &lt; items.length; i++) {</span>
+<span class="nc" id="L72">            Object item = items[i];</span>
+
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            Text text = item instanceof Text ? (Text)item : cs.text(item.toString());</span>
+
+<span class="nc" id="L76">            row[i] = text;</span>
+
+<span class="nc" id="L78">            lengths[i] = Math.max(lengths[i], text.getCJKAdjustedLength());</span>
+        }
+
+<span class="nc" id="L81">        data.add(new DataRow(row));</span>
+<span class="nc" id="L82">    }</span>
+
+    /**
+     * Adds a section. Title spans all columns in the table.
+     *
+     * @param title Section title.
+     */
+    public void addSection(Object title) {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        Text text = title instanceof Text ? (Text)title : cs.text(title.toString());</span>
+
+<span class="nc" id="L92">        data.add(new SectionTitle(text));</span>
+<span class="nc" id="L93">    }</span>
+
+    /**
+     * Converts the table to a string.
+     *
+     * @return String representation of this table.
+     */
+    @Override public String toString() {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (data.isEmpty())</span>
+<span class="nc" id="L102">            return &quot;&quot;;</span>
+
+<span class="nc" id="L104">        StringBuilder sb = new StringBuilder();</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        for (Row row : data) {</span>
+<span class="nc" id="L107">            appendLine(sb);</span>
+<span class="nc" id="L108">            appendRow(sb, row);</span>
+<span class="nc" id="L109">        }</span>
+
+<span class="nc" id="L111">        appendLine(sb);</span>
+
+<span class="nc" id="L113">        return sb.toString().stripTrailing();</span>
+    }
+
+    /** */
+    private void appendLine(StringBuilder sb) {
+<span class="nc" id="L118">        sb.append(&quot; &quot;.repeat(indent));</span>
+
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        for (int length : lengths) {</span>
+<span class="nc" id="L121">            sb.append('+').append(&quot;-&quot;.repeat(length + 2));</span>
+        }
+
+<span class="nc" id="L124">        sb.append(&quot;+\n&quot;);</span>
+<span class="nc" id="L125">    }</span>
+
+    /** */
+    private void appendRow(StringBuilder sb, Row row) {
+<span class="nc" id="L129">        sb.append(&quot; &quot;.repeat(indent))</span>
+<span class="nc" id="L130">            .append(row.render())</span>
+<span class="nc" id="L131">            .append('\n');</span>
+<span class="nc" id="L132">    }</span>
+
+    /** Interface for any renderable row. */
+    private interface Row {
+        /** Render row to string. */
+        String render();
+    }
+
+    /**
+     * Row with actual data.
+     */
+<span class="nc bnc" id="L143" title="All 2 branches missed.">    private class DataRow implements Row {</span>
+        /** */
+        private final Text[] row;
+
+        /** */
+<span class="nc" id="L148">        DataRow(Text[] row) {</span>
+<span class="nc" id="L149">            this.row = row;</span>
+<span class="nc" id="L150">        }</span>
+
+        /** {@inheritDoc} */
+        @Override public String render() {
+<span class="nc bnc" id="L154" title="All 4 branches missed.">            assert row.length == lengths.length;</span>
+
+<span class="nc" id="L156">            StringBuilder sb = new StringBuilder();</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            for (int i = 0; i &lt; row.length; i++) {</span>
+<span class="nc" id="L159">                Text item = row[i];</span>
+
+<span class="nc" id="L161">                sb.append(&quot;| &quot;)</span>
+<span class="nc" id="L162">                    .append(item.toString())</span>
+<span class="nc" id="L163">                    .append(&quot; &quot;.repeat(lengths[i] + 1 - item.getCJKAdjustedLength()));</span>
+            }
+
+<span class="nc" id="L166">            sb.append(&quot;|&quot;);</span>
+
+<span class="nc" id="L168">            return sb.toString();</span>
+        }
+    }
+
+    /**
+     * Row with table title.
+     */
+    private class SectionTitle implements Row {
+        /** */
+        private final Text title;
+
+        /** */
+<span class="nc" id="L180">        SectionTitle(Text title) {</span>
+<span class="nc" id="L181">            this.title = title;</span>
+<span class="nc" id="L182">        }</span>
+
+        /** {@inheritDoc} */
+        @Override public String render() {
+<span class="nc" id="L186">            int totalLen = Arrays.stream(lengths).sum() + 3 * (lengths.length - 1);</span>
+
+<span class="nc" id="L188">            return &quot;| &quot; + title.toString() + &quot; &quot;.repeat(totalLen - title.getCJKAdjustedLength()) + &quot; |&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

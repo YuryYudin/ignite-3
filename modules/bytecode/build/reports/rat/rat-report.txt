@@ -1,0 +1,233 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:52+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 88
+
+Apache Licensed: 86
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+2 Unknown Licenses
+
+*****************************************************
+
+Files with unapproved licenses:
+
+  /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfoLoader.java
+  /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfo.java
+
+*****************************************************
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/TestClassGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestNewInstanceBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestPopBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestSetVariableBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestCastBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestConstantBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestComparisonBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/BytecodeExpressionAssertions.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestLogicalBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestArithmeticBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestArrayBytecodeExpressions.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestSetFieldBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestInvokeBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestInlineIfBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestInvokeDynamicBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/expression/TestGetFieldBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/test/java/com/facebook/presto/bytecode/TestBytecodeUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/DumpBytecodeVisitor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ParameterizedType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/BytecodeBlock.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ArrayOpCode.java
+ !????? /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfoLoader.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/BytecodeNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/CompilationException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/BytecodeUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/SmartClassWriter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/Variable.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/NewInstanceBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/SetArrayElementBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/ConstantBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/BytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/GetFieldBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/BytecodeExpressions.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/ReturnBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/GetElementBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/CastBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/InvokeDynamicBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/InstanceOfBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/NegateBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/InvokeBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/ComparisonBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/ArrayLengthBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/AndBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/SetFieldBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/OrBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/NewArrayBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/PopBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/ArithmeticBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/InlineIfBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/expression/NotBytecodeExpression.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/AnnotationDefinition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/MethodDefinition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/Access.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/MethodGenerationContext.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/AddFakeLineNumberClassVisitor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/FieldDefinition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/debug/LocalVariableNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/debug/LineNumberNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/debug/DebugNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassDefinition.java
+ !????? /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfo.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/Comment.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/Parameter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/DynamicClassLoader.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ByteCodeTooLargeException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/BytecodeVisitor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/InvokeInstruction.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/TypeInstruction.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/InstructionNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/LabelNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/JumpInstruction.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/VariableInstruction.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/Constant.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/instruction/FieldInstruction.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/OpCode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/CaseStatement.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/DoWhileLoop.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/ForLoop.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/WhileLoop.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/FlowControl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/TryCatch.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/SwitchStatement.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/control/IfStatement.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/Scope.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/bytecode/pom.xml
+ 
+*****************************************************
+
+ Printing headers for text files without a valid license header...
+ 
+=====================================================
+== File: /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfoLoader.java
+=====================================================
+/***
+ * ASM tests
+ * Copyright (c) 2002-2005 France Telecom
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.facebook.presto.bytecode;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.CheckClassAdapter;
+
+import static com.facebook.presto.bytecode.ParameterizedType.typeFromPathName;
+
+public class ClassInfoLoader {
+    public static ClassInfoLoader createClassInfoLoader(Collection<ClassDefinition> classDefinitions,
+        ClassLoader classLoader) {
+        Map<ParameterizedType, ClassNode> classNodes = new HashMap<>();
+        for (ClassDefinition classDefinition : classDefinitions) {
+
+=====================================================
+== File: /home/jjb/Work/GridGain/ignite-3/modules/bytecode/src/main/java/com/facebook/presto/bytecode/ClassInfo.java
+=====================================================
+/***
+ * ASM tests
+ * Copyright (c) 2002-2005 France Telecom
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.facebook.presto.bytecode;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkState;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static com.facebook.presto.bytecode.ParameterizedType.typeFromPathName;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
+
+/**
+ * @author Eugene Kuleshov
+ */
+public class ClassInfo {
+    private final ClassInfoLoader loader;
+    private final ParameterizedType type;

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TypeInstruction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.instruction</a> &gt; <span class="el_source">TypeInstruction.java</span></div><h1>TypeInstruction.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.instruction;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.OpCode;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+
+import static com.facebook.presto.bytecode.ArrayOpCode.getArrayOpCode;
+import static com.facebook.presto.bytecode.BytecodeUtils.checkState;
+import static com.facebook.presto.bytecode.OpCode.ANEWARRAY;
+import static com.facebook.presto.bytecode.OpCode.CHECKCAST;
+import static com.facebook.presto.bytecode.OpCode.INSTANCEOF;
+import static com.facebook.presto.bytecode.OpCode.NEW;
+import static com.facebook.presto.bytecode.OpCode.NEWARRAY;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+
+@SuppressWarnings(&quot;UnusedDeclaration&quot;)
+public class TypeInstruction
+    implements InstructionNode {
+    public static InstructionNode newObject(Class&lt;?&gt; type) {
+<span class="nc" id="L37">        return new TypeInstruction(NEW, type(type));</span>
+    }
+
+    public static InstructionNode newObject(ParameterizedType type) {
+<span class="fc" id="L41">        return new TypeInstruction(NEW, type);</span>
+    }
+
+    public static InstructionNode newPrimitiveArray(ParameterizedType type) {
+<span class="fc" id="L45">        return new TypeInstruction(NEWARRAY, type);</span>
+    }
+
+    public static InstructionNode newObjectArray(Class&lt;?&gt; type) {
+<span class="nc" id="L49">        return new TypeInstruction(ANEWARRAY, type(type));</span>
+    }
+
+    public static InstructionNode newObjectArray(ParameterizedType type) {
+<span class="fc" id="L53">        return new TypeInstruction(ANEWARRAY, type);</span>
+    }
+
+    public static InstructionNode instanceOf(Class&lt;?&gt; type) {
+<span class="nc" id="L57">        return new TypeInstruction(INSTANCEOF, type(type));</span>
+    }
+
+    public static InstructionNode instanceOf(ParameterizedType type) {
+<span class="nc" id="L61">        return new TypeInstruction(INSTANCEOF, type);</span>
+    }
+
+    public static InstructionNode cast(Class&lt;?&gt; type) {
+<span class="fc" id="L65">        return new TypeInstruction(CHECKCAST, type(type));</span>
+    }
+
+    public static InstructionNode cast(ParameterizedType type) {
+<span class="fc" id="L69">        return new TypeInstruction(CHECKCAST, type);</span>
+    }
+
+    private final OpCode opCode;
+    private final ParameterizedType type;
+
+<span class="fc" id="L75">    public TypeInstruction(OpCode opCode, ParameterizedType type) {</span>
+<span class="fc" id="L76">        this.opCode = opCode;</span>
+<span class="fc" id="L77">        this.type = type;</span>
+<span class="fc" id="L78">    }</span>
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (opCode == NEWARRAY) {</span>
+<span class="fc" id="L83">            checkState(type.isPrimitive(), &quot;need primitive type for NEWARRAY&quot;);</span>
+<span class="fc" id="L84">            visitor.visitIntInsn(opCode.getOpCode(), getPrimitiveArrayType(type));</span>
+        }
+        else {
+<span class="fc" id="L87">            visitor.visitTypeInsn(opCode.getOpCode(), type.getClassName());</span>
+        }
+<span class="fc" id="L89">    }</span>
+
+    private static int getPrimitiveArrayType(ParameterizedType type) {
+<span class="fc" id="L92">        return getArrayOpCode(type).getAtype();</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L97">        return List.of();</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L102">        return visitor.visitInstruction(parent, this);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L107">        return opCode + &quot; &quot; + type;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

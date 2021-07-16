@@ -1,0 +1,36 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 10
+
+Apache Licensed: 10
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/test/java/org/apache/ignite/internal/affinity/TestConfigurationStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/test/java/org/apache/ignite/internal/affinity/AffinityManagerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/test/java/org/apache/ignite/internal/affinity/RendezvousAffinityFunctionTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/main/java/org/apache/ignite/internal/affinity/RendezvousAffinityFunction.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/main/java/org/apache/ignite/internal/affinity/event/AffinityEventParameters.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/main/java/org/apache/ignite/internal/affinity/event/AffinityEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/src/main/java/org/apache/ignite/internal/affinity/AffinityManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/affinity/pom.xml
+ 
+*****************************************************

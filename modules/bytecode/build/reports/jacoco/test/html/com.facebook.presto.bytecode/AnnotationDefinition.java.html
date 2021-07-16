@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AnnotationDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">AnnotationDefinition.java</span></div><h1>AnnotationDefinition.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static java.util.Objects.requireNonNull;
+
+public class AnnotationDefinition {
+<span class="nc" id="L33">    private static final Set&lt;Class&lt;?&gt;&gt; ALLOWED_TYPES = Set.of(</span>
+        Byte.class,
+        Character.class,
+        Double.class,
+        Float.class,
+        Integer.class,
+        Long.class,
+        Short.class,
+        Void.class,
+        String.class,
+        Class.class,
+        ParameterizedType.class,
+        AnnotationDefinition.class,
+        Enum.class);
+
+    private final ParameterizedType type;
+<span class="nc" id="L49">    private final Map&lt;String, Object&gt; values = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="nc" id="L51">    public AnnotationDefinition(Class&lt;?&gt; type) {</span>
+<span class="nc" id="L52">        this.type = type(type);</span>
+<span class="nc" id="L53">    }</span>
+
+<span class="nc" id="L55">    public AnnotationDefinition(ParameterizedType type) {</span>
+<span class="nc" id="L56">        this.type = type;</span>
+<span class="nc" id="L57">    }</span>
+
+    public AnnotationDefinition setValue(String name, Byte value) {
+<span class="nc" id="L60">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Boolean value) {
+<span class="nc" id="L64">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Character value) {
+<span class="nc" id="L68">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Short value) {
+<span class="nc" id="L72">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Integer value) {
+<span class="nc" id="L76">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Long value) {
+<span class="nc" id="L80">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Float value) {
+<span class="nc" id="L84">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Double value) {
+<span class="nc" id="L88">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, String value) {
+<span class="nc" id="L92">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Class&lt;?&gt; value) {
+<span class="nc" id="L96">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, ParameterizedType value) {
+<span class="nc" id="L100">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, AnnotationDefinition value) {
+<span class="nc" id="L104">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, Enum&lt;?&gt; value) {
+<span class="nc" id="L108">        return setValueInternal(name, value);</span>
+    }
+
+    public AnnotationDefinition setValue(String name, List&lt;?&gt; value) {
+<span class="nc" id="L112">        return setValueInternal(name, value);</span>
+    }
+
+    private AnnotationDefinition setValueInternal(String name, Object value) {
+<span class="nc" id="L116">        requireNonNull(name, &quot;name is null&quot;);</span>
+<span class="nc" id="L117">        requireNonNull(value, &quot;value is null&quot;);</span>
+
+<span class="nc" id="L119">        isValidType(value);</span>
+
+<span class="nc" id="L121">        values.put(name, value);</span>
+<span class="nc" id="L122">        return this;</span>
+    }
+
+    public ParameterizedType getType() {
+<span class="nc" id="L126">        return type;</span>
+    }
+
+    public Map&lt;String, Object&gt; getValues() {
+<span class="nc" id="L130">        return Collections.unmodifiableMap(values);</span>
+    }
+
+    @SuppressWarnings(&quot;OverlyStrongTypeCast&quot;)
+    private static void isValidType(Object value) {
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (value instanceof List) {</span>
+            // todo verify list contains single type
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            for (Object v : (List&lt;Object&gt;)value) {</span>
+<span class="nc" id="L138">                checkArgument(ALLOWED_TYPES.contains(v.getClass()), &quot;List contains invalid type %s&quot;, v.getClass());</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                if (v instanceof List) {</span>
+<span class="nc" id="L140">                    isValidType(value);</span>
+                }
+<span class="nc" id="L142">            }</span>
+        }
+        else {
+<span class="nc" id="L145">            checkArgument(ALLOWED_TYPES.contains(value.getClass()), &quot;Invalid value type %s&quot;, value.getClass());</span>
+        }
+<span class="nc" id="L147">    }</span>
+
+    public void visitClassAnnotation(ClassVisitor visitor) {
+<span class="nc" id="L150">        AnnotationVisitor annotationVisitor = visitor.visitAnnotation(type.getType(), true);</span>
+<span class="nc" id="L151">        visit(annotationVisitor);</span>
+<span class="nc" id="L152">        annotationVisitor.visitEnd();</span>
+<span class="nc" id="L153">    }</span>
+
+    public void visitFieldAnnotation(FieldVisitor visitor) {
+<span class="nc" id="L156">        AnnotationVisitor annotationVisitor = visitor.visitAnnotation(type.getType(), true);</span>
+<span class="nc" id="L157">        visit(annotationVisitor);</span>
+<span class="nc" id="L158">        annotationVisitor.visitEnd();</span>
+<span class="nc" id="L159">    }</span>
+
+    public void visitMethodAnnotation(MethodVisitor visitor) {
+<span class="nc" id="L162">        AnnotationVisitor annotationVisitor = visitor.visitAnnotation(type.getType(), true);</span>
+<span class="nc" id="L163">        visit(annotationVisitor);</span>
+<span class="nc" id="L164">        annotationVisitor.visitEnd();</span>
+<span class="nc" id="L165">    }</span>
+
+    public void visitParameterAnnotation(int parameterIndex, MethodVisitor visitor) {
+<span class="nc" id="L168">        AnnotationVisitor annotationVisitor = visitor.visitParameterAnnotation(parameterIndex, type.getType(), true);</span>
+<span class="nc" id="L169">        visit(annotationVisitor);</span>
+<span class="nc" id="L170">        annotationVisitor.visitEnd();</span>
+<span class="nc" id="L171">    }</span>
+
+    private void visit(AnnotationVisitor visitor) {
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        for (Entry&lt;String, Object&gt; entry : values.entrySet()) {</span>
+<span class="nc" id="L175">            String name = entry.getKey();</span>
+<span class="nc" id="L176">            Object value = entry.getValue();</span>
+<span class="nc" id="L177">            visit(visitor, name, value);</span>
+<span class="nc" id="L178">        }</span>
+<span class="nc" id="L179">    }</span>
+
+    @SuppressWarnings(&quot;OverlyStrongTypeCast&quot;)
+    private static void visit(AnnotationVisitor visitor, String name, Object value) {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (value instanceof AnnotationDefinition) {</span>
+<span class="nc" id="L184">            AnnotationDefinition annotation = (AnnotationDefinition)value;</span>
+<span class="nc" id="L185">            AnnotationVisitor annotationVisitor = visitor.visitAnnotation(name, annotation.type.getType());</span>
+<span class="nc" id="L186">            annotation.visit(annotationVisitor);</span>
+<span class="nc" id="L187">        }</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        else if (value instanceof Enum) {</span>
+<span class="nc" id="L189">            Enum&lt;?&gt; enumConstant = (Enum&lt;?&gt;)value;</span>
+<span class="nc" id="L190">            visitor.visitEnum(name, type(enumConstant.getDeclaringClass()).getClassName(), enumConstant.name());</span>
+<span class="nc" id="L191">        }</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        else if (value instanceof ParameterizedType) {</span>
+<span class="nc" id="L193">            ParameterizedType parameterizedType = (ParameterizedType)value;</span>
+<span class="nc" id="L194">            visitor.visit(name, Type.getType(parameterizedType.getType()));</span>
+<span class="nc" id="L195">        }</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        else if (value instanceof Class) {</span>
+<span class="nc" id="L197">            Class&lt;?&gt; clazz = (Class&lt;?&gt;)value;</span>
+<span class="nc" id="L198">            visitor.visit(name, Type.getType(clazz));</span>
+<span class="nc" id="L199">        }</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        else if (value instanceof List) {</span>
+<span class="nc" id="L201">            AnnotationVisitor arrayVisitor = visitor.visitArray(name);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            for (Object element : (List&lt;?&gt;)value) {</span>
+<span class="nc" id="L203">                visit(arrayVisitor, null, element);</span>
+<span class="nc" id="L204">            }</span>
+<span class="nc" id="L205">            arrayVisitor.visitEnd();</span>
+<span class="nc" id="L206">        }</span>
+        else {
+<span class="nc" id="L208">            visitor.visit(name, value);</span>
+        }
+<span class="nc" id="L210">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

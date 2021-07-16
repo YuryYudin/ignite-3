@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DumpBytecodeVisitor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">DumpBytecodeVisitor.java</span></div><h1>DumpBytecodeVisitor.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import com.facebook.presto.bytecode.control.CaseStatement;
+import com.facebook.presto.bytecode.control.DoWhileLoop;
+import com.facebook.presto.bytecode.control.ForLoop;
+import com.facebook.presto.bytecode.control.IfStatement;
+import com.facebook.presto.bytecode.control.SwitchStatement;
+import com.facebook.presto.bytecode.control.TryCatch;
+import com.facebook.presto.bytecode.control.WhileLoop;
+import com.facebook.presto.bytecode.debug.LineNumberNode;
+import com.facebook.presto.bytecode.expression.BytecodeExpression;
+import com.facebook.presto.bytecode.instruction.Constant.BooleanConstant;
+import com.facebook.presto.bytecode.instruction.Constant.BoxedBooleanConstant;
+import com.facebook.presto.bytecode.instruction.Constant.BoxedDoubleConstant;
+import com.facebook.presto.bytecode.instruction.Constant.BoxedFloatConstant;
+import com.facebook.presto.bytecode.instruction.Constant.BoxedIntegerConstant;
+import com.facebook.presto.bytecode.instruction.Constant.BoxedLongConstant;
+import com.facebook.presto.bytecode.instruction.Constant.ClassConstant;
+import com.facebook.presto.bytecode.instruction.Constant.DoubleConstant;
+import com.facebook.presto.bytecode.instruction.Constant.FloatConstant;
+import com.facebook.presto.bytecode.instruction.Constant.IntConstant;
+import com.facebook.presto.bytecode.instruction.Constant.LongConstant;
+import com.facebook.presto.bytecode.instruction.Constant.StringConstant;
+import com.facebook.presto.bytecode.instruction.InvokeInstruction;
+import com.facebook.presto.bytecode.instruction.InvokeInstruction.InvokeDynamicInstruction;
+import com.facebook.presto.bytecode.instruction.JumpInstruction;
+import com.facebook.presto.bytecode.instruction.LabelNode;
+import com.facebook.presto.bytecode.instruction.VariableInstruction.IncrementVariableInstruction;
+import com.facebook.presto.bytecode.instruction.VariableInstruction.LoadVariableInstruction;
+import com.facebook.presto.bytecode.instruction.VariableInstruction.StoreVariableInstruction;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.facebook.presto.bytecode.Access.INTERFACE;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static java.lang.String.format;
+
+public class DumpBytecodeVisitor
+        extends BytecodeVisitor&lt;Void&gt;
+{
+    private final PrintWriter out;
+    private int indentLevel;
+
+    public DumpBytecodeVisitor(Writer out)
+<span class="fc" id="L62">    {</span>
+<span class="fc" id="L63">        this.out = new PrintWriter(out);</span>
+<span class="fc" id="L64">        indentLevel = 0;</span>
+<span class="fc" id="L65">    }</span>
+
+    @Override
+    public Void visitClass(ClassDefinition classDefinition)
+    {
+        // print annotations first
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        for (AnnotationDefinition annotationDefinition : classDefinition.getAnnotations()) {</span>
+<span class="nc" id="L72">            visitAnnotation(classDefinition, annotationDefinition);</span>
+<span class="nc" id="L73">        }</span>
+
+        // print class declaration
+<span class="fc" id="L76">        Line classDeclaration = line().addAll(classDefinition.getAccess());</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (!classDefinition.getAccess().contains(INTERFACE)) {</span>
+<span class="fc" id="L78">            classDeclaration.add(&quot;class&quot;);</span>
+        }
+<span class="fc" id="L80">        classDeclaration.add(classDefinition.getType().getJavaClassName());</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (!classDefinition.getSuperClass().equals(type(Object.class))) {</span>
+<span class="nc" id="L82">            classDeclaration.add(&quot;extends&quot;).add(classDefinition.getSuperClass().getJavaClassName());</span>
+        }
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (!classDefinition.getInterfaces().isEmpty()) {</span>
+<span class="nc" id="L85">            classDeclaration.add(&quot;implements&quot;);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            for (ParameterizedType interfaceType : classDefinition.getInterfaces()) {</span>
+<span class="nc" id="L87">                classDeclaration.add(interfaceType.getJavaClassName());</span>
+<span class="nc" id="L88">            }</span>
+        }
+<span class="fc" id="L90">        classDeclaration.print();</span>
+
+        // print class body
+<span class="fc" id="L93">        printLine(&quot;{&quot;);</span>
+<span class="fc" id="L94">        indentLevel++;</span>
+
+        // print fields
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        for (FieldDefinition fieldDefinition : classDefinition.getFields()) {</span>
+<span class="nc" id="L98">            visitField(classDefinition, fieldDefinition);</span>
+<span class="nc" id="L99">        }</span>
+
+        // print methods
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        for (MethodDefinition methodDefinition : classDefinition.getMethods()) {</span>
+<span class="fc" id="L103">            visitMethod(classDefinition, methodDefinition);</span>
+<span class="fc" id="L104">        }</span>
+
+        // print class initializer
+<span class="fc" id="L107">        visitMethod(classDefinition, classDefinition.getClassInitializer());</span>
+
+<span class="fc" id="L109">        indentLevel--;</span>
+<span class="fc" id="L110">        printLine(&quot;}&quot;);</span>
+<span class="fc" id="L111">        printLine();</span>
+<span class="fc" id="L112">        return null;</span>
+    }
+
+    @Override
+    public Void visitAnnotation(Object parent, AnnotationDefinition annotationDefinition)
+    {
+<span class="nc" id="L118">        printLine(&quot;@%s&quot;, annotationDefinition.getType().getJavaClassName(), annotationDefinition.getValues());</span>
+<span class="nc" id="L119">        return null;</span>
+    }
+
+    @Override
+    public Void visitField(ClassDefinition classDefinition, FieldDefinition fieldDefinition)
+    {
+        // print annotations first
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        for (AnnotationDefinition annotationDefinition : fieldDefinition.getAnnotations()) {</span>
+<span class="nc" id="L127">            visitAnnotation(fieldDefinition, annotationDefinition);</span>
+<span class="nc" id="L128">        }</span>
+
+        // print field declaration
+<span class="nc" id="L131">        line().addAll(fieldDefinition.getAccess()).add(fieldDefinition.getType().getJavaClassName()).add(fieldDefinition.getName()).add(&quot;;&quot;).print();</span>
+
+<span class="nc" id="L133">        printLine();</span>
+<span class="nc" id="L134">        return null;</span>
+    }
+
+    @Override
+    public Void visitMethod(ClassDefinition classDefinition, MethodDefinition methodDefinition)
+    {
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        if (methodDefinition.getComment() != null) {</span>
+<span class="nc" id="L141">            printLine(&quot;// %s&quot;, methodDefinition.getComment());</span>
+        }
+        // print annotations first
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        for (AnnotationDefinition annotationDefinition : methodDefinition.getAnnotations()) {</span>
+<span class="nc" id="L145">            visitAnnotation(methodDefinition, annotationDefinition);</span>
+<span class="nc" id="L146">        }</span>
+
+        // print method declaration
+<span class="fc" id="L149">        printLine(methodDefinition.toSourceString());</span>
+
+        // print body
+<span class="fc" id="L152">        methodDefinition.getBody().accept(null, this);</span>
+
+<span class="fc" id="L154">        printLine();</span>
+<span class="fc" id="L155">        return null;</span>
+    }
+
+    @Override
+    public Void visitComment(BytecodeNode parent, Comment node)
+    {
+<span class="nc" id="L161">        printLine();</span>
+<span class="nc" id="L162">        printLine(&quot;// %s&quot;, node.getComment());</span>
+<span class="nc" id="L163">        return null;</span>
+    }
+
+    @Override
+    public Void visitBlock(BytecodeNode parent, BytecodeBlock block)
+    {
+        // only indent if we have a block description or more than one child node
+        boolean indented;
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        if (block.getDescription() != null) {</span>
+<span class="nc" id="L172">            line().add(block.getDescription()).add(&quot;{&quot;).print();</span>
+<span class="nc" id="L173">            indentLevel++;</span>
+<span class="nc" id="L174">            indented = true;</span>
+        }
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        else if (block.getChildNodes().size() &gt; 1) {</span>
+<span class="nc" id="L177">            printLine(&quot;{&quot;);</span>
+<span class="nc" id="L178">            indentLevel++;</span>
+<span class="nc" id="L179">            indented = true;</span>
+        }
+        else {
+<span class="fc" id="L182">            indented = false;</span>
+        }
+
+<span class="fc" id="L185">        visitBlockContents(block);</span>
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">        if (indented) {</span>
+<span class="nc" id="L187">            indentLevel--;</span>
+<span class="nc" id="L188">            printLine(&quot;}&quot;);</span>
+        }
+
+<span class="fc" id="L191">        return null;</span>
+    }
+
+    private void visitBlockContents(BytecodeBlock block)
+    {
+<span class="fc bfc" id="L196" title="All 2 branches covered.">        for (BytecodeNode node : block.getChildNodes()) {</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">            if (node instanceof BytecodeBlock) {</span>
+<span class="fc" id="L198">                BytecodeBlock childBlock = (BytecodeBlock) node;</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">                if (childBlock.getDescription() != null) {</span>
+<span class="nc" id="L200">                    visitBlock(block, childBlock);</span>
+                }
+                else {
+<span class="fc" id="L203">                    visitBlockContents(childBlock);</span>
+                }
+<span class="fc" id="L205">            }</span>
+            else {
+<span class="fc" id="L207">                node.accept(node, this);</span>
+            }
+<span class="fc" id="L209">        }</span>
+<span class="fc" id="L210">    }</span>
+
+    @Override
+    public Void visitBytecodeExpression(BytecodeNode parent, BytecodeExpression expression)
+    {
+<span class="fc" id="L215">        printLine(expression.toString());</span>
+<span class="fc" id="L216">        return null;</span>
+    }
+
+    @Override
+    public Void visitNode(BytecodeNode parent, BytecodeNode node)
+    {
+<span class="nc" id="L222">        printLine(node.toString());</span>
+<span class="nc" id="L223">        super.visitNode(parent, node);</span>
+<span class="nc" id="L224">        return null;</span>
+    }
+
+    @Override
+    public Void visitLabel(BytecodeNode parent, LabelNode labelNode)
+    {
+<span class="nc" id="L230">        printLine(&quot;%s:&quot;, labelNode.getName());</span>
+<span class="nc" id="L231">        return null;</span>
+    }
+
+    @Override
+    public Void visitJumpInstruction(BytecodeNode parent, JumpInstruction jumpInstruction)
+    {
+<span class="nc" id="L237">        printLine(&quot;%s %s&quot;, jumpInstruction.getOpCode(), jumpInstruction.getLabel().getName());</span>
+<span class="nc" id="L238">        return null;</span>
+    }
+
+    //
+    // Variable
+    //
+
+    @Override
+    public Void visitLoadVariable(BytecodeNode parent, LoadVariableInstruction loadVariableInstruction)
+    {
+<span class="nc" id="L248">        Variable variable = loadVariableInstruction.getVariable();</span>
+<span class="nc" id="L249">        printLine(&quot;load %s&quot;, variable.getName());</span>
+<span class="nc" id="L250">        return null;</span>
+    }
+
+    @Override
+    public Void visitStoreVariable(BytecodeNode parent, StoreVariableInstruction storeVariableInstruction)
+    {
+<span class="nc" id="L256">        Variable variable = storeVariableInstruction.getVariable();</span>
+<span class="nc" id="L257">        printLine(&quot;store %s)&quot;, variable.getName());</span>
+<span class="nc" id="L258">        return null;</span>
+    }
+
+    @Override
+    public Void visitIncrementVariable(BytecodeNode parent, IncrementVariableInstruction incrementVariableInstruction)
+    {
+<span class="nc" id="L264">        Variable variable = incrementVariableInstruction.getVariable();</span>
+<span class="nc" id="L265">        byte increment = incrementVariableInstruction.getIncrement();</span>
+<span class="nc" id="L266">        printLine(&quot;increment %s %s&quot;, variable.getName(), increment);</span>
+<span class="nc" id="L267">        return null;</span>
+    }
+
+    //
+    // Invoke
+    //
+
+    @Override
+    public Void visitInvoke(BytecodeNode parent, InvokeInstruction invokeInstruction)
+    {
+<span class="nc" id="L277">        printLine(&quot;invoke %s.%s%s&quot;,</span>
+<span class="nc" id="L278">                invokeInstruction.getTarget().getJavaClassName(),</span>
+<span class="nc" id="L279">                invokeInstruction.getName(),</span>
+<span class="nc" id="L280">                invokeInstruction.getMethodDescription());</span>
+<span class="nc" id="L281">        return null;</span>
+    }
+
+    @Override
+    public Void visitInvokeDynamic(BytecodeNode parent, InvokeDynamicInstruction invokeDynamicInstruction)
+    {
+<span class="nc" id="L287">        printLine(&quot;invokeDynamic %s%s %s&quot;,</span>
+<span class="nc" id="L288">                invokeDynamicInstruction.getName(),</span>
+<span class="nc" id="L289">                invokeDynamicInstruction.getMethodDescription(),</span>
+<span class="nc" id="L290">                invokeDynamicInstruction.getBootstrapArguments());</span>
+<span class="nc" id="L291">        return null;</span>
+    }
+
+    //
+    // Control Flow
+    //
+
+    @Override
+    public Void visitTryCatch(BytecodeNode parent, TryCatch tryCatch)
+    {
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (tryCatch.getComment() != null) {</span>
+<span class="nc" id="L302">            printLine();</span>
+<span class="nc" id="L303">            printLine(&quot;// %s&quot;, tryCatch.getComment());</span>
+        }
+
+<span class="nc" id="L306">        printLine(&quot;try {&quot;);</span>
+<span class="nc" id="L307">        indentLevel++;</span>
+<span class="nc" id="L308">        tryCatch.getTryNode().accept(tryCatch, this);</span>
+<span class="nc" id="L309">        indentLevel--;</span>
+<span class="nc" id="L310">        printLine(&quot;}&quot;);</span>
+
+<span class="nc" id="L312">        printLine(&quot;catch (%s) {&quot;, tryCatch.getExceptionName());</span>
+<span class="nc" id="L313">        indentLevel++;</span>
+<span class="nc" id="L314">        tryCatch.getCatchNode().accept(tryCatch, this);</span>
+<span class="nc" id="L315">        indentLevel--;</span>
+<span class="nc" id="L316">        printLine(&quot;}&quot;);</span>
+
+<span class="nc" id="L318">        return null;</span>
+    }
+
+    @Override
+    public Void visitIf(BytecodeNode parent, IfStatement ifStatement)
+    {
+<span class="nc bnc" id="L324" title="All 2 branches missed.">        if (ifStatement.getComment() != null) {</span>
+<span class="nc" id="L325">            printLine();</span>
+<span class="nc" id="L326">            printLine(&quot;// %s&quot;, ifStatement.getComment());</span>
+        }
+<span class="nc" id="L328">        printLine(&quot;if {&quot;);</span>
+<span class="nc" id="L329">        indentLevel++;</span>
+<span class="nc" id="L330">        visitNestedNode(&quot;condition&quot;, ifStatement.condition(), ifStatement);</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        if (!ifStatement.ifTrue().isEmpty()) {</span>
+<span class="nc" id="L332">            visitNestedNode(&quot;ifTrue&quot;, ifStatement.ifTrue(), ifStatement);</span>
+        }
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (!ifStatement.ifFalse().isEmpty()) {</span>
+<span class="nc" id="L335">            visitNestedNode(&quot;ifFalse&quot;, ifStatement.ifFalse(), ifStatement);</span>
+        }
+<span class="nc" id="L337">        indentLevel--;</span>
+<span class="nc" id="L338">        printLine(&quot;}&quot;);</span>
+<span class="nc" id="L339">        return null;</span>
+    }
+
+    @Override
+    public Void visitFor(BytecodeNode parent, ForLoop forLoop)
+    {
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        if (forLoop.getComment() != null) {</span>
+<span class="nc" id="L346">            printLine();</span>
+<span class="nc" id="L347">            printLine(&quot;// %s&quot;, forLoop.getComment());</span>
+        }
+<span class="nc" id="L349">        printLine(&quot;for {&quot;);</span>
+<span class="nc" id="L350">        indentLevel++;</span>
+<span class="nc" id="L351">        visitNestedNode(&quot;initialize&quot;, forLoop.initialize(), forLoop);</span>
+<span class="nc" id="L352">        visitNestedNode(&quot;condition&quot;, forLoop.condition(), forLoop);</span>
+<span class="nc" id="L353">        visitNestedNode(&quot;update&quot;, forLoop.update(), forLoop);</span>
+<span class="nc" id="L354">        visitNestedNode(&quot;body&quot;, forLoop.body(), forLoop);</span>
+<span class="nc" id="L355">        indentLevel--;</span>
+<span class="nc" id="L356">        printLine(&quot;}&quot;);</span>
+<span class="nc" id="L357">        return null;</span>
+    }
+
+    @Override
+    public Void visitWhile(BytecodeNode parent, WhileLoop whileLoop)
+    {
+<span class="nc bnc" id="L363" title="All 2 branches missed.">        if (whileLoop.getComment() != null) {</span>
+<span class="nc" id="L364">            printLine();</span>
+<span class="nc" id="L365">            printLine(&quot;// %s&quot;, whileLoop.getComment());</span>
+        }
+<span class="nc" id="L367">        printLine(&quot;while {&quot;);</span>
+<span class="nc" id="L368">        indentLevel++;</span>
+<span class="nc" id="L369">        visitNestedNode(&quot;condition&quot;, whileLoop.condition(), whileLoop);</span>
+<span class="nc" id="L370">        visitNestedNode(&quot;body&quot;, whileLoop.body(), whileLoop);</span>
+<span class="nc" id="L371">        indentLevel--;</span>
+<span class="nc" id="L372">        printLine(&quot;}&quot;);</span>
+<span class="nc" id="L373">        return null;</span>
+    }
+
+    @Override
+    public Void visitDoWhile(BytecodeNode parent, DoWhileLoop doWhileLoop)
+    {
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        if (doWhileLoop.getComment() != null) {</span>
+<span class="nc" id="L380">            printLine();</span>
+<span class="nc" id="L381">            printLine(&quot;// %s&quot;, doWhileLoop.getComment());</span>
+        }
+<span class="nc" id="L383">        printLine(&quot;while {&quot;);</span>
+<span class="nc" id="L384">        indentLevel++;</span>
+<span class="nc" id="L385">        visitNestedNode(&quot;body&quot;, doWhileLoop.body(), doWhileLoop);</span>
+<span class="nc" id="L386">        visitNestedNode(&quot;condition&quot;, doWhileLoop.condition(), doWhileLoop);</span>
+<span class="nc" id="L387">        indentLevel--;</span>
+<span class="nc" id="L388">        printLine(&quot;}&quot;);</span>
+<span class="nc" id="L389">        return null;</span>
+    }
+
+    @Override
+    public Void visitSwitch(BytecodeNode parent, SwitchStatement switchStatement)
+    {
+<span class="nc bnc" id="L395" title="All 2 branches missed.">        if (switchStatement.getComment() != null) {</span>
+<span class="nc" id="L396">            printLine();</span>
+<span class="nc" id="L397">            printLine(&quot;// %s&quot;, switchStatement.getComment());</span>
+        }
+<span class="nc" id="L399">        printLine(&quot;switch {&quot;);</span>
+<span class="nc" id="L400">        indentLevel++;</span>
+<span class="nc" id="L401">        visitNestedNode(&quot;expression&quot;, switchStatement.expression(), switchStatement);</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">        for (CaseStatement caseStatement : switchStatement.cases()) {</span>
+<span class="nc" id="L403">            visitNestedNode(format(&quot;case %s:&quot;, caseStatement.getKey()), caseStatement.getBody(), switchStatement);</span>
+<span class="nc" id="L404">        }</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">        if (switchStatement.getDefaultBody() != null) {</span>
+<span class="nc" id="L406">            visitNestedNode(&quot;default:&quot;, switchStatement.getDefaultBody(), switchStatement);</span>
+        }
+<span class="nc" id="L408">        indentLevel--;</span>
+<span class="nc" id="L409">        printLine(&quot;}&quot;);</span>
+<span class="nc" id="L410">        return null;</span>
+    }
+
+    //
+    // Instructions
+    //
+
+    //
+    // Constants
+    //
+
+    @Override
+    public Void visitBoxedBooleanConstant(BytecodeNode parent, BoxedBooleanConstant boxedBooleanConstant)
+    {
+<span class="nc" id="L424">        printLine(&quot;load constant %s&quot;, boxedBooleanConstant.getValue());</span>
+<span class="nc" id="L425">        return null;</span>
+    }
+
+    @Override
+    public Void visitBooleanConstant(BytecodeNode parent, BooleanConstant booleanConstant)
+    {
+<span class="nc" id="L431">        printLine(&quot;load constant %s&quot;, booleanConstant.getValue());</span>
+<span class="nc" id="L432">        return null;</span>
+    }
+
+    @Override
+    public Void visitIntConstant(BytecodeNode parent, IntConstant intConstant)
+    {
+<span class="nc" id="L438">        printLine(&quot;load constant %s&quot;, intConstant.getValue());</span>
+<span class="nc" id="L439">        return null;</span>
+    }
+
+    @Override
+    public Void visitBoxedIntegerConstant(BytecodeNode parent, BoxedIntegerConstant boxedIntegerConstant)
+    {
+<span class="nc" id="L445">        printLine(&quot;load constant new Integer(%s)&quot;, boxedIntegerConstant.getValue());</span>
+<span class="nc" id="L446">        return null;</span>
+    }
+
+    @Override
+    public Void visitFloatConstant(BytecodeNode parent, FloatConstant floatConstant)
+    {
+<span class="nc" id="L452">        printLine(&quot;load constant %sf&quot;, floatConstant.getValue());</span>
+<span class="nc" id="L453">        return null;</span>
+    }
+
+    @Override
+    public Void visitBoxedFloatConstant(BytecodeNode parent, BoxedFloatConstant boxedFloatConstant)
+    {
+<span class="nc" id="L459">        printLine(&quot;load constant new Float(%sf)&quot;, boxedFloatConstant.getValue());</span>
+<span class="nc" id="L460">        return null;</span>
+    }
+
+    @Override
+    public Void visitLongConstant(BytecodeNode parent, LongConstant longConstant)
+    {
+<span class="nc" id="L466">        printLine(&quot;load constant %sL&quot;, longConstant.getValue());</span>
+<span class="nc" id="L467">        return null;</span>
+    }
+
+    @Override
+    public Void visitBoxedLongConstant(BytecodeNode parent, BoxedLongConstant boxedLongConstant)
+    {
+<span class="nc" id="L473">        printLine(&quot;load constant new Long(%sL)&quot;, boxedLongConstant.getValue());</span>
+<span class="nc" id="L474">        return null;</span>
+    }
+
+    @Override
+    public Void visitDoubleConstant(BytecodeNode parent, DoubleConstant doubleConstant)
+    {
+<span class="nc" id="L480">        printLine(&quot;load constant %s&quot;, doubleConstant.getValue());</span>
+<span class="nc" id="L481">        return null;</span>
+    }
+
+    @Override
+    public Void visitBoxedDoubleConstant(BytecodeNode parent, BoxedDoubleConstant boxedDoubleConstant)
+    {
+<span class="nc" id="L487">        printLine(&quot;load constant new Double(%s)&quot;, boxedDoubleConstant.getValue());</span>
+<span class="nc" id="L488">        return null;</span>
+    }
+
+    @Override
+    public Void visitStringConstant(BytecodeNode parent, StringConstant stringConstant)
+    {
+<span class="nc" id="L494">        printLine(&quot;load constant \&quot;%s\&quot;&quot;, stringConstant.getValue());</span>
+<span class="nc" id="L495">        return null;</span>
+    }
+
+    @Override
+    public Void visitClassConstant(BytecodeNode parent, ClassConstant classConstant)
+    {
+<span class="nc" id="L501">        printLine(&quot;load constant %s.class&quot;, classConstant.getValue().getJavaClassName());</span>
+<span class="nc" id="L502">        return null;</span>
+    }
+
+    //
+    // Line Number
+    //
+
+    @Override
+    public Void visitLineNumber(BytecodeNode parent, LineNumberNode lineNumberNode)
+    {
+<span class="nc" id="L512">        lineNumber = lineNumberNode.getLineNumber();</span>
+<span class="nc" id="L513">        printLine(&quot;LINE %s&quot;, lineNumber);</span>
+<span class="nc" id="L514">        return null;</span>
+    }
+
+    //
+    // Print
+    //
+
+<span class="fc" id="L521">    private int lineNumber = -1;</span>
+
+    public void printLine()
+    {
+<span class="fc" id="L525">        out.println(indent(indentLevel));</span>
+<span class="fc" id="L526">    }</span>
+
+    public void printLine(String line)
+    {
+<span class="fc" id="L530">        out.println(format(&quot;%s%s&quot;, indent(indentLevel), line));</span>
+<span class="fc" id="L531">    }</span>
+
+    public void printLine(String format, Object... args)
+    {
+<span class="nc" id="L535">        String line = format(format, args);</span>
+<span class="nc" id="L536">        out.println(format(&quot;%s%s&quot;, indent(indentLevel), line));</span>
+<span class="nc" id="L537">    }</span>
+
+    public void printWords(String... words)
+    {
+<span class="nc" id="L541">        String line = String.join(&quot; &quot;, words);</span>
+<span class="nc" id="L542">        out.println(format(&quot;%s%s&quot;, indent(indentLevel), line));</span>
+<span class="nc" id="L543">    }</span>
+
+    private String indent(int level)
+    {
+<span class="fc" id="L547">        return BytecodeUtils.repeat(&quot;    &quot;, level);</span>
+    }
+
+    private void visitNestedNode(String description, BytecodeNode node, BytecodeNode parent)
+    {
+<span class="nc" id="L552">        printLine(description + &quot; {&quot;);</span>
+<span class="nc" id="L553">        indentLevel++;</span>
+<span class="nc" id="L554">        node.accept(parent, this);</span>
+<span class="nc" id="L555">        indentLevel--;</span>
+<span class="nc" id="L556">        printLine(&quot;}&quot;);</span>
+<span class="nc" id="L557">    }</span>
+
+    private Line line()
+    {
+<span class="fc" id="L561">        return new Line();</span>
+    }
+
+    private class Line
+    {
+        private final String separator;
+<span class="fc" id="L567">        private final List&lt;Object&gt; parts = new ArrayList&lt;&gt;();</span>
+
+        private Line()
+<span class="fc" id="L570">        {</span>
+<span class="fc" id="L571">            separator = &quot; &quot;;</span>
+<span class="fc" id="L572">        }</span>
+
+        public Line add(Object element)
+        {
+<span class="fc" id="L576">            parts.add(element);</span>
+<span class="fc" id="L577">            return this;</span>
+        }
+
+        public Line addAll(Collection&lt;?&gt; c)
+        {
+<span class="fc" id="L582">            parts.addAll(c);</span>
+<span class="fc" id="L583">            return this;</span>
+        }
+
+        public void print()
+        {
+<span class="fc" id="L588">            printLine(parts.stream().map(this::toCharSequence).collect(Collectors.joining(separator)));</span>
+<span class="fc" id="L589">        }</span>
+
+        private CharSequence toCharSequence(Object p) {
+<span class="fc bfc" id="L592" title="All 2 branches covered.">            return p instanceof CharSequence ? (CharSequence)p : p.toString();</span>
+        }
+
+        @Override
+        public String toString()
+        {
+<span class="nc" id="L598">            return parts.stream().map(this::toCharSequence).collect(Collectors.joining(separator));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

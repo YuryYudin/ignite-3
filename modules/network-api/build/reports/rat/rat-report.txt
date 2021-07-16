@@ -1,0 +1,53 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 27
+
+Apache Licensed: 27
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/test/java/org/apache/ignite/network/NetworkAddressTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/AbstractClusterService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/NetworkMessage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/ClusterServiceFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/NetworkAddress.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/MessagingService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/AbstractTopologyService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/AbstractMessagingService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageWriter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageSerializationFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageSerializationRegistry.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageReader.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageSerializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageMappingException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/serialization/MessageDeserializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/NetworkConfigurationException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/annotations/MessageGroup.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/annotations/Transferable.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/NetworkMessageHandler.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/TopologyEventHandler.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/ClusterLocalConfiguration.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/ClusterNode.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/TopologyService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/src/main/java/org/apache/ignite/network/ClusterService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/network-api/pom.xml
+ 
+*****************************************************

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">BytecodeExpression.java</span></div><h1>BytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.FieldDefinition;
+import com.facebook.presto.bytecode.MethodDefinition;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.objectweb.asm.MethodVisitor;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static com.facebook.presto.bytecode.expression.BytecodeExpressions.constantInt;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
+
+/**
+ * A BytecodeExpression is chain of Java like expressions that results in at most
+ * a single value being pushed on the stack.  The chain starts with a constant,
+ * local variable, static field, static method or invoke dynamic followed
+ * by zero or more invocations, field dereferences, array element fetches, or casts.
+ * The expression can optionally be terminated by a set expression, and in this
+ * case no value is pushed on the stack.
+ * &lt;p&gt;
+ * A BytecodeExpression is a BytecodeNode so it works with tools like tree dump.
+ * &lt;p&gt;
+ * This abstraction makes it easy to write generic byte code generators that can
+ * work with data that may come from a parameter, field or the result of a method
+ * invocation.
+ */
+public abstract class BytecodeExpression
+    implements BytecodeNode {
+    private final ParameterizedType type;
+
+<span class="fc" id="L54">    protected BytecodeExpression(ParameterizedType type) {</span>
+<span class="fc" id="L55">        this.type = requireNonNull(type, &quot;type is null&quot;);</span>
+<span class="fc" id="L56">    }</span>
+
+    public final ParameterizedType getType() {
+<span class="fc" id="L59">        return type;</span>
+    }
+
+    public abstract BytecodeNode getBytecode(MethodGenerationContext generationContext);
+
+    protected abstract String formatOneLine();
+
+    @Override
+    public final String toString() {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        return formatOneLine() + (type.getPrimitiveType() == void.class ? &quot;;&quot; : &quot;&quot;);</span>
+    }
+
+    public final BytecodeExpression getField(Class&lt;?&gt; declaringClass, String name) {
+<span class="fc" id="L72">        return new GetFieldBytecodeExpression(this, declaringClass, name);</span>
+    }
+
+    public final BytecodeExpression getField(String name, Class&lt;?&gt; type) {
+<span class="fc" id="L76">        return new GetFieldBytecodeExpression(this, this.getType(), name, type(type));</span>
+    }
+
+    public final BytecodeExpression getField(Field field) {
+<span class="fc" id="L80">        return new GetFieldBytecodeExpression(this, field);</span>
+    }
+
+    public final BytecodeExpression getField(FieldDefinition field) {
+<span class="nc" id="L84">        return new GetFieldBytecodeExpression(this, field);</span>
+    }
+
+    public final BytecodeExpression getField(ParameterizedType declaringClass, String name, ParameterizedType type) {
+<span class="nc" id="L88">        return new GetFieldBytecodeExpression(this, declaringClass, name, type);</span>
+    }
+
+    public final BytecodeExpression setField(String name, BytecodeExpression value) {
+<span class="fc" id="L92">        return new SetFieldBytecodeExpression(this, this.getType(), name, value);</span>
+    }
+
+    public final BytecodeExpression setField(Field field, BytecodeExpression value) {
+<span class="fc" id="L96">        return new SetFieldBytecodeExpression(this, field, value);</span>
+    }
+
+    public final BytecodeExpression setField(FieldDefinition field, BytecodeExpression value) {
+<span class="nc" id="L100">        return new SetFieldBytecodeExpression(this, field, value);</span>
+    }
+
+    public final BytecodeExpression cast(Class&lt;?&gt; type) {
+<span class="fc" id="L104">        return new CastBytecodeExpression(this, type(type));</span>
+    }
+
+    public final BytecodeExpression cast(ParameterizedType type) {
+<span class="nc" id="L108">        return new CastBytecodeExpression(this, type);</span>
+    }
+
+    public final BytecodeExpression invoke(Method method, BytecodeExpression... parameters) {
+<span class="nc" id="L112">        return invoke(method, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public final BytecodeExpression invoke(MethodDefinition method,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L117">        List&lt;BytecodeExpression&gt; params = new ArrayList&lt;&gt;(parameters);</span>
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        checkArgument(method.getParameters().size() == params.size(), &quot;Expected %s params found %s&quot;, method.getParameters().size(), params.size());</span>
+<span class="nc" id="L120">        return invoke(method.getName(), method.getReturnType(), method.getParameterTypes(), parameters);</span>
+    }
+
+    public final BytecodeExpression invoke(Method method, Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L124">        return invoke(</span>
+<span class="nc" id="L125">            method.getName(),</span>
+<span class="nc" id="L126">            type(method.getReturnType()),</span>
+<span class="nc" id="L127">            stream(method.getParameterTypes())</span>
+<span class="nc" id="L128">                .map(ParameterizedType::type)</span>
+<span class="nc" id="L129">                .collect(Collectors.toList()),</span>
+            parameters);
+    }
+
+    public final BytecodeExpression invoke(String methodName, Class&lt;?&gt; returnType, BytecodeExpression... parameters) {
+<span class="fc" id="L134">        return invoke(methodName, type(returnType), List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public final BytecodeExpression invoke(String methodName, Class&lt;?&gt; returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L139">        return invoke(methodName, type(returnType), parameters);</span>
+    }
+
+    public final BytecodeExpression invoke(String methodName, ParameterizedType returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L144">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="fc" id="L146">        return invoke(methodName,</span>
+            returnType,
+<span class="fc" id="L148">            parameters.stream().map(BytecodeExpression::getType).collect(Collectors.toList()),</span>
+            parameters);
+    }
+
+    public final BytecodeExpression invoke(String methodName, Class&lt;?&gt; returnType,
+        Collection&lt;? extends Class&lt;?&gt;&gt; parameterTypes, BytecodeExpression... parameters) {
+<span class="fc" id="L154">        return invoke(methodName, type(returnType),</span>
+<span class="fc" id="L155">            parameterTypes.stream().map(ParameterizedType::type).collect(Collectors.toList()),</span>
+<span class="fc" id="L156">            List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public final BytecodeExpression invoke(String methodName, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes, BytecodeExpression... parameters) {
+<span class="fc" id="L161">        return invoke(methodName, returnType, parameterTypes, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public final BytecodeExpression invoke(
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L169">        return InvokeBytecodeExpression.createInvoke(</span>
+            this,
+            methodName,
+            returnType,
+            parameterTypes,
+            parameters);
+    }
+
+    public final BytecodeExpression getElement(int index) {
+<span class="fc" id="L178">        return new GetElementBytecodeExpression(this, constantInt(index));</span>
+    }
+
+    public final BytecodeExpression getElement(BytecodeExpression index) {
+<span class="fc" id="L182">        return new GetElementBytecodeExpression(this, index);</span>
+    }
+
+    public final BytecodeExpression setElement(int index, BytecodeExpression value) {
+<span class="nc" id="L186">        return new SetArrayElementBytecodeExpression(this, constantInt(index), value);</span>
+    }
+
+    public final BytecodeExpression setElement(BytecodeExpression index, BytecodeExpression value) {
+<span class="fc" id="L190">        return new SetArrayElementBytecodeExpression(this, index, value);</span>
+    }
+
+    public final BytecodeExpression length() {
+<span class="fc" id="L194">        return new ArrayLengthBytecodeExpression(this);</span>
+    }
+
+    public final BytecodeExpression ret() {
+<span class="fc" id="L198">        return new ReturnBytecodeExpression(this);</span>
+    }
+
+    public final BytecodeExpression pop() {
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        if (this.getType().getPrimitiveType() == void.class) {</span>
+<span class="nc" id="L203">            return this;</span>
+        }
+<span class="fc" id="L205">        return new PopBytecodeExpression(this);</span>
+    }
+
+    @Override
+    public final void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L210">        getBytecode(generationContext).accept(visitor, generationContext);</span>
+<span class="fc" id="L211">    }</span>
+
+    @Override
+    public final &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="fc" id="L215">        return visitor.visitBytecodeExpression(parent, this);</span>
+    }
+
+    public BytecodeExpression instanceOf(Class&lt;?&gt; type) {
+<span class="nc" id="L219">        return InstanceOfBytecodeExpression.instanceOf(this, type);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

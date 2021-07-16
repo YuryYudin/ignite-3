@@ -1,0 +1,47 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 21
+
+Apache Licensed: 21
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/test/java/org/apache/ignite/internal/metastorage/server/ValueConditionTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/test/java/org/apache/ignite/internal/metastorage/server/SimpleInMemoryKeyValueStorageTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/test/java/org/apache/ignite/internal/metastorage/server/ExistenceConditionTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/test/java/org/apache/ignite/internal/metastorage/server/RevisionConditionTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/RevisionCondition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/Operation.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/SimpleInMemoryKeyValueStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/Value.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/Condition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/ValueCondition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/ExistenceCondition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/EntryEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/CompactedException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/raft/MetaStorageListener.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/Entry.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/KeyValueStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/WatchEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/src/main/java/org/apache/ignite/internal/metastorage/server/AbstractCondition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-server/pom.xml
+ 
+*****************************************************

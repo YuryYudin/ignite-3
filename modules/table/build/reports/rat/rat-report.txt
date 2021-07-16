@@ -1,0 +1,80 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:51+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 54
+
+Apache Licensed: 54
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/integrationTest/java/org/apache/ignite/distributed/ITDistributedTableTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/KVViewOperationsTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/TestConfigurationStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/distributed/raft/PartitionCommandListenerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/Example.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/impl/DummySchemaManagerImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/impl/TestTupleBuilder.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/impl/DummyInternalTableImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/TableBinaryViewOperationsTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/StrictSchemaOperationsTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/test/java/org/apache/ignite/internal/table/TableManagerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/schema/marshaller/KVSerializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/schema/marshaller/TupleMarshaller.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/schema/marshaller/RecordSerializer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/ColumnNotFoundException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/TupleMarshallerImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/KVBinaryViewImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/SchemaMismatchException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/event/TableEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/event/TableEventParameters.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/storage/InternalTableImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/GetCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/response/MultiRowsResponse.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/response/SingleRowResponse.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/DeleteExactCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/GetAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/GetAndUpsertCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/GetAndDeleteCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/DeleteCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/CommandUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/DeleteExactAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/ReplaceCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/UpsertCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/InsertAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/GetAndReplaceCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/DeleteAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/ReplaceIfExistCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/UpsertAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/command/InsertCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/raft/PartitionListener.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/distributed/TableManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/TableImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/KVViewImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/AbstractTableView.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/InternalTable.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/RowChunkAdapter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/RecordViewImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/TableRow.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/internal/table/TupleBuilderImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/src/main/java/org/apache/ignite/binary/BinaryObjects.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/table/pom.xml
+ 
+*****************************************************

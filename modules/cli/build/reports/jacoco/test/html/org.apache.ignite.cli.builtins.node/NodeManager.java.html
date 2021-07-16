@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NodeManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.builtins.node</a> &gt; <span class="el_source">NodeManager.java</span></div><h1>NodeManager.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.builtins.node;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.LockSupport;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.apache.ignite.cli.builtins.module.ModuleRegistry;
+import org.apache.ignite.cli.ui.Spinner;
+import org.jline.terminal.Terminal;
+
+/**
+ * Manager of local Ignite nodes.
+ */
+@Singleton
+public class NodeManager {
+    /** Entry point of core Ignite artifact for running new node. */
+    private static final String MAIN_CLASS = &quot;org.apache.ignite.app.IgniteCliRunner&quot;;
+
+    /** Timeout for successful node start. */
+<span class="fc" id="L49">    private static final Duration NODE_START_TIMEOUT = Duration.ofSeconds(30);</span>
+
+    /** Interval for polling node logs to identify successful start. */
+<span class="fc" id="L52">    private static final Duration LOG_FILE_POLL_INTERVAL = Duration.ofMillis(500);</span>
+
+    /** Module registry. **/
+    private final ModuleRegistry moduleRegistry;
+
+    /**
+     * Creates node manager.
+     *
+     * @param moduleRegistry Module registry.
+     * @param terminal System terminal instance.
+     */
+    @Inject
+<span class="nc" id="L64">    public NodeManager(ModuleRegistry moduleRegistry, Terminal terminal) {</span>
+<span class="nc" id="L65">        this.moduleRegistry = moduleRegistry;</span>
+<span class="nc" id="L66">    }</span>
+
+    /**
+     * Starts new Ignite node and check if it was successfully started.
+     * It has very naive implementation of successful run check -
+     * just waiting for appropriate message in the node logs.
+     *
+     * @param nodeName Node name.
+     * @param logDir Log dir for receiving node state.
+     * @param pidsDir Dir where pid files of running nodes will be stored.
+     * @param srvCfg Config for Ignite node
+     * @param out PrintWriter for user messages.
+     * @return Information about successfully started node
+     */
+    public RunningNode start(String nodeName, Path logDir, Path pidsDir, Path srvCfg, PrintWriter out) {
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (getRunningNodes(logDir, pidsDir).stream().anyMatch(n -&gt; n.name.equals(nodeName)))</span>
+<span class="nc" id="L82">            throw new IgniteCLIException(&quot;Node with nodeName &quot; + nodeName + &quot; is already exist&quot;);</span>
+
+        try {
+<span class="nc" id="L85">            Path logFile = logFile(logDir, nodeName);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (Files.exists(logFile))</span>
+<span class="nc" id="L87">                Files.delete(logFile);</span>
+
+<span class="nc" id="L89">            Files.createFile(logFile);</span>
+
+<span class="nc" id="L91">            var cmdArgs = new ArrayList&lt;String&gt;();</span>
+
+<span class="nc" id="L93">            cmdArgs.add(&quot;java&quot;);</span>
+<span class="nc" id="L94">            cmdArgs.add(&quot;-cp&quot;);</span>
+<span class="nc" id="L95">            cmdArgs.add(classpath());</span>
+<span class="nc" id="L96">            cmdArgs.add(MAIN_CLASS);</span>
+
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (srvCfg != null) {</span>
+<span class="nc" id="L99">                cmdArgs.add(&quot;--config&quot;);</span>
+<span class="nc" id="L100">                cmdArgs.add(srvCfg.toAbsolutePath().toString());</span>
+            }
+
+<span class="nc" id="L103">            cmdArgs.add(nodeName);</span>
+
+<span class="nc" id="L105">            ProcessBuilder pb = new ProcessBuilder(</span>
+                cmdArgs
+            )
+<span class="nc" id="L108">                .redirectError(logFile.toFile())</span>
+<span class="nc" id="L109">                .redirectOutput(logFile.toFile());</span>
+
+<span class="nc" id="L111">            Process p = pb.start();</span>
+
+<span class="nc" id="L113">            try (var spinner = new Spinner(out, &quot;Starting a new Ignite node&quot;)) {</span>
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">                if (!waitForStart(&quot;Apache Ignite started successfully!&quot;, logFile, NODE_START_TIMEOUT, spinner)) {</span>
+<span class="nc" id="L116">                    p.destroyForcibly();</span>
+
+<span class="nc" id="L118">                    throw new IgniteCLIException(&quot;Node wasn't started during timeout period &quot;</span>
+<span class="nc" id="L119">                        + NODE_START_TIMEOUT.toMillis() + &quot;ms&quot;);</span>
+                }
+            }
+<span class="nc" id="L122">            catch (InterruptedException | IOException e) {</span>
+<span class="nc" id="L123">                throw new IgniteCLIException(&quot;Waiting for node start was failed&quot;, e);</span>
+<span class="nc" id="L124">            }</span>
+
+<span class="nc" id="L126">            createPidFile(nodeName, p.pid(), pidsDir);</span>
+
+<span class="nc" id="L128">            return new RunningNode(p.pid(), nodeName, logFile);</span>
+        }
+<span class="nc" id="L130">        catch (IOException e) {</span>
+<span class="nc" id="L131">            throw new IgniteCLIException(&quot;Can't load classpath&quot;, e);</span>
+        }
+    }
+
+    /**
+     * Waits for node start by checking node logs in cycle.
+     *
+     * @param started Mark string that node was started.
+     * @param file Node's log file
+     * @param timeout Timeout for waiting
+     * @return true if node was successfully started, false otherwise.
+     * @throws IOException If can't read the log file
+     * @throws InterruptedException If waiting was interrupted.
+     */
+    private static boolean waitForStart(
+        String started,
+        Path file,
+        Duration timeout,
+        Spinner spinner
+    ) throws IOException, InterruptedException {
+<span class="nc" id="L151">        var start = System.currentTimeMillis();</span>
+
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        while ((System.currentTimeMillis() - start) &lt; timeout.toMillis()) {</span>
+<span class="nc" id="L154">            spinner.spin();</span>
+<span class="nc" id="L155">            LockSupport.parkNanos(LOG_FILE_POLL_INTERVAL.toNanos());</span>
+
+<span class="nc" id="L157">            var content = Files.readString(file);</span>
+
+<span class="nc bnc" id="L159" title="All 2 branches missed.">            if (content.contains(started))</span>
+<span class="nc" id="L160">                return true;</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            else if (content.contains(&quot;Exception&quot;))</span>
+<span class="nc" id="L162">                throw new IgniteCLIException(&quot;Can't start the node. Read logs for details: &quot; + file);</span>
+<span class="nc" id="L163">        }</span>
+
+<span class="nc" id="L165">        return false;</span>
+    }
+
+    /**
+     * @return Actual classpath according to current installed modules.
+     * @throws IOException If couldn't read the module registry file.
+     */
+    public String classpath() throws IOException {
+<span class="nc" id="L173">        return moduleRegistry.listInstalled().modules.stream()</span>
+<span class="nc" id="L174">            .flatMap(m -&gt; m.artifacts.stream())</span>
+<span class="nc" id="L175">            .map(m -&gt; m.toAbsolutePath().toString())</span>
+<span class="nc" id="L176">            .collect(Collectors.joining(System.getProperty(&quot;path.separator&quot;)));</span>
+    }
+
+    /**
+     * @return Actual classpath items list according to current installed modules.
+     * @throws IOException If couldn't read the module registry file.
+     */
+    public List&lt;String&gt; classpathItems() throws IOException {
+<span class="nc" id="L184">        return moduleRegistry.listInstalled().modules.stream()</span>
+<span class="nc" id="L185">            .flatMap(m -&gt; m.artifacts.stream())</span>
+<span class="nc" id="L186">            .map(m -&gt; m.getFileName().toString())</span>
+<span class="nc" id="L187">            .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Creates pid file for Ignite node.
+     *
+     * @param nodeName Node name.
+     * @param pid Pid
+     * @param pidsDir Dir for storing pid files.
+     */
+    public void createPidFile(String nodeName, long pid, Path pidsDir) {
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (!Files.exists(pidsDir)) {</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            if (!pidsDir.toFile().mkdirs())</span>
+<span class="nc" id="L200">                throw new IgniteCLIException(&quot;Can't create directory for storing the process pids: &quot; + pidsDir);</span>
+        }
+
+<span class="nc" id="L203">        Path pidPath = pidsDir.resolve(nodeName + &quot;_&quot; + System.currentTimeMillis() + &quot;.pid&quot;);</span>
+
+<span class="nc" id="L205">        try (FileWriter fileWriter = new FileWriter(pidPath.toFile())) {</span>
+<span class="nc" id="L206">            fileWriter.write(String.valueOf(pid));</span>
+        }
+<span class="nc" id="L208">        catch (IOException e) {</span>
+<span class="nc" id="L209">            throw new IgniteCLIException(&quot;Can't write pid file &quot; + pidPath);</span>
+<span class="nc" id="L210">        }</span>
+<span class="nc" id="L211">    }</span>
+
+    /**
+     * @param logDir Ignite installation work dir.
+     * @param pidsDir Dir with nodes pids.
+     * @return List of running nodes.
+     */
+    public List&lt;RunningNode&gt; getRunningNodes(Path logDir, Path pidsDir) {
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (Files.exists(pidsDir)) {</span>
+<span class="nc" id="L220">            try (Stream&lt;Path&gt; files = Files.find(pidsDir, 1, (f, attrs) -&gt; f.getFileName().toString().endsWith(&quot;.pid&quot;))) {</span>
+<span class="nc" id="L221">                return files</span>
+<span class="nc" id="L222">                    .map(f -&gt; {</span>
+                        long pid;
+
+                        try {
+<span class="nc" id="L226">                            pid = Long.parseLong(Files.readAllLines(f).get(0));</span>
+
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                            if (!ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false))</span>
+<span class="nc" id="L229">                                return Optional.&lt;RunningNode&gt;empty();</span>
+                        }
+<span class="nc" id="L231">                        catch (IOException e) {</span>
+<span class="nc" id="L232">                            throw new IgniteCLIException(&quot;Can't parse pid file &quot; + f);</span>
+<span class="nc" id="L233">                        }</span>
+
+<span class="nc" id="L235">                        String filename = f.getFileName().toString();</span>
+
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                        if (filename.lastIndexOf('_') == -1)</span>
+<span class="nc" id="L238">                            return Optional.&lt;RunningNode&gt;empty();</span>
+                        else {
+<span class="nc" id="L240">                            String nodeName = filename.substring(0, filename.lastIndexOf('_'));</span>
+
+<span class="nc" id="L242">                            return Optional.of(new RunningNode(pid, nodeName, logFile(logDir, nodeName)));</span>
+                        }
+
+                    })
+<span class="nc" id="L246">                    .filter(Optional::isPresent)</span>
+<span class="nc" id="L247">                    .map(Optional::get).collect(Collectors.toList());</span>
+            }
+<span class="nc" id="L249">            catch (IOException e) {</span>
+<span class="nc" id="L250">                throw new IgniteCLIException(&quot;Can't find directory with pid files for running nodes &quot; + pidsDir);</span>
+            }
+        }
+        else
+<span class="nc" id="L254">            return Collections.emptyList();</span>
+    }
+
+    /**
+     * Stops the node by name and waits for success.
+     *
+     * @param nodeName Node name.
+     * @param pidsDir Dir with running nodes pids.
+     * @return true if stopped, false otherwise.
+     */
+    public boolean stopWait(String nodeName, Path pidsDir) {
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        if (Files.exists(pidsDir)) {</span>
+            try {
+<span class="nc" id="L267">                List&lt;Path&gt; files = Files.find(pidsDir, 1,</span>
+                    (f, attrs) -&gt;
+<span class="nc" id="L269">                        f.getFileName().toString().startsWith(nodeName + &quot;_&quot;)).collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L271" title="All 2 branches missed.">                if (!files.isEmpty()) {</span>
+<span class="nc" id="L272">                    return files.stream().map(f -&gt; {</span>
+                        try {
+<span class="nc" id="L274">                            long pid = Long.parseLong(Files.readAllLines(f).get(0));</span>
+
+<span class="nc" id="L276">                            boolean res = stopWait(pid);</span>
+
+<span class="nc" id="L278">                            Files.delete(f);</span>
+
+<span class="nc" id="L280">                            return res;</span>
+                        }
+<span class="nc" id="L282">                        catch (IOException e) {</span>
+<span class="nc" id="L283">                            throw new IgniteCLIException(&quot;Can't read pid file &quot; + f);</span>
+                        }
+<span class="nc bnc" id="L285" title="All 4 branches missed.">                    }).reduce((a, b) -&gt; a &amp;&amp; b).orElse(false);</span>
+                }
+                else
+<span class="nc" id="L288">                    throw new IgniteCLIException(&quot;Can't find node with name&quot; + nodeName);</span>
+            }
+<span class="nc" id="L290">            catch (IOException e) {</span>
+<span class="nc" id="L291">                throw new IgniteCLIException(&quot;Can't open directory with pid files &quot; + pidsDir);</span>
+            }
+        }
+        else
+<span class="nc" id="L295">            return false;</span>
+    }
+
+    /**
+     * Stops the process and waits for success.
+     *
+     * @param pid Pid of proccess to stop.
+     * @return true if process was stopped, false otherwise.
+     */
+    private boolean stopWait(long pid) {
+<span class="nc" id="L305">        return ProcessHandle</span>
+<span class="nc" id="L306">            .of(pid)</span>
+<span class="nc" id="L307">            .map(ProcessHandle::destroy)</span>
+<span class="nc" id="L308">            .orElse(false);</span>
+    }
+
+    /**
+     * @param logDir Ignite log dir.
+     * @param nodeName Node name.
+     * @return Path of node log file.
+     */
+    private static Path logFile(Path logDir, String nodeName) {
+<span class="nc" id="L317">          return logDir.resolve(nodeName + &quot;.log&quot;);</span>
+    }
+
+    /**
+     * Simple structure with information about running node.
+     */
+    public static class RunningNode {
+
+        /** Pid. */
+        public final long pid;
+
+        /** Consistent id. */
+        public final String name;
+
+        /** Path to log file. */
+        public final Path logFile;
+
+        /**
+         * Creates info about running node.
+         *
+         * @param pid Pid.
+         * @param name Consistent id.
+         * @param logFile Log file.
+         */
+<span class="fc" id="L341">        public RunningNode(long pid, String name, Path logFile) {</span>
+<span class="fc" id="L342">            this.pid = pid;</span>
+<span class="fc" id="L343">            this.name = name;</span>
+<span class="fc" id="L344">            this.logFile = logFile;</span>
+<span class="fc" id="L345">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

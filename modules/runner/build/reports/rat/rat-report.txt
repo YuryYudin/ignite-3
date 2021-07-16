@@ -1,0 +1,41 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:51+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 15
+
+Apache Licensed: 15
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/integrationTest/java/org/apache/ignite/internal/runner/app/TableCreationTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/integrationTest/java/org/apache/ignite/internal/runner/app/DynamicTableCreationTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/integrationTest/java/org/apache/ignite/internal/runner/app/IgnitionTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/test/java/org/apache/ignite/internal/app/IgnitionCleaner.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/java/org/apache/ignite/internal/storage/DistributedConfigurationStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/java/org/apache/ignite/internal/storage/LocalConfigurationStorage.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/java/org/apache/ignite/internal/app/IgniteImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/java/org/apache/ignite/internal/app/IgnitionImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/java/org/apache/ignite/app/IgniteCliRunner.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/java/org/apache/ignite/utils/IgniteProperties.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/resources/simplelogger.properties
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/src/main/resources/ignite.properties
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/runner/pom.xml
+ 
+*****************************************************

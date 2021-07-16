@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TryCatch.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.control</a> &gt; <span class="el_source">TryCatch.java</span></div><h1>TryCatch.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.control;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import com.facebook.presto.bytecode.instruction.LabelNode;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+
+import static java.util.Objects.requireNonNull;
+
+public class TryCatch
+    implements FlowControl {
+    private final String comment;
+    private final BytecodeNode tryNode;
+    private final BytecodeNode catchNode;
+    private final String exceptionName;
+
+    public TryCatch(BytecodeNode tryNode, BytecodeNode catchNode, ParameterizedType exceptionType) {
+<span class="nc" id="L35">        this(null, tryNode, catchNode, exceptionType);</span>
+<span class="nc" id="L36">    }</span>
+
+<span class="nc" id="L38">    public TryCatch(String comment, BytecodeNode tryNode, BytecodeNode catchNode, ParameterizedType exceptionType) {</span>
+<span class="nc" id="L39">        this.comment = comment;</span>
+<span class="nc" id="L40">        this.tryNode = requireNonNull(tryNode, &quot;tryNode is null&quot;);</span>
+<span class="nc" id="L41">        this.catchNode = requireNonNull(catchNode, &quot;catchNode is null&quot;);</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        this.exceptionName = (exceptionType != null) ? exceptionType.getClassName() : null;</span>
+<span class="nc" id="L43">    }</span>
+
+    @Override
+    public String getComment() {
+<span class="nc" id="L47">        return comment;</span>
+    }
+
+    public BytecodeNode getTryNode() {
+<span class="nc" id="L51">        return tryNode;</span>
+    }
+
+    public BytecodeNode getCatchNode() {
+<span class="nc" id="L55">        return catchNode;</span>
+    }
+
+    public String getExceptionName() {
+<span class="nc" id="L59">        return exceptionName;</span>
+    }
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc" id="L64">        LabelNode tryStart = new LabelNode(&quot;tryStart&quot;);</span>
+<span class="nc" id="L65">        LabelNode tryEnd = new LabelNode(&quot;tryEnd&quot;);</span>
+<span class="nc" id="L66">        LabelNode handler = new LabelNode(&quot;handler&quot;);</span>
+<span class="nc" id="L67">        LabelNode done = new LabelNode(&quot;done&quot;);</span>
+
+<span class="nc" id="L69">        BytecodeBlock block = new BytecodeBlock();</span>
+
+        // try block
+<span class="nc" id="L72">        block.visitLabel(tryStart)</span>
+<span class="nc" id="L73">            .append(tryNode)</span>
+<span class="nc" id="L74">            .visitLabel(tryEnd)</span>
+<span class="nc" id="L75">            .gotoLabel(done);</span>
+
+        // handler block
+<span class="nc" id="L78">        block.visitLabel(handler)</span>
+<span class="nc" id="L79">            .append(catchNode);</span>
+
+        // all done
+<span class="nc" id="L82">        block.visitLabel(done);</span>
+
+<span class="nc" id="L84">        block.accept(visitor, generationContext);</span>
+<span class="nc" id="L85">        visitor.visitTryCatchBlock(tryStart.getLabel(), tryEnd.getLabel(), handler.getLabel(), exceptionName);</span>
+<span class="nc" id="L86">    }</span>
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L90">        return List.of(tryNode, catchNode);</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L95">        return visitor.visitTryCatch(parent, this);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

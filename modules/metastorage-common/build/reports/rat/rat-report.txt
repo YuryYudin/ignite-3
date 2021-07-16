@@ -1,0 +1,54 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 28
+
+Apache Licensed: 28
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/OperationType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/GetAndRemoveCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/GetCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/WatchRangeKeysCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/RemoveCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/cursor/CursorNextCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/cursor/CursorCloseCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/cursor/CursorHasNextCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/ErrorResponse.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/GetAndPutCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/GetAndPutAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/GetAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/RemoveAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/OperationInfo.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/MultipleEntryResponse.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/InvokeCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/SingleEntryResponse.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/GetAndRemoveAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/ConditionInfo.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/PutCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/PutAllCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/RangeCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/command/WatchExactKeysCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/src/main/java/org/apache/ignite/internal/metastorage/common/ConditionType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-common/pom.xml
+ 
+*****************************************************

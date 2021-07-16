@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VariableInstruction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.instruction</a> &gt; <span class="el_source">VariableInstruction.java</span></div><h1>VariableInstruction.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.instruction;
+
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeVisitor;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.Variable;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.OpCode.ILOAD;
+import static com.facebook.presto.bytecode.OpCode.ISTORE;
+
+public abstract class VariableInstruction
+    implements InstructionNode {
+    public static InstructionNode loadVariable(Variable variable) {
+<span class="fc" id="L31">        return new LoadVariableInstruction(variable);</span>
+    }
+
+    public static InstructionNode storeVariable(Variable variable) {
+<span class="fc" id="L35">        return new StoreVariableInstruction(variable);</span>
+    }
+
+    public static InstructionNode incrementVariable(Variable variable, byte increment) {
+<span class="nc" id="L39">        return new IncrementVariableInstruction(variable, increment);</span>
+    }
+
+    private final Variable variable;
+
+<span class="fc" id="L44">    private VariableInstruction(Variable variable) {</span>
+<span class="fc" id="L45">        this.variable = variable;</span>
+<span class="fc" id="L46">    }</span>
+
+    public Variable getVariable() {
+<span class="fc" id="L49">        return variable;</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L54">        return List.of();</span>
+    }
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L59">        return visitor.visitVariableInstruction(parent, this);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L64">        return getClass().getSimpleName() + &quot;{variable=&quot; + variable + '}';</span>
+    }
+
+    public static class LoadVariableInstruction
+        extends VariableInstruction {
+        public LoadVariableInstruction(Variable variable) {
+<span class="fc" id="L70">            super(variable);</span>
+<span class="fc" id="L71">        }</span>
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L75">            visitor.visitVarInsn(Type.getType(getVariable().getType().getType()).getOpcode(ILOAD.getOpCode()), generationContext.getVariableSlot(getVariable()));</span>
+<span class="fc" id="L76">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L80">            return visitor.visitLoadVariable(parent, this);</span>
+        }
+    }
+
+    public static class StoreVariableInstruction
+        extends VariableInstruction {
+        public StoreVariableInstruction(Variable variable) {
+<span class="fc" id="L87">            super(variable);</span>
+<span class="fc" id="L88">        }</span>
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc" id="L92">            visitor.visitVarInsn(Type.getType(getVariable().getType().getType()).getOpcode(ISTORE.getOpCode()), generationContext.getVariableSlot(getVariable()));</span>
+<span class="fc" id="L93">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L97">            return visitor.visitStoreVariable(parent, this);</span>
+        }
+    }
+
+    public static class IncrementVariableInstruction
+        extends VariableInstruction {
+        private final byte increment;
+
+        public IncrementVariableInstruction(Variable variable, byte increment) {
+<span class="nc" id="L106">            super(variable);</span>
+<span class="nc" id="L107">            String type = variable.getType().getClassName();</span>
+<span class="nc" id="L108">            checkArgument(List.of(&quot;byte&quot;, &quot;short&quot;, &quot;int&quot;).contains(type), &quot;variable must be an byte, short or int, but is %s&quot;, type);</span>
+<span class="nc" id="L109">            this.increment = increment;</span>
+<span class="nc" id="L110">        }</span>
+
+        public byte getIncrement() {
+<span class="nc" id="L113">            return increment;</span>
+        }
+
+        @Override
+        public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="nc" id="L118">            visitor.visitIincInsn(generationContext.getVariableSlot(getVariable()), increment);</span>
+<span class="nc" id="L119">        }</span>
+
+        @Override
+        public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="nc" id="L123">            return visitor.visitIncrementVariable(parent, this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

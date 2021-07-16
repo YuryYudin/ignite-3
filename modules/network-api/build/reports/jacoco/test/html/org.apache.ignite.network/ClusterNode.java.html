@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClusterNode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">network-api</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.network</a> &gt; <span class="el_source">ClusterNode.java</span></div><h1>ClusterNode.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.ignite.network;
+
+import java.io.Serializable;
+import java.util.Objects;
+import org.apache.ignite.internal.tostring.S;
+
+/**
+ * Representation of a node in a cluster.
+ */
+public class ClusterNode implements Serializable {
+    /** Local id assigned to this node instance. Changes between restarts. */
+    private final String id;
+
+    /** Unique name of member in the cluster. Consistent between restarts. */
+    private final String name;
+
+    /** Network address of this node. */
+    private final NetworkAddress address;
+
+    /**
+     * @param id Local id that changes between restarts.
+     * @param name Unique name of a member in a cluster.
+     * @param address Node address.
+     */
+<span class="nc" id="L41">    public ClusterNode(String id, String name, NetworkAddress address) {</span>
+<span class="nc" id="L42">        this.id = id;</span>
+<span class="nc" id="L43">        this.name = name;</span>
+<span class="nc" id="L44">        this.address = address;</span>
+<span class="nc" id="L45">    }</span>
+
+    /**
+     * @return Node's local id.
+     */
+    public String id() {
+<span class="nc" id="L51">        return id;</span>
+    }
+
+    /**
+     * @return Unique name of member in cluster. Doesn't change between restarts.
+     */
+    public String name() {
+<span class="nc" id="L58">        return name;</span>
+    }
+
+    /**
+     * @return Network address of this node.
+     */
+    public NetworkAddress address() {
+<span class="nc" id="L65">        return address;</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override public boolean equals(Object o) {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (this == o)</span>
+<span class="nc" id="L71">            return true;</span>
+<span class="nc bnc" id="L72" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass())</span>
+<span class="nc" id="L73">            return false;</span>
+<span class="nc" id="L74">        ClusterNode that = (ClusterNode)o;</span>
+<span class="nc bnc" id="L75" title="All 4 branches missed.">        return name.equals(that.name) &amp;&amp; address.equals(that.address);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override public int hashCode() {
+<span class="nc" id="L80">        return Objects.hash(name, address);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override public String toString() {
+<span class="nc" id="L85">        return S.toString(ClusterNode.class, this);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvokeDynamicBytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">InvokeDynamicBytecodeExpression.java</span></div><h1>InvokeDynamicBytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
+
+class InvokeDynamicBytecodeExpression
+    extends BytecodeExpression {
+    private final Method bootstrapMethod;
+    private final List&lt;Object&gt; bootstrapArgs;
+    private final String methodName;
+    private final ParameterizedType returnType;
+    private final List&lt;BytecodeExpression&gt; parameters;
+    private final List&lt;ParameterizedType&gt; parameterTypes;
+
+    InvokeDynamicBytecodeExpression(
+        Method bootstrapMethod,
+        Collection&lt;?&gt; bootstrapArgs,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters,
+        Collection&lt;ParameterizedType&gt; parameterTypes
+    ) {
+<span class="fc" id="L44">        super(returnType);</span>
+<span class="fc" id="L45">        this.bootstrapMethod = requireNonNull(bootstrapMethod, &quot;bootstrapMethod is null&quot;);</span>
+<span class="fc" id="L46">        this.bootstrapArgs = List.copyOf(requireNonNull(bootstrapArgs, &quot;bootstrapArgs is null&quot;));</span>
+<span class="fc" id="L47">        this.methodName = requireNonNull(methodName, &quot;methodName is null&quot;);</span>
+<span class="fc" id="L48">        this.returnType = requireNonNull(returnType, &quot;returnType is null&quot;);</span>
+<span class="fc" id="L49">        this.parameters = List.copyOf(requireNonNull(parameters, &quot;parameters is null&quot;));</span>
+<span class="fc" id="L50">        this.parameterTypes = List.copyOf(requireNonNull(parameterTypes, &quot;parameterTypes is null&quot;));</span>
+<span class="fc" id="L51">    }</span>
+
+    @Override
+    public BytecodeNode getBytecode(MethodGenerationContext generationContext) {
+<span class="fc" id="L55">        BytecodeBlock block = new BytecodeBlock();</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (BytecodeExpression parameter : parameters) {</span>
+<span class="fc" id="L57">            block.append(parameter);</span>
+<span class="fc" id="L58">        }</span>
+<span class="fc" id="L59">        return block.invokeDynamic(methodName, returnType, parameterTypes, bootstrapMethod, bootstrapArgs);</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc" id="L64">        return List.of();</span>
+    }
+
+    @Override
+    protected String formatOneLine() {
+<span class="fc" id="L69">        StringBuilder builder = new StringBuilder();</span>
+<span class="fc" id="L70">        builder.append(&quot;[&quot;).append(bootstrapMethod.getName());</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if (!bootstrapArgs.isEmpty()) {</span>
+<span class="fc" id="L72">            builder.append(&quot;(&quot;).append(bootstrapArgs.stream().map(ConstantBytecodeExpression::renderConstant)</span>
+<span class="fc" id="L73">                .collect(Collectors.joining(&quot;, &quot;))).append(&quot;)&quot;);</span>
+        }
+<span class="fc" id="L75">        builder.append(&quot;]=&gt;&quot;);</span>
+
+<span class="fc" id="L77">        builder.append(methodName)</span>
+<span class="fc" id="L78">            .append(&quot;(&quot;)</span>
+<span class="fc" id="L79">            .append(parameters.stream().map(BytecodeExpression::toString).collect(Collectors.joining(&quot;, &quot;)))</span>
+<span class="fc" id="L80">            .append(&quot;)&quot;);</span>
+
+<span class="fc" id="L82">        return builder.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SetFieldBytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">SetFieldBytecodeExpression.java</span></div><h1>SetFieldBytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.FieldDefinition;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
+
+import static com.facebook.presto.bytecode.Access.STATIC;
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
+
+class SetFieldBytecodeExpression
+    extends BytecodeExpression {
+    private final BytecodeExpression instance;
+    private final ParameterizedType declaringClass;
+    private final String name;
+    private final BytecodeExpression value;
+    private final ParameterizedType fieldType;
+
+    SetFieldBytecodeExpression(@Nullable BytecodeExpression instance, Class&lt;?&gt; declaringClass, String name,
+        BytecodeExpression value) {
+<span class="fc" id="L42">        this(instance, getDeclaredField(declaringClass, name), value);</span>
+<span class="fc" id="L43">    }</span>
+
+    SetFieldBytecodeExpression(@Nullable BytecodeExpression instance, Field field, BytecodeExpression value) {
+<span class="fc" id="L46">        this(instance, type(requireNonNull(field, &quot;field is null&quot;).getDeclaringClass()), field.getName(), value, type(field.getType()));</span>
+
+<span class="fc" id="L48">        boolean isStatic = Modifier.isStatic(field.getModifiers());</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L50">            checkArgument(isStatic, &quot;Field is not static: %s&quot;, field);</span>
+        }
+        else {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">            checkArgument(!isStatic, &quot;Field is static: %s&quot;, field);</span>
+        }
+<span class="fc" id="L55">    }</span>
+
+    SetFieldBytecodeExpression(@Nullable BytecodeExpression instance, FieldDefinition field,
+        BytecodeExpression value) {
+<span class="nc" id="L59">        this(instance, requireNonNull(field, &quot;field is null&quot;).getDeclaringClass().getType(), field.getName(), value, field.getType());</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L61">            checkArgument(field.getAccess().contains(STATIC), &quot;Field is not static: %s&quot;, field);</span>
+        }
+        else {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            checkArgument(!field.getAccess().contains(STATIC), &quot;Field is static: %s&quot;, field);</span>
+        }
+<span class="nc" id="L66">    }</span>
+
+    SetFieldBytecodeExpression(@Nullable BytecodeExpression instance, ParameterizedType declaringClass,
+        String name, BytecodeExpression value) {
+<span class="fc" id="L70">        this(instance, declaringClass, name, value, value.getType());</span>
+<span class="fc" id="L71">    }</span>
+
+    SetFieldBytecodeExpression(@Nullable BytecodeExpression instance,
+        ParameterizedType declaringClass,
+        String name,
+        BytecodeExpression value,
+        ParameterizedType fieldType) {
+<span class="fc" id="L78">        super(type(void.class));</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (instance != null) {</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">            checkArgument(!instance.getType().isPrimitive(), &quot;Type %s does not have fields&quot;, instance.getType());</span>
+        }
+<span class="fc" id="L82">        this.instance = instance;</span>
+<span class="fc" id="L83">        this.declaringClass = requireNonNull(declaringClass, &quot;declaringClass is null&quot;);</span>
+<span class="fc" id="L84">        this.name = requireNonNull(name, &quot;name is null&quot;);</span>
+<span class="fc" id="L85">        this.fieldType = requireNonNull(fieldType, &quot;fieldType is null&quot;);</span>
+<span class="fc" id="L86">        this.value = requireNonNull(value, &quot;value is null&quot;);</span>
+<span class="fc" id="L87">    }</span>
+
+    @Override
+    public BytecodeNode getBytecode(MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L92">            return new BytecodeBlock()</span>
+<span class="fc" id="L93">                .append(value.getBytecode(generationContext))</span>
+<span class="fc" id="L94">                .putStaticField(declaringClass, name, fieldType);</span>
+        }
+
+<span class="fc" id="L97">        return new BytecodeBlock()</span>
+<span class="fc" id="L98">            .append(instance.getBytecode(generationContext))</span>
+<span class="fc" id="L99">            .append(value.getBytecode(generationContext))</span>
+<span class="fc" id="L100">            .putField(declaringClass, name, fieldType);</span>
+    }
+
+    @Override
+    protected String formatOneLine() {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L106">            return declaringClass.getSimpleName() + &quot;.&quot; + name + &quot; = &quot; + value;</span>
+        }
+        else {
+<span class="fc" id="L109">            return instance + &quot;.&quot; + name + &quot; = &quot; + value;</span>
+        }
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        return instance != null ? List.of(instance, value) : List.of(value);</span>
+    }
+
+    private static Field getDeclaredField(Class&lt;?&gt; declaringClass, String name) {
+<span class="fc" id="L119">        requireNonNull(declaringClass, &quot;declaringClass is null&quot;);</span>
+<span class="fc" id="L120">        requireNonNull(name, &quot;name is null&quot;);</span>
+
+        try {
+<span class="fc" id="L123">            return declaringClass.getField(name);</span>
+        }
+<span class="nc" id="L125">        catch (NoSuchFieldException e) {</span>
+<span class="nc" id="L126">            throw new IllegalArgumentException(format(&quot;Class %s does not have a '%s' field&quot;, declaringClass.getName(), name));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

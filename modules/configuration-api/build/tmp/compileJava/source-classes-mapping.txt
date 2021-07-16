@@ -1,0 +1,48 @@
+org/apache/ignite/configuration/notifications/ConfigurationNotificationEvent.java
+ org.apache.ignite.configuration.notifications.ConfigurationNotificationEvent
+org/apache/ignite/configuration/NamedListView.java
+ org.apache.ignite.configuration.NamedListView
+org/apache/ignite/configuration/annotation/ConfigurationRoot.java
+ org.apache.ignite.configuration.annotation.ConfigurationRoot
+org/apache/ignite/configuration/validation/ValidationIssue.java
+ org.apache.ignite.configuration.validation.ValidationIssue
+org/apache/ignite/configuration/annotation/Value.java
+ org.apache.ignite.configuration.annotation.Value
+org/apache/ignite/configuration/notifications/ConfigurationListener.java
+ org.apache.ignite.configuration.notifications.ConfigurationListener
+org/apache/ignite/configuration/annotation/Config.java
+ org.apache.ignite.configuration.annotation.Config
+org/apache/ignite/configuration/annotation/ConfigurationType.java
+ org.apache.ignite.configuration.annotation.ConfigurationType
+org/apache/ignite/configuration/NamedConfigurationTree.java
+ org.apache.ignite.configuration.NamedConfigurationTree
+org/apache/ignite/configuration/RootKey.java
+ org.apache.ignite.configuration.RootKey
+org/apache/ignite/configuration/ConfigurationChangeException.java
+ org.apache.ignite.configuration.ConfigurationChangeException
+org/apache/ignite/configuration/ConfigurationTree.java
+ org.apache.ignite.configuration.ConfigurationTree
+org/apache/ignite/configuration/validation/ConfigurationValidationException.java
+ org.apache.ignite.configuration.validation.ConfigurationValidationException
+org/apache/ignite/configuration/ConfigurationValue.java
+ org.apache.ignite.configuration.ConfigurationValue
+org/apache/ignite/configuration/validation/Max.java
+ org.apache.ignite.configuration.validation.Max
+org/apache/ignite/configuration/annotation/ConfigValue.java
+ org.apache.ignite.configuration.annotation.ConfigValue
+org/apache/ignite/configuration/notifications/ConfigurationNamedListListener.java
+ org.apache.ignite.configuration.notifications.ConfigurationNamedListListener
+org/apache/ignite/configuration/validation/Validator.java
+ org.apache.ignite.configuration.validation.Validator
+org/apache/ignite/configuration/validation/Min.java
+ org.apache.ignite.configuration.validation.Min
+org/apache/ignite/configuration/validation/Immutable.java
+ org.apache.ignite.configuration.validation.Immutable
+org/apache/ignite/configuration/NamedListChange.java
+ org.apache.ignite.configuration.NamedListChange
+org/apache/ignite/configuration/annotation/NamedConfigValue.java
+ org.apache.ignite.configuration.annotation.NamedConfigValue
+org/apache/ignite/configuration/ConfigurationProperty.java
+ org.apache.ignite.configuration.ConfigurationProperty
+org/apache/ignite/configuration/validation/ValidationContext.java
+ org.apache.ignite.configuration.validation.ValidationContext

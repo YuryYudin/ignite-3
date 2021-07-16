@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IgnitePaths.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli</a> &gt; <span class="el_source">IgnitePaths.java</span></div><h1>IgnitePaths.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli;
+
+import java.io.File;
+import java.nio.file.Path;
+
+/**
+ * The main resolver of Ignite paths for the current installation (like bin, work and etc. dirs).
+ * Current Ignite distributive has the following dirs structure:
+ * &lt;ul&gt;
+ *      &lt;li&gt;bin
+ *          &lt;ul&gt;
+ *              &lt;li&gt;${version}
+ *                  &lt;ul&gt;
+ *                      &lt;li&gt;cli&lt;/li&gt;
+ *                      &lt;li&gt;libs&lt;/li&gt;
+ *                  &lt;/ul&gt;
+ *              &lt;/li&gt;
+ *          &lt;/ul&gt;
+ *     &lt;/li&gt;
+ *     &lt;li&gt;work
+ *          &lt;ul&gt;
+ *              &lt;li&gt;config
+ *                  &lt;ul&gt;
+ *                      &lt;li&gt;default-config.xml&lt;/li&gt;
+ *                  &lt;/ul&gt;
+ *              &lt;/li&gt;
+ *              &lt;li&gt;cli
+ *                  &lt;ul&gt;
+ *                      &lt;li&gt;pids&lt;/li&gt;
+ *                  &lt;/ul&gt;
+ *              &lt;/li&gt;
+ *              &lt;li&gt;modules.json&lt;/li&gt;
+ *          &lt;/ul&gt;
+ *     &lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+public class IgnitePaths {
+    /**
+     * Path to Ignite bin directory.
+     * Bin directory contains jar artifacts for Ignite server and CLI modules.
+     */
+    public final Path binDir;
+
+    /** Work directory for Ignite server and CLI operation. */
+    public final Path workDir;
+
+    /** Directory for storing server node configs. */
+    public final Path cfgDir;
+
+    /** Directory for server nodes logs */
+    public final Path logDir;
+
+    /**
+     * Ignite CLI version.
+     * Also, the same version will be used for addressing any binaries inside bin dir
+     */
+    private final String ver;
+
+    /**
+     * Creates resolved ignite paths instance from Ignite CLI version and base dirs paths.
+     *
+     * @param binDir Bin directory.
+     * @param workDir Work directory.
+     * @param cfgDir Config directory.
+     * @param logDir Log directory.
+     * @param ver Ignite CLI version.
+     */
+<span class="fc" id="L85">    public IgnitePaths(Path binDir, Path workDir, Path cfgDir, Path logDir, String ver) {</span>
+<span class="fc" id="L86">        this.binDir = binDir;</span>
+<span class="fc" id="L87">        this.workDir = workDir;</span>
+<span class="fc" id="L88">        this.cfgDir = cfgDir;</span>
+<span class="fc" id="L89">        this.logDir = logDir;</span>
+<span class="fc" id="L90">        this.ver = ver;</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * @return Path where CLI module artifacts will be placed.
+     */
+    public Path cliLibsDir() {
+<span class="nc" id="L97">        return binDir.resolve(ver).resolve(&quot;cli&quot;);</span>
+    }
+
+    /**
+     * @return Path where Ignite server module artifacts will be placed.
+     */
+    public Path libsDir() {
+<span class="nc" id="L104">        return binDir.resolve(ver).resolve(&quot;libs&quot;);</span>
+    }
+
+    /**
+     * @return Path where Ignite node pid files will be created.
+     */
+    public Path cliPidsDir() {
+<span class="nc" id="L111">        return workDir.resolve(&quot;cli&quot;).resolve(&quot;pids&quot;);</span>
+    }
+
+    /**
+     * @return Path to file with registry data for {@link org.apache.ignite.cli.builtins.module.ModuleRegistry}
+     */
+    public Path installedModulesFile() {
+<span class="nc" id="L118">        return workDir.resolve(&quot;modules.json&quot;);</span>
+    }
+
+    /**
+     * @return Path to directory with Ignite nodes configs.
+     */
+    public Path serverConfigDir() {
+<span class="nc" id="L125">        return workDir.resolve(&quot;config&quot;);</span>
+    }
+
+    /**
+     * @return Path to default Ignite node config.
+     */
+    public Path serverDefaultConfigFile() {
+<span class="nc" id="L132">        return cfgDir.resolve(&quot;default-config.xml&quot;);</span>
+    }
+
+    /**
+     * Init or recovers Ignite distributive directories structure.
+     */
+    public void initOrRecover() {
+<span class="nc" id="L139">        initDirIfNeeded(workDir,&quot;Can't create working directory: &quot; + workDir);</span>
+<span class="nc" id="L140">        initDirIfNeeded(binDir,&quot;Can't create bin directory: &quot; + binDir);</span>
+<span class="nc" id="L141">        initDirIfNeeded(libsDir(),&quot;Can't create a directory for ignite modules: &quot; + libsDir());</span>
+<span class="nc" id="L142">        initDirIfNeeded(cliLibsDir(),&quot;Can't create a directory for cli modules: &quot; + cliLibsDir());</span>
+<span class="nc" id="L143">        initDirIfNeeded(cfgDir,&quot;Can't create a directory for server configs: &quot; + cfgDir);</span>
+<span class="nc" id="L144">        initDirIfNeeded(logDir,&quot;Can't create a directory for server logs: &quot; + logDir);</span>
+<span class="nc" id="L145">    }</span>
+
+    /**
+     * Create directory if not exists.
+     *
+     * @param dir Directory
+     * @param exceptionMessage Exception message if directory wasn't created
+     */
+    private void initDirIfNeeded(Path dir, String exceptionMessage) {
+<span class="nc" id="L154">        File dirFile = dir.toFile();</span>
+<span class="nc bnc" id="L155" title="All 4 branches missed.">        if (!(dirFile.exists() || dirFile.mkdirs()))</span>
+<span class="nc" id="L156">            throw new IgniteCLIException(exceptionMessage);</span>
+<span class="nc" id="L157">    }</span>
+
+    /**
+     * Validates that all Ignite distributive directories is exists.
+     *
+     * @return true if check passes, false otherwise.
+     */
+    public boolean validateDirs() {
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        return workDir.toFile().exists() &amp;&amp;</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">                binDir.toFile().exists() &amp;&amp;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">                libsDir().toFile().exists() &amp;&amp;</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                cliLibsDir().toFile().exists() &amp;&amp;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                cfgDir.toFile().exists() &amp;&amp;</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                logDir.toFile().exists();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

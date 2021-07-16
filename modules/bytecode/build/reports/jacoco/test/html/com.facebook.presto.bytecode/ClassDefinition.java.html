@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">ClassDefinition.java</span></div><h1>ClassDefinition.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.objectweb.asm.ClassVisitor;
+
+import static com.facebook.presto.bytecode.Access.INTERFACE;
+import static com.facebook.presto.bytecode.Access.STATIC;
+import static com.facebook.presto.bytecode.Access.a;
+import static com.facebook.presto.bytecode.Access.toAccessModifier;
+import static java.util.Objects.requireNonNull;
+import static org.objectweb.asm.Opcodes.ACC_SUPER;
+import static org.objectweb.asm.Opcodes.V11;
+
+public class ClassDefinition {
+    private final EnumSet&lt;Access&gt; access;
+    private final ParameterizedType type;
+    private final ParameterizedType superClass;
+<span class="fc" id="L37">    private final List&lt;ParameterizedType&gt; interfaces = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L38">    private final List&lt;AnnotationDefinition&gt; annotations = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L39">    private final List&lt;FieldDefinition&gt; fields = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L40">    private final List&lt;MethodDefinition&gt; methods = new ArrayList&lt;&gt;();</span>
+    private final MethodDefinition classInitializer;
+    private String source;
+    private String debug;
+
+    public ClassDefinition(
+        EnumSet&lt;Access&gt; access,
+        String name,
+        ParameterizedType superClass,
+        ParameterizedType... interfaces) {
+<span class="fc" id="L50">        this(access, new ParameterizedType(name), superClass, interfaces);</span>
+<span class="fc" id="L51">    }</span>
+
+    public ClassDefinition(
+        EnumSet&lt;Access&gt; access,
+        ParameterizedType type,
+        ParameterizedType superClass,
+<span class="fc" id="L57">        ParameterizedType... interfaces) {</span>
+<span class="fc" id="L58">        requireNonNull(access, &quot;access is null&quot;);</span>
+<span class="fc" id="L59">        requireNonNull(type, &quot;type is null&quot;);</span>
+<span class="fc" id="L60">        requireNonNull(superClass, &quot;superClass is null&quot;);</span>
+<span class="fc" id="L61">        requireNonNull(interfaces, &quot;interfaces is null&quot;);</span>
+
+<span class="fc" id="L63">        this.access = access;</span>
+<span class="fc" id="L64">        this.type = type;</span>
+<span class="fc" id="L65">        this.superClass = superClass;</span>
+<span class="fc" id="L66">        this.interfaces.addAll(List.of(interfaces));</span>
+
+<span class="fc" id="L68">        classInitializer = new MethodDefinition(this, a(STATIC), &quot;&lt;clinit&gt;&quot;, ParameterizedType.type(void.class), List.of());</span>
+<span class="fc" id="L69">    }</span>
+
+    public Set&lt;Access&gt; getAccess() {
+<span class="fc" id="L72">        return Set.copyOf(access);</span>
+    }
+
+    public String getName() {
+<span class="nc" id="L76">        return type.getClassName();</span>
+    }
+
+    public ParameterizedType getType() {
+<span class="fc" id="L80">        return type;</span>
+    }
+
+    public ParameterizedType getSuperClass() {
+<span class="fc" id="L84">        return superClass;</span>
+    }
+
+    public String getSource() {
+<span class="nc" id="L88">        return source;</span>
+    }
+
+    public List&lt;ParameterizedType&gt; getInterfaces() {
+<span class="fc" id="L92">        return List.copyOf(interfaces);</span>
+    }
+
+    public List&lt;AnnotationDefinition&gt; getAnnotations() {
+<span class="fc" id="L96">        return List.copyOf(annotations);</span>
+    }
+
+    public List&lt;FieldDefinition&gt; getFields() {
+<span class="fc" id="L100">        return List.copyOf(fields);</span>
+    }
+
+    public List&lt;MethodDefinition&gt; getMethods() {
+<span class="fc" id="L104">        return List.copyOf(methods);</span>
+    }
+
+    public boolean isInterface() {
+<span class="fc" id="L108">        return access.contains(INTERFACE);</span>
+    }
+
+    public void visit(ClassVisitor visitor) {
+        // Generic signature if super class or any interface is generic
+<span class="fc" id="L113">        String signature = null;</span>
+<span class="pc bpc" id="L114" title="2 of 4 branches missed.">        if (superClass.isGeneric() || interfaces.stream().anyMatch(ParameterizedType::isGeneric)) {</span>
+<span class="nc" id="L115">            signature = genericClassSignature(superClass, interfaces);</span>
+        }
+
+<span class="fc" id="L118">        String[] interfaces = new String[this.interfaces.size()];</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        for (int i = 0; i &lt; interfaces.length; i++) {</span>
+<span class="nc" id="L120">            interfaces[i] = this.interfaces.get(i).getClassName();</span>
+        }
+<span class="fc" id="L122">        int accessModifier = toAccessModifier(access);</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        visitor.visit(V11, isInterface() ? accessModifier : accessModifier | ACC_SUPER, type.getClassName(), signature, superClass.getClassName(), interfaces);</span>
+
+        // visit source
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (source != null) {</span>
+<span class="nc" id="L127">            visitor.visitSource(source, debug);</span>
+        }
+
+        // visit annotations
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        for (AnnotationDefinition annotation : annotations) {</span>
+<span class="nc" id="L132">            annotation.visitClassAnnotation(visitor);</span>
+<span class="nc" id="L133">        }</span>
+
+        // visit fields
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        for (FieldDefinition field : fields) {</span>
+<span class="nc" id="L137">            field.visit(visitor);</span>
+<span class="nc" id="L138">        }</span>
+
+        // visit clinit method
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        if (!isInterface()) {</span>
+<span class="fc" id="L142">            classInitializer.visit(visitor, true);</span>
+        }
+
+        // visit methods
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (MethodDefinition method : methods) {</span>
+<span class="fc" id="L147">            method.visit(visitor);</span>
+<span class="fc" id="L148">        }</span>
+
+        // done
+<span class="fc" id="L151">        visitor.visitEnd();</span>
+<span class="fc" id="L152">    }</span>
+
+    public AnnotationDefinition declareAnnotation(Class&lt;?&gt; type) {
+<span class="nc" id="L155">        AnnotationDefinition annotationDefinition = new AnnotationDefinition(type);</span>
+<span class="nc" id="L156">        annotations.add(annotationDefinition);</span>
+<span class="nc" id="L157">        return annotationDefinition;</span>
+    }
+
+    public AnnotationDefinition declareAnnotation(ParameterizedType type) {
+<span class="nc" id="L161">        AnnotationDefinition annotationDefinition = new AnnotationDefinition(type);</span>
+<span class="nc" id="L162">        annotations.add(annotationDefinition);</span>
+<span class="nc" id="L163">        return annotationDefinition;</span>
+    }
+
+    public FieldDefinition declareField(EnumSet&lt;Access&gt; access, String name, Class&lt;?&gt; type) {
+<span class="nc" id="L167">        FieldDefinition fieldDefinition = new FieldDefinition(this, access, name, type);</span>
+<span class="nc" id="L168">        fields.add(fieldDefinition);</span>
+<span class="nc" id="L169">        return fieldDefinition;</span>
+    }
+
+    public ClassDefinition addField(EnumSet&lt;Access&gt; access, String name, Class&lt;?&gt; type) {
+<span class="nc" id="L173">        declareField(access, name, type);</span>
+<span class="nc" id="L174">        return this;</span>
+    }
+
+    public FieldDefinition declareField(EnumSet&lt;Access&gt; access, String name, ParameterizedType type) {
+<span class="nc" id="L178">        FieldDefinition fieldDefinition = new FieldDefinition(this, access, name, type);</span>
+<span class="nc" id="L179">        fields.add(fieldDefinition);</span>
+<span class="nc" id="L180">        return fieldDefinition;</span>
+    }
+
+    public ClassDefinition addField(EnumSet&lt;Access&gt; access, String name, ParameterizedType type) {
+<span class="nc" id="L184">        declareField(access, name, type);</span>
+<span class="nc" id="L185">        return this;</span>
+    }
+
+    public ClassDefinition addField(FieldDefinition field) {
+<span class="nc" id="L189">        fields.add(field);</span>
+<span class="nc" id="L190">        return this;</span>
+    }
+
+    public MethodDefinition getClassInitializer() {
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">        if (isInterface()) {</span>
+<span class="nc" id="L195">            throw new IllegalAccessError(&quot;Interface does not have class initializer&quot;);</span>
+        }
+<span class="fc" id="L197">        return classInitializer;</span>
+    }
+
+    public MethodDefinition declareConstructor(
+        EnumSet&lt;Access&gt; access,
+        Parameter... parameters) {
+<span class="nc" id="L203">        return declareMethod(access, &quot;&lt;init&gt;&quot;, ParameterizedType.type(void.class), List.of(parameters));</span>
+    }
+
+    public MethodDefinition declareConstructor(
+        EnumSet&lt;Access&gt; access,
+        Collection&lt;Parameter&gt; parameters) {
+<span class="nc" id="L209">        return declareMethod(access, &quot;&lt;init&gt;&quot;, ParameterizedType.type(void.class), List.copyOf(parameters));</span>
+    }
+
+    public ClassDefinition declareDefaultConstructor(EnumSet&lt;Access&gt; access) {
+<span class="nc" id="L213">        MethodDefinition constructor = declareConstructor(access);</span>
+<span class="nc" id="L214">        constructor</span>
+<span class="nc" id="L215">            .getBody()</span>
+<span class="nc" id="L216">            .append(constructor.getThis())</span>
+<span class="nc" id="L217">            .invokeConstructor(superClass)</span>
+<span class="nc" id="L218">            .ret();</span>
+<span class="nc" id="L219">        return this;</span>
+    }
+
+    public ClassDefinition addMethod(MethodDefinition method) {
+<span class="nc" id="L223">        methods.add(method);</span>
+<span class="nc" id="L224">        return this;</span>
+    }
+
+    public ClassDefinition visitSource(String source, String debug) {
+<span class="nc" id="L228">        this.source = source;</span>
+<span class="nc" id="L229">        this.debug = debug;</span>
+<span class="nc" id="L230">        return this;</span>
+    }
+
+    public MethodDefinition declareMethod(
+        EnumSet&lt;Access&gt; access,
+        String name,
+        ParameterizedType returnType,
+        Parameter... parameters) {
+<span class="fc" id="L238">        return declareMethod(access, name, returnType, List.of(parameters));</span>
+    }
+
+    public MethodDefinition declareMethod(
+        EnumSet&lt;Access&gt; access,
+        String name,
+        ParameterizedType returnType,
+        Collection&lt;Parameter&gt; parameters) {
+<span class="fc" id="L246">        MethodDefinition methodDefinition = new MethodDefinition(this, access, name, returnType, parameters);</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        for (MethodDefinition method : methods) {</span>
+<span class="pc bpc" id="L248" title="3 of 4 branches missed.">            if (name.equals(method.getName()) &amp;&amp; method.getParameterTypes().equals(methodDefinition.getParameterTypes())) {</span>
+<span class="nc" id="L249">                throw new IllegalArgumentException(&quot;Method with same name and signature already exists: &quot; + name);</span>
+            }
+<span class="fc" id="L251">        }</span>
+<span class="fc" id="L252">        methods.add(methodDefinition);</span>
+<span class="fc" id="L253">        return methodDefinition;</span>
+    }
+
+    public static String genericClassSignature(
+        ParameterizedType classType,
+        ParameterizedType... interfaceTypes) {
+
+<span class="nc" id="L260">        return Stream.concat(Stream.of(classType), Stream.of(interfaceTypes))</span>
+<span class="nc" id="L261">            .map(ParameterizedType::toString).collect(Collectors.joining(&quot;&quot;));</span>
+    }
+
+    public static String genericClassSignature(
+        ParameterizedType classType,
+        List&lt;ParameterizedType&gt; interfaceTypes) {
+
+<span class="nc" id="L268">        return Stream.concat(Stream.of(classType), interfaceTypes.stream())</span>
+<span class="nc" id="L269">            .map(ParameterizedType::toString).collect(Collectors.joining(&quot;&quot;));</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L274">        final StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L275">        sb.append(&quot;ClassDefinition&quot;);</span>
+<span class="nc" id="L276">        sb.append(&quot;{access=&quot;).append(access);</span>
+<span class="nc" id="L277">        sb.append(&quot;, type=&quot;).append(type);</span>
+<span class="nc" id="L278">        sb.append('}');</span>
+<span class="nc" id="L279">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

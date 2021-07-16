@@ -1,0 +1,76 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:52+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 50
+
+Apache Licensed: 50
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/tostring/CircularStringBuilderSelfTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/tostring/IgniteToStringBuilderSelfTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/tostring/SensitiveDataToStringTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/testframework/WithSystemProperty.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/testframework/SystemPropertiesList.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/testframework/SystemPropertiesExtension.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/testframework/IgniteAbstractTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/testframework/IgniteTestUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/util/IgniteIntListSelfTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/internal/util/IgniteUtilsTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/test/java/org/apache/ignite/lang/LoggerHelperTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/manager/EventParameters.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/manager/Event.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/manager/EventListener.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/manager/Producer.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/manager/ListenerRemovedException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/IgniteToStringBuilder.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/ClassDescriptor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/S.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/FieldDescriptor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/CircularStringBuilder.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/SBLimitedLength.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/SensitiveDataLoggingPolicy.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/IgniteToStringInclude.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/IgniteToStringExclude.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/tostring/IgniteToStringOrder.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/ByteUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/IgniteIntList.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/ArrayFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/IgniteIntIterator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/IgniteUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/ArrayUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/FeatureChecker.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/GridUnsafe.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/Cursor.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/internal/util/CollectionUtils.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/plugin/extensions/communication/MessageCollectionItemType.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteInternalCheckedException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/LoggerMessageHelper.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteInternalException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteBiTuple.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteUuidGenerator.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteStringBuilder.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/ByteArray.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteUuid.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteSystemProperties.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/src/main/java/org/apache/ignite/lang/IgniteLogger.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/core/pom.xml
+ 
+*****************************************************

@@ -1,0 +1,46 @@
+org/apache/ignite/network/serialization/MessageDeserializer.java
+ org.apache.ignite.network.serialization.MessageDeserializer
+org/apache/ignite/network/AbstractMessagingService.java
+ org.apache.ignite.network.AbstractMessagingService
+org/apache/ignite/network/serialization/MessageSerializationRegistry.java
+ org.apache.ignite.network.serialization.MessageSerializationRegistry
+org/apache/ignite/network/NetworkConfigurationException.java
+ org.apache.ignite.network.NetworkConfigurationException
+org/apache/ignite/network/TopologyService.java
+ org.apache.ignite.network.TopologyService
+org/apache/ignite/network/NetworkMessage.java
+ org.apache.ignite.network.NetworkMessage
+org/apache/ignite/network/TopologyEventHandler.java
+ org.apache.ignite.network.TopologyEventHandler
+org/apache/ignite/network/serialization/MessageMappingException.java
+ org.apache.ignite.network.serialization.MessageMappingException
+org/apache/ignite/network/annotations/MessageGroup.java
+ org.apache.ignite.network.annotations.MessageGroup
+org/apache/ignite/network/NetworkAddress.java
+ org.apache.ignite.network.NetworkAddress
+org/apache/ignite/network/serialization/MessageWriter.java
+ org.apache.ignite.network.serialization.MessageWriter
+org/apache/ignite/network/annotations/Transferable.java
+ org.apache.ignite.network.annotations.Transferable
+org/apache/ignite/network/ClusterServiceFactory.java
+ org.apache.ignite.network.ClusterServiceFactory
+org/apache/ignite/network/MessagingService.java
+ org.apache.ignite.network.MessagingService
+org/apache/ignite/network/serialization/MessageSerializer.java
+ org.apache.ignite.network.serialization.MessageSerializer
+org/apache/ignite/network/ClusterService.java
+ org.apache.ignite.network.ClusterService
+org/apache/ignite/network/ClusterLocalConfiguration.java
+ org.apache.ignite.network.ClusterLocalConfiguration
+org/apache/ignite/network/ClusterNode.java
+ org.apache.ignite.network.ClusterNode
+org/apache/ignite/network/serialization/MessageSerializationFactory.java
+ org.apache.ignite.network.serialization.MessageSerializationFactory
+org/apache/ignite/network/serialization/MessageReader.java
+ org.apache.ignite.network.serialization.MessageReader
+org/apache/ignite/network/NetworkMessageHandler.java
+ org.apache.ignite.network.NetworkMessageHandler
+org/apache/ignite/network/AbstractClusterService.java
+ org.apache.ignite.network.AbstractClusterService
+org/apache/ignite/network/AbstractTopologyService.java
+ org.apache.ignite.network.AbstractTopologyService

@@ -1,0 +1,87 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 61
+
+Apache Licensed: 61
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/ui/SpinnerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/ui/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/ui/ProgressBarTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/builtins/module/ModuleMangerTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/builtins/module/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/builtins/init/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/builtins/init/InitIgniteCommandTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/AbstractCliTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/java/org/apache/ignite/cli/IgniteCliInterfaceTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/resources/version.properties
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/resources/builtin_modules.conf
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/test/resources/logback-test.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/VersionProvider.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/CommandFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/ui/Spinner.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/ui/ProgressBar.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/ui/TerminalFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/InitIgniteCommandSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/SpecAdapter.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/ModuleCommandSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/CategorySpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/NodeCommandSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/ConfigCommandSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/IgniteCliSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/CommandSpec.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/spec/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/ErrorHandler.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/SystemPathResolver.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/node/NodeManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/node/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/ModuleRegistry.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/MavenCoordinates.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/ModuleManager.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/StandardModuleDefinition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/ResolveResult.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/module/MavenArtifactResolver.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/config/HttpClientFactory.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/config/ConfigurationClient.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/config/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/init/InitIgniteCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/builtins/init/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/IgniteCliApp.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/HelpFactoryImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/CliVersionInfo.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/InteractiveWrapper.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/Table.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/IgnitePaths.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/CliPathsConfigLoader.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/java/org/apache/ignite/cli/IgniteCLIException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/resources/default-config.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/resources/version.properties
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/resources/builtin_modules.conf
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/src/main/resources/logback.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/ignite.sh
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli/pom.xml
+ 
+*****************************************************

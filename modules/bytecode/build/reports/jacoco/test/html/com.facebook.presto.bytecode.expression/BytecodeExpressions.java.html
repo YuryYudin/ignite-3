@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BytecodeExpressions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">BytecodeExpressions.java</span></div><h1>BytecodeExpressions.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.FieldDefinition;
+import com.facebook.presto.bytecode.MethodDefinition;
+import com.facebook.presto.bytecode.OpCode;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static com.facebook.presto.bytecode.expression.ArithmeticBytecodeExpression.createArithmeticBytecodeExpression;
+import static com.facebook.presto.bytecode.instruction.Constant.loadBoolean;
+import static com.facebook.presto.bytecode.instruction.Constant.loadClass;
+import static com.facebook.presto.bytecode.instruction.Constant.loadDouble;
+import static com.facebook.presto.bytecode.instruction.Constant.loadFloat;
+import static com.facebook.presto.bytecode.instruction.Constant.loadInt;
+import static com.facebook.presto.bytecode.instruction.Constant.loadLong;
+import static com.facebook.presto.bytecode.instruction.Constant.loadNull;
+import static com.facebook.presto.bytecode.instruction.Constant.loadString;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
+
+public final class BytecodeExpressions {
+    private BytecodeExpressions() {
+    }
+
+    //
+    // Constants
+    //
+
+    public static BytecodeExpression constantTrue() {
+<span class="fc" id="L51">        return new ConstantBytecodeExpression(boolean.class, loadBoolean(true));</span>
+    }
+
+    public static BytecodeExpression constantFalse() {
+<span class="fc" id="L55">        return new ConstantBytecodeExpression(boolean.class, loadBoolean(false));</span>
+    }
+
+    public static BytecodeExpression constantBoolean(boolean value) {
+<span class="fc" id="L59">        return new ConstantBytecodeExpression(boolean.class, loadBoolean(value));</span>
+    }
+
+    public static BytecodeExpression constantClass(Class&lt;?&gt; value) {
+<span class="fc" id="L63">        return new ConstantBytecodeExpression(Class.class, loadClass(value));</span>
+    }
+
+    public static BytecodeExpression constantClass(ParameterizedType value) {
+<span class="nc" id="L67">        return new ConstantBytecodeExpression(Class.class, loadClass(value));</span>
+    }
+
+    public static BytecodeExpression constantDouble(double value) {
+<span class="fc" id="L71">        return new ConstantBytecodeExpression(double.class, loadDouble(value));</span>
+    }
+
+    public static BytecodeExpression constantFloat(float value) {
+<span class="fc" id="L75">        return new ConstantBytecodeExpression(float.class, loadFloat(value));</span>
+    }
+
+    public static BytecodeExpression constantInt(int value) {
+<span class="fc" id="L79">        return new ConstantBytecodeExpression(int.class, loadInt(value));</span>
+    }
+
+    public static BytecodeExpression constantLong(long value) {
+<span class="fc" id="L83">        return new ConstantBytecodeExpression(long.class, loadLong(value));</span>
+    }
+
+    public static BytecodeExpression constantNumber(Number value) {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (value instanceof Byte) {</span>
+<span class="nc" id="L88">            return constantInt((value).intValue()).cast(byte.class);</span>
+        }
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (value instanceof Short) {</span>
+<span class="nc" id="L91">            return constantInt((value).intValue()).cast(short.class);</span>
+        }
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (value instanceof Integer) {</span>
+<span class="nc" id="L94">            return constantInt((Integer)value);</span>
+        }
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (value instanceof Long) {</span>
+<span class="nc" id="L97">            return constantLong((Long)value);</span>
+        }
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (value instanceof Float) {</span>
+<span class="nc" id="L100">            return constantFloat((Float)value);</span>
+        }
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (value instanceof Double) {</span>
+<span class="nc" id="L103">            return constantDouble((Double)value);</span>
+        }
+<span class="nc" id="L105">        throw new IllegalStateException(&quot;Unsupported number type &quot; + value.getClass().getSimpleName());</span>
+    }
+
+    public static BytecodeExpression constantNull(Class&lt;?&gt; type) {
+<span class="fc" id="L109">        return new ConstantBytecodeExpression(type, loadNull());</span>
+    }
+
+    public static BytecodeExpression constantNull(ParameterizedType type) {
+<span class="nc" id="L113">        return new ConstantBytecodeExpression(type, loadNull());</span>
+    }
+
+    public static BytecodeExpression constantString(String value) {
+<span class="fc" id="L117">        return new ConstantBytecodeExpression(String.class, loadString(value));</span>
+    }
+
+    public static BytecodeExpression defaultValue(ParameterizedType type) {
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (type.isPrimitive()) {</span>
+<span class="nc" id="L122">            return defaultValue(type.getPrimitiveType());</span>
+        }
+<span class="nc" id="L124">        return constantNull(type);</span>
+    }
+
+    public static BytecodeExpression defaultValue(Class&lt;?&gt; type) {
+<span class="nc" id="L128">        requireNonNull(type, &quot;type is null&quot;);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (type == boolean.class) {</span>
+<span class="nc" id="L130">            return constantInt(0).cast(boolean.class);</span>
+        }
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (type == byte.class) {</span>
+<span class="nc" id="L133">            return constantInt(0).cast(byte.class);</span>
+        }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (type == int.class) {</span>
+<span class="nc" id="L136">            return constantInt(0);</span>
+        }
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (type == short.class) {</span>
+<span class="nc" id="L139">            return constantInt(0).cast(short.class);</span>
+        }
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (type == long.class) {</span>
+<span class="nc" id="L142">            return constantLong(0L);</span>
+        }
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (type == float.class) {</span>
+<span class="nc" id="L145">            return constantFloat(0.0f);</span>
+        }
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (type == double.class) {</span>
+<span class="nc" id="L148">            return constantDouble(0.0d);</span>
+        }
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        checkArgument(!type.isPrimitive(), &quot;Unsupported type %s&quot;, type);</span>
+<span class="nc" id="L151">        return constantNull(type);</span>
+    }
+
+    //
+    // Get static field
+    //
+
+    public static BytecodeExpression getStatic(Class&lt;?&gt; declaringClass, String name) {
+<span class="fc" id="L159">        return new GetFieldBytecodeExpression(null, declaringClass, name);</span>
+    }
+
+    public static BytecodeExpression getStatic(Field staticField) {
+<span class="fc" id="L163">        return new GetFieldBytecodeExpression(null, staticField);</span>
+    }
+
+    public static BytecodeExpression getStatic(FieldDefinition staticField) {
+<span class="nc" id="L167">        return new GetFieldBytecodeExpression(null, staticField);</span>
+    }
+
+    public static BytecodeExpression getStatic(ParameterizedType declaringClass, String name, ParameterizedType type) {
+<span class="fc" id="L171">        return new GetFieldBytecodeExpression(null, declaringClass, name, type);</span>
+    }
+
+    //
+    // Set static field
+    //
+
+    public static BytecodeExpression setStatic(Class&lt;?&gt; declaringClass, String name, BytecodeExpression value) {
+<span class="fc" id="L179">        return new SetFieldBytecodeExpression(null, declaringClass, name, value);</span>
+    }
+
+    public static BytecodeExpression setStatic(Field staticField, BytecodeExpression value) {
+<span class="fc" id="L183">        return new SetFieldBytecodeExpression(null, staticField, value);</span>
+    }
+
+    public static BytecodeExpression setStatic(FieldDefinition staticField, BytecodeExpression value) {
+<span class="nc" id="L187">        return new SetFieldBytecodeExpression(null, staticField, value);</span>
+    }
+
+    public static BytecodeExpression setStatic(ParameterizedType declaringClass, String name,
+        BytecodeExpression value) {
+<span class="fc" id="L192">        return new SetFieldBytecodeExpression(null, declaringClass, name, value);</span>
+    }
+
+    //
+    // New instance
+    //
+
+    public static BytecodeExpression newInstance(Constructor&lt;?&gt; constructor, BytecodeExpression... parameters) {
+<span class="nc" id="L200">        return newInstance(constructor, List.of(parameters));</span>
+    }
+
+    public static BytecodeExpression newInstance(Constructor&lt;?&gt; constructor,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L205">        return newInstance(</span>
+<span class="nc" id="L206">            type(constructor.getDeclaringClass()),</span>
+<span class="nc" id="L207">            stream(constructor.getParameterTypes())</span>
+<span class="nc" id="L208">                .map(ParameterizedType::type)</span>
+<span class="nc" id="L209">                .collect(Collectors.toUnmodifiableList()),</span>
+            parameters);
+    }
+
+    public static BytecodeExpression newInstance(Class&lt;?&gt; returnType, BytecodeExpression... parameters) {
+<span class="fc" id="L214">        return newInstance(type(returnType), List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression newInstance(Class&lt;?&gt; returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L219">        return newInstance(type(returnType), parameters);</span>
+    }
+
+    public static BytecodeExpression newInstance(ParameterizedType returnType, BytecodeExpression... parameters) {
+<span class="nc" id="L223">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="nc" id="L225">        return newInstance(returnType, List.of(parameters));</span>
+    }
+
+    public static BytecodeExpression newInstance(ParameterizedType returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L230">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="fc" id="L232">        return newInstance(</span>
+            returnType,
+<span class="fc" id="L234">            parameters.stream().map(BytecodeExpression::getType).collect(Collectors.toList()),</span>
+            parameters);
+    }
+
+    public static BytecodeExpression newInstance(Class&lt;?&gt; returnType, Collection&lt;? extends Class&lt;?&gt;&gt; parameterTypes,
+        BytecodeExpression... parameters) {
+<span class="fc" id="L240">        return newInstance(type(returnType), parameterTypes.stream().map(ParameterizedType::type).collect(Collectors.toList()),</span>
+<span class="fc" id="L241">            List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression newInstance(ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes, BytecodeExpression... parameters) {
+<span class="nc" id="L246">        return newInstance(returnType, parameterTypes, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression newInstance(
+        ParameterizedType type,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L253">        return new NewInstanceBytecodeExpression(type, parameterTypes, parameters);</span>
+    }
+
+    //
+    // Array
+    //
+    public static BytecodeExpression newArray(ParameterizedType type, int length) {
+<span class="fc" id="L260">        return new NewArrayBytecodeExpression(type, length);</span>
+    }
+
+    public static BytecodeExpression newArray(ParameterizedType type, BytecodeExpression length) {
+<span class="nc" id="L264">        return new NewArrayBytecodeExpression(type, length);</span>
+    }
+
+    public static BytecodeExpression newArray(ParameterizedType type, BytecodeExpression... elements) {
+<span class="nc" id="L268">        return new NewArrayBytecodeExpression(type, List.of(elements));</span>
+    }
+
+    public static BytecodeExpression newArray(ParameterizedType type,
+        Collection&lt;? extends BytecodeExpression&gt; elements) {
+<span class="fc" id="L273">        return new NewArrayBytecodeExpression(type, List.copyOf(elements));</span>
+    }
+
+    public static BytecodeExpression length(BytecodeExpression instance) {
+<span class="nc" id="L277">        return new ArrayLengthBytecodeExpression(instance);</span>
+    }
+
+    public static BytecodeExpression get(BytecodeExpression instance, BytecodeExpression index) {
+<span class="nc" id="L281">        return new GetElementBytecodeExpression(instance, index);</span>
+    }
+
+    public static BytecodeExpression set(BytecodeExpression instance, BytecodeExpression index,
+        BytecodeExpression value) {
+<span class="nc" id="L286">        return new SetArrayElementBytecodeExpression(instance, index, value);</span>
+    }
+
+    //
+    // Invoke static method
+    //
+
+    public static BytecodeExpression invokeStatic(MethodDefinition method, BytecodeExpression... parameters) {
+<span class="fc" id="L294">        return invokeStatic(</span>
+<span class="fc" id="L295">            method.getDeclaringClass().getType(),</span>
+<span class="fc" id="L296">            method.getName(),</span>
+<span class="fc" id="L297">            method.getReturnType(),</span>
+<span class="fc" id="L298">            method.getParameterTypes(),</span>
+<span class="fc" id="L299">            List.of(parameters));</span>
+    }
+
+    public static BytecodeExpression invokeStatic(Method method, BytecodeExpression... parameters) {
+<span class="nc" id="L303">        return invokeStatic(method, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression invokeStatic(Method method, Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L307">        return invokeStatic(</span>
+<span class="nc" id="L308">            type(method.getDeclaringClass()),</span>
+<span class="nc" id="L309">            method.getName(),</span>
+<span class="nc" id="L310">            type(method.getReturnType()),</span>
+<span class="nc" id="L311">            stream(method.getParameterTypes())</span>
+<span class="nc" id="L312">                .map(ParameterizedType::type)</span>
+<span class="nc" id="L313">                .collect(Collectors.toUnmodifiableList()),</span>
+            parameters);
+    }
+
+    public static BytecodeExpression invokeStatic(Class&lt;?&gt; methodTargetType, String methodName, Class&lt;?&gt; returnType,
+        BytecodeExpression... parameters) {
+<span class="fc" id="L319">        return invokeStatic(methodTargetType, methodName, returnType, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression invokeStatic(
+        Class&lt;?&gt; methodTargetType,
+        String methodName,
+        Class&lt;?&gt; returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L327">        return invokeStatic(type(methodTargetType), methodName, type(returnType), parameters);</span>
+    }
+
+    public static BytecodeExpression invokeStatic(
+        ParameterizedType methodTargetType,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L335">        requireNonNull(methodTargetType, &quot;methodTargetType is null&quot;);</span>
+<span class="fc" id="L336">        requireNonNull(returnType, &quot;returnType is null&quot;);</span>
+<span class="fc" id="L337">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="fc" id="L339">        return invokeStatic(</span>
+            methodTargetType,
+            methodName,
+            returnType,
+<span class="fc" id="L343">            parameters.stream()</span>
+<span class="fc" id="L344">                .map(BytecodeExpression::getType)</span>
+<span class="fc" id="L345">                .collect(Collectors.toUnmodifiableList()),</span>
+            parameters);
+    }
+
+    public static BytecodeExpression invokeStatic(
+        Class&lt;?&gt; methodTargetType,
+        String methodName,
+        Class&lt;?&gt; returnType,
+        Collection&lt;? extends Class&lt;?&gt;&gt; parameterTypes,
+        BytecodeExpression... parameters) {
+<span class="fc" id="L355">        requireNonNull(methodTargetType, &quot;methodTargetType is null&quot;);</span>
+<span class="fc" id="L356">        requireNonNull(returnType, &quot;returnType is null&quot;);</span>
+<span class="fc" id="L357">        requireNonNull(parameterTypes, &quot;parameterTypes is null&quot;);</span>
+<span class="fc" id="L358">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="fc" id="L360">        return invokeStatic(</span>
+<span class="fc" id="L361">            type(methodTargetType),</span>
+            methodName,
+<span class="fc" id="L363">            type(returnType),</span>
+<span class="fc" id="L364">            parameterTypes.stream()</span>
+<span class="fc" id="L365">                .map(ParameterizedType::type)</span>
+<span class="fc" id="L366">                .collect(Collectors.toUnmodifiableList()),</span>
+<span class="fc" id="L367">            List.of(parameters));</span>
+    }
+
+    public static BytecodeExpression invokeStatic(
+        ParameterizedType methodTargetType,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        BytecodeExpression... parameters) {
+<span class="nc" id="L376">        return invokeStatic(methodTargetType, methodName, returnType, parameterTypes, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression invokeStatic(
+        ParameterizedType methodTargetType,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L385">        return new InvokeBytecodeExpression(</span>
+            null,
+            methodTargetType,
+            methodName,
+            returnType,
+            parameterTypes,
+            parameters);
+    }
+
+    //
+    // Invoke dynamic
+    //
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        Class&lt;?&gt; returnType,
+        BytecodeExpression... parameters) {
+<span class="fc" id="L404">        return invokeDynamic(bootstrapMethod, bootstrapArgs, methodName, returnType, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        Class&lt;?&gt; returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L413">        requireNonNull(returnType, &quot;returnType is null&quot;);</span>
+<span class="fc" id="L414">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="fc" id="L416">        return invokeDynamic(</span>
+            bootstrapMethod,
+            bootstrapArgs,
+            methodName,
+<span class="fc" id="L420">            type(returnType),</span>
+<span class="fc" id="L421">            parameters.stream()</span>
+<span class="fc" id="L422">                .map(BytecodeExpression::getType)</span>
+<span class="fc" id="L423">                .collect(Collectors.toUnmodifiableList()),</span>
+            parameters);
+    }
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        ParameterizedType returnType,
+        BytecodeExpression... parameters) {
+<span class="nc" id="L433">        return invokeDynamic(bootstrapMethod, bootstrapArgs, methodName, returnType, List.of(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L442">        requireNonNull(returnType, &quot;returnType is null&quot;);</span>
+<span class="nc" id="L443">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="nc" id="L445">        return invokeDynamic(</span>
+            bootstrapMethod,
+            bootstrapArgs,
+            methodName,
+            returnType,
+<span class="nc" id="L450">            parameters.stream()</span>
+<span class="nc" id="L451">                .map(BytecodeExpression::getType)</span>
+<span class="nc" id="L452">                .collect(Collectors.toUnmodifiableList()),</span>
+            parameters);
+    }
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        MethodType methodType,
+        BytecodeExpression... parameters) {
+<span class="nc" id="L462">        requireNonNull(methodType, &quot;methodType is null&quot;);</span>
+<span class="nc" id="L463">        requireNonNull(parameters, &quot;parameters is null&quot;);</span>
+
+<span class="nc" id="L465">        return invokeDynamic(bootstrapMethod, bootstrapArgs, methodName, methodType, List.of(parameters));</span>
+    }
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        MethodType methodType,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="nc" id="L474">        return invokeDynamic(</span>
+            bootstrapMethod,
+            bootstrapArgs,
+            methodName,
+<span class="nc" id="L478">            type(methodType.returnType()),</span>
+<span class="nc" id="L479">            methodType.parameterList().stream().map(ParameterizedType::type).collect(Collectors.toList()),</span>
+<span class="nc" id="L480">            List.copyOf(requireNonNull(parameters, &quot;parameters is null&quot;)));</span>
+    }
+
+    public static BytecodeExpression invokeDynamic(
+        Method bootstrapMethod,
+        Collection&lt;? extends Object&gt; bootstrapArgs,
+        String methodName,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Collection&lt;? extends BytecodeExpression&gt; parameters) {
+<span class="fc" id="L490">        return new InvokeDynamicBytecodeExpression(</span>
+            bootstrapMethod,
+            bootstrapArgs,
+            methodName,
+            returnType,
+            parameters,
+            parameterTypes);
+    }
+
+    //
+    // Arithmetic operations
+    //
+
+    public static BytecodeExpression add(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L504">        return createArithmeticBytecodeExpression(OpCode.IADD, left, right);</span>
+    }
+
+    public static BytecodeExpression subtract(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L508">        return createArithmeticBytecodeExpression(OpCode.ISUB, left, right);</span>
+    }
+
+    public static BytecodeExpression multiply(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L512">        return createArithmeticBytecodeExpression(OpCode.IMUL, left, right);</span>
+    }
+
+    public static BytecodeExpression divide(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L516">        return createArithmeticBytecodeExpression(OpCode.IDIV, left, right);</span>
+    }
+
+    public static BytecodeExpression remainder(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L520">        return createArithmeticBytecodeExpression(OpCode.IREM, left, right);</span>
+    }
+
+    public static BytecodeExpression bitwiseAnd(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L524">        return createArithmeticBytecodeExpression(OpCode.IAND, left, right);</span>
+    }
+
+    public static BytecodeExpression bitwiseOr(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L528">        return createArithmeticBytecodeExpression(OpCode.IOR, left, right);</span>
+    }
+
+    public static BytecodeExpression bitwiseXor(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L532">        return createArithmeticBytecodeExpression(OpCode.IXOR, left, right);</span>
+    }
+
+    public static BytecodeExpression shiftLeft(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L536">        return createArithmeticBytecodeExpression(OpCode.ISHL, left, right);</span>
+    }
+
+    public static BytecodeExpression shiftRight(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L540">        return createArithmeticBytecodeExpression(OpCode.ISHR, left, right);</span>
+    }
+
+    public static BytecodeExpression shiftRightUnsigned(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L544">        return createArithmeticBytecodeExpression(OpCode.IUSHR, left, right);</span>
+    }
+
+    public static BytecodeExpression negate(BytecodeExpression value) {
+<span class="fc" id="L548">        return new NegateBytecodeExpression(value);</span>
+    }
+
+    //
+    // Comparison operations
+    //
+
+    public static BytecodeExpression lessThan(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L556">        return ComparisonBytecodeExpression.lessThan(left, right);</span>
+    }
+
+    public static BytecodeExpression greaterThan(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L560">        return ComparisonBytecodeExpression.greaterThan(left, right);</span>
+    }
+
+    public static BytecodeExpression lessThanOrEqual(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L564">        return ComparisonBytecodeExpression.lessThanOrEqual(left, right);</span>
+    }
+
+    public static BytecodeExpression greaterThanOrEqual(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L568">        return ComparisonBytecodeExpression.greaterThanOrEqual(left, right);</span>
+    }
+
+    public static BytecodeExpression equal(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L572">        return ComparisonBytecodeExpression.equal(left, right);</span>
+    }
+
+    public static BytecodeExpression notEqual(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L576">        return ComparisonBytecodeExpression.notEqual(left, right);</span>
+    }
+
+    //
+    // Null comparison operations
+    //
+
+    public static BytecodeExpression isNull(BytecodeExpression value) {
+<span class="nc" id="L584">        return equal(value, constantNull(value.getType()));</span>
+    }
+
+    public static BytecodeExpression isNotNull(BytecodeExpression value) {
+<span class="nc" id="L588">        return notEqual(value, constantNull(value.getType()));</span>
+    }
+
+    //
+    // Logical binary operations
+    //
+
+    public static BytecodeExpression and(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L596">        return new AndBytecodeExpression(left, right);</span>
+    }
+
+    public static BytecodeExpression or(BytecodeExpression left, BytecodeExpression right) {
+<span class="fc" id="L600">        return new OrBytecodeExpression(left, right);</span>
+    }
+
+    public static BytecodeExpression not(BytecodeExpression value) {
+<span class="fc" id="L604">        return new NotBytecodeExpression(value);</span>
+    }
+
+    //
+    // Complex expressions
+    //
+
+    public static BytecodeExpression inlineIf(BytecodeExpression condition, BytecodeExpression ifTrue,
+        BytecodeExpression ifFalse) {
+<span class="fc" id="L613">        return new InlineIfBytecodeExpression(condition, ifTrue, ifFalse);</span>
+    }
+
+    //
+    // Print
+    //
+    public static BytecodeExpression print(BytecodeExpression variable) {
+<span class="nc" id="L620">        BytecodeExpression out = getStatic(System.class, &quot;out&quot;);</span>
+<span class="nc" id="L621">        return out.invoke(&quot;println&quot;, void.class, variable);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

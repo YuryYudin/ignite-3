@@ -1,0 +1,6 @@
+org/apache/ignite/internal/configuration/processor/Utils.java
+ org.apache.ignite.internal.configuration.processor.Utils
+org/apache/ignite/internal/configuration/processor/ProcessorException.java
+ org.apache.ignite.internal.configuration.processor.ProcessorException
+org/apache/ignite/internal/configuration/processor/Processor.java
+ org.apache.ignite.internal.configuration.processor.Processor

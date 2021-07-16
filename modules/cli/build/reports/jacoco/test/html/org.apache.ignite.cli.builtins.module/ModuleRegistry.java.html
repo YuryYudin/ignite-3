@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModuleRegistry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.builtins.module</a> &gt; <span class="el_source">ModuleRegistry.java</span></div><h1>ModuleRegistry.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.builtins.module;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.apache.ignite.cli.CliPathsConfigLoader;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.apache.ignite.internal.tostring.IgniteToStringInclude;
+import org.apache.ignite.internal.tostring.S;
+
+/**
+ * The registry of installed CLI or Ignite server modules.
+ * Module from the the registry's point of view is a pair of (name -&amp;gt; [artifacts, cliArtifacts]).
+ * Where:
+ * &lt;ul&gt;
+ *     &lt;li&gt;artifacts - is a list of Ignite server node artifacts, which will be used in classpath of any server node.&lt;/li&gt;
+ *     &lt;li&gt;cliArtifacts - is a list of Ignite CLI artifacts, which will be used to lookup CLI extensions.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * Registry persisted on a disk as a JSON file.
+ */
+@Singleton
+public class ModuleRegistry {
+    /** Loader of CLI config with Ignite distributive paths. */
+    private final CliPathsConfigLoader cliPathsCfgLdr;
+
+    /**
+     * Creates module registry instance.
+     *
+     * @param cliPathsCfgLdr Loader of CLI config with Ignite ditributive paths.
+     */
+    @Inject
+<span class="nc" id="L57">    public ModuleRegistry(CliPathsConfigLoader cliPathsCfgLdr) {</span>
+<span class="nc" id="L58">        this.cliPathsCfgLdr = cliPathsCfgLdr;</span>
+<span class="nc" id="L59">    }</span>
+
+    /**
+     * @return Path of registry file.
+     */
+    private Path moduleFile() {
+<span class="nc" id="L65">        return cliPathsCfgLdr.loadIgnitePathsOrThrowError().installedModulesFile();</span>
+    }
+
+    /**
+     * Saves module to module registry.
+     *
+     * @param moduleDefinition Module definition.
+     * @throws IOException If can't save the registry file.
+     */
+    //TODO: IGNITE-14021 write-to-tmp-&gt;move approach should be used to prevent file corruption on accidental exit
+    public void saveModule(ModuleDefinition moduleDefinition) throws IOException {
+<span class="nc" id="L76">        ModuleDefinitionsList moduleDefinitionsList = listInstalled();</span>
+
+<span class="nc" id="L78">        moduleDefinitionsList.modules.add(moduleDefinition);</span>
+
+<span class="nc" id="L80">        ObjectMapper objMapper = new ObjectMapper();</span>
+
+<span class="nc" id="L82">        objMapper.writeValue(moduleFile().toFile(), moduleDefinitionsList);</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Removes module from the registry of installed modules.
+     * Note: artifacts' files will not be removed.
+     * This action only remove module and its dependencies from current classpaths as a result.
+     *
+     * @param name Module name to remove.
+     * @return true if module was removed, false otherwise.
+     * @throws IOException If can't save updated registry file.
+     */
+    //TODO: iIGNITE-14021 write-to-tmp-&gt;move approach should be used to prevent file corruption on accidental exit
+    public boolean removeModule(String name) throws IOException {
+<span class="nc" id="L96">        ModuleDefinitionsList moduleDefinitionsList = listInstalled();</span>
+
+<span class="nc" id="L98">        boolean rmv = moduleDefinitionsList.modules.removeIf(m -&gt; m.name.equals(name));</span>
+
+<span class="nc" id="L100">        ObjectMapper objMapper = new ObjectMapper();</span>
+
+<span class="nc" id="L102">        objMapper.writeValue(moduleFile().toFile(), moduleDefinitionsList);</span>
+
+<span class="nc" id="L104">        return rmv;</span>
+    }
+
+    /**
+     * @return Definitions of installed modules.
+     */
+    public ModuleDefinitionsList listInstalled() {
+<span class="nc" id="L111">        var moduleFileAvailable =</span>
+<span class="nc" id="L112">            cliPathsCfgLdr.loadIgnitePathsConfig()</span>
+<span class="nc" id="L113">                .map(p -&gt; p.installedModulesFile().toFile().exists())</span>
+<span class="nc" id="L114">                .orElse(false);</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (!moduleFileAvailable)</span>
+<span class="nc" id="L117">            return new ModuleDefinitionsList(new ArrayList&lt;&gt;());</span>
+        else {
+<span class="nc" id="L119">            ObjectMapper objMapper = new ObjectMapper();</span>
+
+            try {
+<span class="nc" id="L122">                return objMapper.readValue(</span>
+<span class="nc" id="L123">                    moduleFile().toFile(),</span>
+                    ModuleDefinitionsList.class);
+            }
+<span class="nc" id="L126">            catch (IOException e) {</span>
+<span class="nc" id="L127">                throw new IgniteCLIException(&quot;Can't read lsit of installed modules because of IO error&quot;, e);</span>
+            }
+        }
+    }
+
+    /**
+     * Simple wrapper for a list of modules' definitions.
+     * Wrap it in the form suitable for JSON serialization.
+     */
+    public static class ModuleDefinitionsList {
+        /** Modules list. */
+        public final List&lt;ModuleDefinition&gt; modules;
+
+        /**
+         * Creates modules definitions list.
+         *
+         * @param modules List of definitions to wrap.
+         */
+        @JsonCreator
+        public ModuleDefinitionsList(
+<span class="fc" id="L147">            @JsonProperty(&quot;modules&quot;) List&lt;ModuleDefinition&gt; modules) {</span>
+<span class="fc" id="L148">            this.modules = modules;</span>
+<span class="fc" id="L149">        }</span>
+    }
+
+    /**
+     * Definition of Ignite module. Every module can consist of server, CLI, or both artifacts' lists.
+     */
+    public static class ModuleDefinition {
+        /** Module's name. */
+        @IgniteToStringInclude
+        public final String name;
+
+        /** Module's server artifacts. */
+        @IgniteToStringInclude
+        public final List&lt;Path&gt; artifacts;
+
+        /** Module's CLI artifacts. */
+        @IgniteToStringInclude
+        public final List&lt;Path&gt; cliArtifacts;
+
+        /** Type of module source. */
+        @IgniteToStringInclude
+        public final SourceType type;
+
+        /**
+         * It can be an url, file path, or any other source identificator,
+         * depending on the source type.
+         */
+        public final String src;
+
+        /**
+         * Creates module defition.
+         *
+         * @param name Module name.
+         * @param artifacts Module server artifacts' paths.
+         * @param cliArtifacts Module CLI artifacts' paths.
+         * @param type Source type of the module.
+         * @param src Source string (file path, url, maven coordinates and etc.).
+         */
+        @JsonCreator
+        public ModuleDefinition(
+            @JsonProperty(&quot;name&quot;) String name,
+            @JsonProperty(&quot;artifacts&quot;) List&lt;Path&gt; artifacts,
+            @JsonProperty(&quot;cliArtifacts&quot;) List&lt;Path&gt; cliArtifacts,
+            @JsonProperty(&quot;type&quot;) SourceType type,
+<span class="fc" id="L193">            @JsonProperty(&quot;source&quot;) String src) {</span>
+<span class="fc" id="L194">            this.name = name;</span>
+<span class="fc" id="L195">            this.artifacts = artifacts;</span>
+<span class="fc" id="L196">            this.cliArtifacts = cliArtifacts;</span>
+<span class="fc" id="L197">            this.type = type;</span>
+<span class="fc" id="L198">            this.src = src;</span>
+<span class="fc" id="L199">        }</span>
+
+        /**
+         * @return Server artifacts' paths.
+         */
+        @JsonGetter(&quot;artifacts&quot;)
+        public List&lt;String&gt; artifacts() {
+<span class="nc" id="L206">            return artifacts.stream().map(a -&gt; a.toAbsolutePath().toString()).collect(Collectors.toList());</span>
+        }
+
+        /**
+         * @return CLI artifacts paths.
+         */
+        @JsonGetter(&quot;cliArtifacts&quot;)
+        public List&lt;String&gt; cliArtifacts() {
+<span class="nc" id="L214">            return cliArtifacts.stream().map(a -&gt; a.toAbsolutePath().toString()).collect(Collectors.toList());</span>
+        }
+
+        /** {@inheritDoc} */
+        @Override public String toString() {
+<span class="nc" id="L219">            return S.toString(ModuleDefinition.class, this);</span>
+        }
+    }
+
+    /**
+     * Type of module source.
+     */
+<span class="fc" id="L226">    public enum SourceType {</span>
+        /** Module is an maven artifact. */
+<span class="fc" id="L228">        Maven,</span>
+        /** Module is an builtin module. */
+<span class="fc" id="L230">        Standard</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

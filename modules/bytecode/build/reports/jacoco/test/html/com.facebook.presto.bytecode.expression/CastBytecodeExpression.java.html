@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CastBytecodeExpression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode.expression</a> &gt; <span class="el_source">CastBytecodeExpression.java</span></div><h1>CastBytecodeExpression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode.expression;
+
+import com.facebook.presto.bytecode.BytecodeBlock;
+import com.facebook.presto.bytecode.BytecodeNode;
+import com.facebook.presto.bytecode.BytecodeUtils;
+import com.facebook.presto.bytecode.MethodGenerationContext;
+import com.facebook.presto.bytecode.OpCode;
+import com.facebook.presto.bytecode.ParameterizedType;
+import java.util.List;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
+
+class CastBytecodeExpression
+        extends BytecodeExpression
+{
+<span class="fc" id="L32">    private static final ParameterizedType OBJECT_TYPE = type(Object.class);</span>
+
+    private final BytecodeExpression instance;
+
+    CastBytecodeExpression(BytecodeExpression instance, ParameterizedType type)
+    {
+<span class="fc" id="L38">        super(type);</span>
+
+<span class="fc" id="L40">        this.instance = requireNonNull(instance, &quot;instance is null&quot;);</span>
+
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        checkArgument(type.getPrimitiveType() != void.class, &quot;Type %s can not be cast to %s&quot;, instance.getType(), type);</span>
+
+        // Call generateBytecode to run the validation logic. The result is thrown away.
+        // Duplicating the validation logic here is error-prone and introduces duplicate code.
+<span class="fc" id="L46">        generateBytecode(instance.getType(), getType());</span>
+<span class="fc" id="L47">    }</span>
+
+    @Override
+    public BytecodeNode getBytecode(MethodGenerationContext generationContext)
+    {
+<span class="fc" id="L52">        return new BytecodeBlock()</span>
+<span class="fc" id="L53">                .append(instance.getBytecode(generationContext))</span>
+<span class="fc" id="L54">                .append(generateBytecode(instance.getType(), getType()));</span>
+    }
+
+    private static BytecodeBlock generateBytecode(ParameterizedType sourceType, ParameterizedType targetType)
+    {
+<span class="fc" id="L59">        BytecodeBlock block = new BytecodeBlock();</span>
+
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">        switch (getTypeKind(sourceType)) {</span>
+            case PRIMITIVE:
+<span class="pc bpc" id="L63" title="1 of 4 branches missed.">                switch (getTypeKind(targetType)) {</span>
+                    case PRIMITIVE:
+<span class="fc" id="L65">                        castPrimitiveToPrimitive(block, sourceType.getPrimitiveType(), targetType.getPrimitiveType());</span>
+<span class="fc" id="L66">                        return block;</span>
+                    case BOXED_PRIMITVE:
+<span class="fc bfc" id="L68" title="All 2 branches covered.">                        checkArgument(sourceType.getPrimitiveType() == unwrapPrimitiveType(targetType), &quot;Type %s can not be cast to %s&quot;, sourceType, targetType);</span>
+<span class="fc" id="L69">                        return block.invokeStatic(targetType, &quot;valueOf&quot;, targetType, sourceType);</span>
+                    case OTHER:
+<span class="fc" id="L71">                        checkArgument(OBJECT_TYPE.equals(targetType), &quot;Type %s can not be cast to %s&quot;, sourceType, targetType);</span>
+<span class="fc" id="L72">                        Class&lt;?&gt; sourceClass = sourceType.getPrimitiveType();</span>
+<span class="fc" id="L73">                        return block</span>
+<span class="fc" id="L74">                                .invokeStatic(BytecodeUtils.wrap(sourceClass), &quot;valueOf&quot;, BytecodeUtils.wrap(sourceClass), sourceClass)</span>
+<span class="fc" id="L75">                                .checkCast(targetType);</span>
+                }
+            case BOXED_PRIMITVE:
+<span class="pc bpc" id="L78" title="3 of 4 branches missed.">                switch (getTypeKind(targetType)) {</span>
+                    case PRIMITIVE:
+<span class="fc bfc" id="L80" title="All 2 branches covered.">                        checkArgument(unwrapPrimitiveType(sourceType) == targetType.getPrimitiveType(), &quot;Type %s can not be cast to %s&quot;, sourceType, targetType);</span>
+<span class="fc" id="L81">                        return block.invokeVirtual(sourceType, targetType.getPrimitiveType().getSimpleName() + &quot;Value&quot;, targetType);</span>
+                    case BOXED_PRIMITVE:
+<span class="nc" id="L83">                        checkArgument(sourceType.equals(targetType), &quot;Type %s can not be cast to %s&quot;, sourceType, targetType);</span>
+<span class="nc" id="L84">                        return block;</span>
+                    case OTHER:
+<span class="nc" id="L86">                        return block.checkCast(targetType);</span>
+                }
+            case OTHER:
+<span class="pc bpc" id="L89" title="1 of 3 branches missed.">                switch (getTypeKind(targetType)) {</span>
+                    case PRIMITIVE:
+<span class="fc" id="L91">                        checkArgument(OBJECT_TYPE.equals(sourceType), &quot;Type %s can not be cast to %s&quot;, sourceType, targetType);</span>
+<span class="fc" id="L92">                        return block</span>
+<span class="fc" id="L93">                                .checkCast(BytecodeUtils.wrap(targetType.getPrimitiveType()))</span>
+<span class="fc" id="L94">                                .invokeVirtual(BytecodeUtils.wrap(targetType.getPrimitiveType()), targetType.getPrimitiveType().getSimpleName() + &quot;Value&quot;, targetType.getPrimitiveType());</span>
+                    case BOXED_PRIMITVE:
+                    case OTHER:
+<span class="fc" id="L97">                        return block.checkCast(targetType);</span>
+                }
+        }
+<span class="nc" id="L100">        throw new UnsupportedOperationException(&quot;unexpected enum value&quot;);</span>
+    }
+
+    private static BytecodeBlock castPrimitiveToPrimitive(BytecodeBlock block, Class&lt;?&gt; sourceType, Class&lt;?&gt; targetType)
+    {
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (sourceType == boolean.class) {</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">            if (targetType == boolean.class) {</span>
+<span class="fc" id="L107">                return block;</span>
+            }
+        }
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (sourceType == byte.class) {</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L112">                return block;</span>
+            }
+<span class="fc bfc" id="L114" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L115">                return block;</span>
+            }
+<span class="fc bfc" id="L117" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L118">                return block;</span>
+            }
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L121">                return block;</span>
+            }
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L124">                return block.append(OpCode.I2L);</span>
+            }
+<span class="fc bfc" id="L126" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L127">                return block.append(OpCode.I2F);</span>
+            }
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L130">                return block.append(OpCode.I2D);</span>
+            }
+        }
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (sourceType == char.class) {</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L135">                return block.append(OpCode.I2B);</span>
+            }
+<span class="fc bfc" id="L137" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L138">                return block;</span>
+            }
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L141">                return block;</span>
+            }
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L144">                return block;</span>
+            }
+<span class="fc bfc" id="L146" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L147">                return block.append(OpCode.I2L);</span>
+            }
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L150">                return block.append(OpCode.I2F);</span>
+            }
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L153">                return block.append(OpCode.I2D);</span>
+            }
+        }
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (sourceType == short.class) {</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L158">                return block.append(OpCode.I2B);</span>
+            }
+<span class="fc bfc" id="L160" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L161">                return block.append(OpCode.I2C);</span>
+            }
+<span class="fc bfc" id="L163" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L164">                return block;</span>
+            }
+<span class="fc bfc" id="L166" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L167">                return block;</span>
+            }
+<span class="fc bfc" id="L169" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L170">                return block.append(OpCode.I2L);</span>
+            }
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L173">                return block.append(OpCode.I2F);</span>
+            }
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L176">                return block.append(OpCode.I2D);</span>
+            }
+        }
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (sourceType == int.class) {</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">            if (targetType == boolean.class) {</span>
+<span class="nc" id="L181">                return block;</span>
+            }
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L184">                return block.append(OpCode.I2B);</span>
+            }
+<span class="fc bfc" id="L186" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L187">                return block.append(OpCode.I2C);</span>
+            }
+<span class="fc bfc" id="L189" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L190">                return block.append(OpCode.I2S);</span>
+            }
+<span class="fc bfc" id="L192" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L193">                return block;</span>
+            }
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L196">                return block.append(OpCode.I2L);</span>
+            }
+<span class="fc bfc" id="L198" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L199">                return block.append(OpCode.I2F);</span>
+            }
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L202">                return block.append(OpCode.I2D);</span>
+            }
+        }
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (sourceType == long.class) {</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L207">                return block.append(OpCode.L2I).append(OpCode.I2B);</span>
+            }
+<span class="fc bfc" id="L209" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L210">                return block.append(OpCode.L2I).append(OpCode.I2C);</span>
+            }
+<span class="fc bfc" id="L212" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L213">                return block.append(OpCode.L2I).append(OpCode.I2S);</span>
+            }
+<span class="fc bfc" id="L215" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L216">                return block.append(OpCode.L2I);</span>
+            }
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L219">                return block;</span>
+            }
+<span class="fc bfc" id="L221" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L222">                return block.append(OpCode.L2F);</span>
+            }
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L225">                return block.append(OpCode.L2D);</span>
+            }
+        }
+<span class="fc bfc" id="L228" title="All 2 branches covered.">        if (sourceType == float.class) {</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L230">                return block.append(OpCode.F2I).append(OpCode.I2B);</span>
+            }
+<span class="fc bfc" id="L232" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L233">                return block.append(OpCode.F2I).append(OpCode.I2C);</span>
+            }
+<span class="fc bfc" id="L235" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L236">                return block.append(OpCode.F2I).append(OpCode.I2S);</span>
+            }
+<span class="fc bfc" id="L238" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L239">                return block.append(OpCode.F2I);</span>
+            }
+<span class="fc bfc" id="L241" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L242">                return block.append(OpCode.F2L);</span>
+            }
+<span class="fc bfc" id="L244" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L245">                return block;</span>
+            }
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L248">                return block.append(OpCode.F2D);</span>
+            }
+        }
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">        if (sourceType == double.class) {</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">            if (targetType == byte.class) {</span>
+<span class="fc" id="L253">                return block.append(OpCode.D2I).append(OpCode.I2B);</span>
+            }
+<span class="fc bfc" id="L255" title="All 2 branches covered.">            if (targetType == char.class) {</span>
+<span class="fc" id="L256">                return block.append(OpCode.D2I).append(OpCode.I2C);</span>
+            }
+<span class="fc bfc" id="L258" title="All 2 branches covered.">            if (targetType == short.class) {</span>
+<span class="fc" id="L259">                return block.append(OpCode.D2I).append(OpCode.I2S);</span>
+            }
+<span class="fc bfc" id="L261" title="All 2 branches covered.">            if (targetType == int.class) {</span>
+<span class="fc" id="L262">                return block.append(OpCode.D2I);</span>
+            }
+<span class="fc bfc" id="L264" title="All 2 branches covered.">            if (targetType == long.class) {</span>
+<span class="fc" id="L265">                return block.append(OpCode.D2L);</span>
+            }
+<span class="fc bfc" id="L267" title="All 2 branches covered.">            if (targetType == float.class) {</span>
+<span class="fc" id="L268">                return block.append(OpCode.D2F);</span>
+            }
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">            if (targetType == double.class) {</span>
+<span class="fc" id="L271">                return block;</span>
+            }
+        }
+<span class="nc" id="L274">        throw new IllegalArgumentException(format(&quot;Type %s can not be cast to %s&quot;, sourceType, targetType));</span>
+    }
+
+    private static TypeKind getTypeKind(ParameterizedType type)
+    {
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        if (type.isPrimitive()) {</span>
+<span class="fc" id="L280">            return TypeKind.PRIMITIVE;</span>
+        }
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        if (unwrapPrimitiveType(type) != null) {</span>
+<span class="fc" id="L283">            return TypeKind.BOXED_PRIMITVE;</span>
+        }
+<span class="fc" id="L285">        return TypeKind.OTHER;</span>
+    }
+
+    private static Class&lt;?&gt; unwrapPrimitiveType(ParameterizedType boxedPrimitiveType)
+    {
+<span class="fc bfc" id="L290" title="All 9 branches covered.">        switch (boxedPrimitiveType.getJavaClassName()) {</span>
+            case &quot;java.lang.Boolean&quot;:
+<span class="fc" id="L292">                return boolean.class;</span>
+            case &quot;java.lang.Byte&quot;:
+<span class="fc" id="L294">                return byte.class;</span>
+            case &quot;java.lang.Character&quot;:
+<span class="fc" id="L296">                return char.class;</span>
+            case &quot;java.lang.Short&quot;:
+<span class="fc" id="L298">                return short.class;</span>
+            case &quot;java.lang.Integer&quot;:
+<span class="fc" id="L300">                return int.class;</span>
+            case &quot;java.lang.Long&quot;:
+<span class="fc" id="L302">                return long.class;</span>
+            case &quot;java.lang.Float&quot;:
+<span class="fc" id="L304">                return float.class;</span>
+            case &quot;java.lang.Double&quot;:
+<span class="fc" id="L306">                return double.class;</span>
+            default:
+<span class="fc" id="L308">                return null;</span>
+        }
+    }
+
+    @Override
+    protected String formatOneLine()
+    {
+<span class="fc" id="L315">        return &quot;((&quot; + getType().getSimpleName() + &quot;) &quot; + instance + &quot;)&quot;;</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes()
+    {
+<span class="nc" id="L321">        return List.of(instance);</span>
+    }
+
+<span class="fc" id="L324">    private enum TypeKind</span>
+    {
+<span class="fc" id="L326">        PRIMITIVE, BOXED_PRIMITVE, OTHER</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

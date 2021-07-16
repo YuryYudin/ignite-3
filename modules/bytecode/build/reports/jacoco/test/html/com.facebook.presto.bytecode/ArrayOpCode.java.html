@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArrayOpCode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">ArrayOpCode.java</span></div><h1>ArrayOpCode.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.Nullable;
+
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_BOOLEAN;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_BYTE;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_CHAR;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_DOUBLE;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_FLOAT;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_INT;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_LONG;
+import static com.facebook.presto.bytecode.ArrayOpCode.AType.T_SHORT;
+import static com.facebook.presto.bytecode.OpCode.AALOAD;
+import static com.facebook.presto.bytecode.OpCode.AASTORE;
+import static com.facebook.presto.bytecode.OpCode.BALOAD;
+import static com.facebook.presto.bytecode.OpCode.BASTORE;
+import static com.facebook.presto.bytecode.OpCode.CALOAD;
+import static com.facebook.presto.bytecode.OpCode.CASTORE;
+import static com.facebook.presto.bytecode.OpCode.DALOAD;
+import static com.facebook.presto.bytecode.OpCode.DASTORE;
+import static com.facebook.presto.bytecode.OpCode.FALOAD;
+import static com.facebook.presto.bytecode.OpCode.FASTORE;
+import static com.facebook.presto.bytecode.OpCode.IALOAD;
+import static com.facebook.presto.bytecode.OpCode.IASTORE;
+import static com.facebook.presto.bytecode.OpCode.LALOAD;
+import static com.facebook.presto.bytecode.OpCode.LASTORE;
+import static com.facebook.presto.bytecode.OpCode.SALOAD;
+import static com.facebook.presto.bytecode.OpCode.SASTORE;
+import static java.util.Arrays.stream;
+import static java.util.Objects.requireNonNull;
+
+<span class="fc" id="L48">public enum ArrayOpCode {</span>
+<span class="fc" id="L49">    NOT_PRIMITIVE(null, AALOAD, AASTORE, null),</span>
+<span class="fc" id="L50">    BYTE(byte.class, BALOAD, BASTORE, T_BYTE),</span>
+<span class="fc" id="L51">    BOOLEAN(boolean.class, BALOAD, BASTORE, T_BOOLEAN),</span>
+<span class="fc" id="L52">    CHAR(char.class, CALOAD, CASTORE, T_CHAR),</span>
+<span class="fc" id="L53">    SHORT(short.class, SALOAD, SASTORE, T_SHORT),</span>
+<span class="fc" id="L54">    INT(int.class, IALOAD, IASTORE, T_INT),</span>
+<span class="fc" id="L55">    LONG(long.class, LALOAD, LASTORE, T_LONG),</span>
+<span class="fc" id="L56">    FLOAT(float.class, FALOAD, FASTORE, T_FLOAT),</span>
+<span class="fc" id="L57">    DOUBLE(double.class, DALOAD, DASTORE, T_DOUBLE);</span>
+
+    private final OpCode load;
+    private final OpCode store;
+    private final AType atype;
+    private final Class&lt;?&gt; type;
+
+<span class="fc" id="L64">    private static final Map&lt;Class&lt;?&gt;, ArrayOpCode&gt; arrayOpCodeMap = initializeArrayOpCodeMap();</span>
+
+<span class="fc" id="L66">    ArrayOpCode(@Nullable Class&lt;?&gt; clazz, OpCode load, OpCode store, @Nullable AType atype) {</span>
+<span class="fc" id="L67">        this.type = clazz;</span>
+<span class="fc" id="L68">        this.load = requireNonNull(load, &quot;load is null&quot;);</span>
+<span class="fc" id="L69">        this.store = requireNonNull(store, &quot;store is null&quot;);</span>
+<span class="fc" id="L70">        this.atype = atype;</span>
+<span class="fc" id="L71">    }</span>
+
+    public OpCode getLoad() {
+<span class="fc" id="L74">        return load;</span>
+    }
+
+    public OpCode getStore() {
+<span class="fc" id="L78">        return store;</span>
+    }
+
+    public int getAtype() {
+<span class="fc" id="L82">        return atype.getType();</span>
+    }
+
+    public Class&lt;?&gt; getType() {
+<span class="fc" id="L86">        return type;</span>
+    }
+
+    public static ArrayOpCode getArrayOpCode(ParameterizedType type) {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (!type.isPrimitive()) {</span>
+<span class="fc" id="L91">            return NOT_PRIMITIVE;</span>
+        }
+<span class="fc" id="L93">        ArrayOpCode arrayOpCode = arrayOpCodeMap.get(type.getPrimitiveType());</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (arrayOpCode == null) {</span>
+<span class="nc" id="L95">            throw new IllegalArgumentException(&quot;unsupported primitive type &quot; + type);</span>
+        }
+<span class="fc" id="L97">        return arrayOpCode;</span>
+    }
+
+    static Map&lt;Class&lt;?&gt;, ArrayOpCode&gt; initializeArrayOpCodeMap() {
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        return stream(values()).filter(o -&gt; o.getType() != null).collect(Collectors.toMap(ArrayOpCode::getType, Function.identity()));</span>
+    }
+
+<span class="fc" id="L104">    enum AType {</span>
+<span class="fc" id="L105">        T_BOOLEAN(4),</span>
+<span class="fc" id="L106">        T_CHAR(5),</span>
+<span class="fc" id="L107">        T_FLOAT(6),</span>
+<span class="fc" id="L108">        T_DOUBLE(7),</span>
+<span class="fc" id="L109">        T_BYTE(8),</span>
+<span class="fc" id="L110">        T_SHORT(9),</span>
+<span class="fc" id="L111">        T_INT(10),</span>
+<span class="fc" id="L112">        T_LONG(11);</span>
+
+        private final int type;
+
+<span class="fc" id="L116">        AType(int type) {</span>
+<span class="fc" id="L117">            this.type = type;</span>
+<span class="fc" id="L118">        }</span>
+
+        int getType() {
+<span class="fc" id="L121">            return type;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

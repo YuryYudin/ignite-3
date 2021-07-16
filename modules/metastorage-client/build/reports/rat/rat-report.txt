@@ -1,0 +1,45 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:50+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 19
+
+Apache Licensed: 19
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/integrationTest/java/org/apache/ignite/internal/metastorage/client/ITMetaStorageServiceTest.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/Operation.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/MetaStorageServiceImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/EntryImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/Condition.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/WatchListener.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/Operations.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/EntryEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/CompactedException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/Entry.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/MetaStorageService.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/Conditions.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/CursorImpl.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/OperationTimeoutException.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/src/main/java/org/apache/ignite/internal/metastorage/client/WatchEvent.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/metastorage-client/pom.xml
+ 
+*****************************************************

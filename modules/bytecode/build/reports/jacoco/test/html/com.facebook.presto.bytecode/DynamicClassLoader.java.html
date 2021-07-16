@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DynamicClassLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">DynamicClassLoader.java</span></div><h1>DynamicClassLoader.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import java.lang.invoke.MethodHandle;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+
+public class DynamicClassLoader
+        extends ClassLoader
+{
+<span class="fc" id="L30">    private final ConcurrentMap&lt;String, byte[]&gt; pendingClasses = new ConcurrentHashMap&lt;&gt;();</span>
+    private final Map&lt;Long, MethodHandle&gt; callSiteBindings;
+    private final Optional&lt;ClassLoader&gt; overrideClassLoader;
+
+    public DynamicClassLoader(ClassLoader parentClassLoader)
+    {
+<span class="fc" id="L36">        this(parentClassLoader, Map.of());</span>
+<span class="fc" id="L37">    }</span>
+
+    public DynamicClassLoader(ClassLoader parentClassLoader, Map&lt;Long, MethodHandle&gt; callSiteBindings)
+    {
+<span class="fc" id="L41">        super(parentClassLoader);</span>
+<span class="fc" id="L42">        this.callSiteBindings = Map.copyOf(callSiteBindings);</span>
+<span class="fc" id="L43">        this.overrideClassLoader = Optional.empty();</span>
+<span class="fc" id="L44">    }</span>
+
+    public Class&lt;?&gt; defineClass(String className, byte[] bytecode)
+    {
+<span class="fc" id="L48">        return defineClass(className, bytecode, 0, bytecode.length);</span>
+    }
+
+    public Map&lt;String, Class&lt;?&gt;&gt; defineClasses(Map&lt;String, byte[]&gt; newClasses)
+    {
+<span class="fc" id="L53">        final Set&lt;String&gt; conflicts = newClasses.keySet().stream().filter(pendingClasses::containsKey).collect(Collectors.toSet());</span>
+
+<span class="fc" id="L55">        checkArgument(conflicts.isEmpty(), &quot;The classes %s have already been defined&quot;, conflicts);</span>
+
+<span class="fc" id="L57">        pendingClasses.putAll(newClasses);</span>
+        try {
+<span class="fc" id="L59">            Map&lt;String, Class&lt;?&gt;&gt; classes = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (String className : newClasses.keySet()) {</span>
+                try {
+<span class="fc" id="L62">                    Class&lt;?&gt; clazz = loadClass(className);</span>
+<span class="fc" id="L63">                    classes.put(className, clazz);</span>
+                }
+<span class="nc" id="L65">                catch (ClassNotFoundException e) {</span>
+                    // this should never happen
+<span class="nc" id="L67">                    throw new RuntimeException(e);</span>
+<span class="fc" id="L68">                }</span>
+<span class="fc" id="L69">            }</span>
+<span class="fc" id="L70">            return classes;</span>
+        }
+        finally {
+<span class="fc" id="L73">            pendingClasses.keySet().removeAll(newClasses.keySet());</span>
+        }
+    }
+
+    public Map&lt;Long, MethodHandle&gt; getCallSiteBindings()
+    {
+<span class="nc" id="L79">        return callSiteBindings;</span>
+    }
+
+    @Override
+    protected Class&lt;?&gt; findClass(String name)
+            throws ClassNotFoundException
+    {
+<span class="fc" id="L86">        byte[] bytecode = pendingClasses.get(name);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (bytecode == null) {</span>
+<span class="fc" id="L88">            throw new ClassNotFoundException(name);</span>
+        }
+
+<span class="fc" id="L91">        return defineClass(name, bytecode);</span>
+    }
+
+    @Override
+    protected Class&lt;?&gt; loadClass(String name, boolean resolve)
+            throws ClassNotFoundException
+    {
+        // grab the magic lock
+<span class="fc" id="L99">        synchronized (getClassLoadingLock(name)) {</span>
+            // Check if class is in the loaded classes cache
+<span class="fc" id="L101">            Class&lt;?&gt; cachedClass = findLoadedClass(name);</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">            if (cachedClass != null) {</span>
+<span class="nc" id="L103">                return resolveClass(cachedClass, resolve);</span>
+            }
+
+            try {
+<span class="fc" id="L107">                Class&lt;?&gt; clazz = findClass(name);</span>
+<span class="fc" id="L108">                return resolveClass(clazz, resolve);</span>
+            }
+<span class="fc" id="L110">            catch (ClassNotFoundException ignored) {</span>
+                // not a local class
+            }
+
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">            if (overrideClassLoader.isPresent()) {</span>
+                try {
+<span class="nc" id="L116">                    return resolveClass(overrideClassLoader.get().loadClass(name), resolve);</span>
+                }
+<span class="nc" id="L118">                catch (ClassNotFoundException e) {</span>
+                    // not in override loader
+                }
+            }
+
+<span class="fc" id="L123">            Class&lt;?&gt; clazz = getParent().loadClass(name);</span>
+<span class="fc" id="L124">            return resolveClass(clazz, resolve);</span>
+        }
+    }
+
+    private Class&lt;?&gt; resolveClass(Class&lt;?&gt; clazz, boolean resolve)
+    {
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        if (resolve) {</span>
+<span class="nc" id="L131">            resolveClass(clazz);</span>
+        }
+<span class="fc" id="L133">        return clazz;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

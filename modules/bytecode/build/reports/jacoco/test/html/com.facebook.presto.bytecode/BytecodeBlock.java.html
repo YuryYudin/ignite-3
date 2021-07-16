@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BytecodeBlock.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">bytecode</a> &gt; <a href="index.source.html" class="el_package">com.facebook.presto.bytecode</a> &gt; <span class="el_source">BytecodeBlock.java</span></div><h1>BytecodeBlock.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.facebook.presto.bytecode;
+
+import com.facebook.presto.bytecode.debug.LineNumberNode;
+import com.facebook.presto.bytecode.instruction.Constant;
+import com.facebook.presto.bytecode.instruction.InvokeInstruction;
+import com.facebook.presto.bytecode.instruction.JumpInstruction;
+import com.facebook.presto.bytecode.instruction.LabelNode;
+import com.facebook.presto.bytecode.instruction.TypeInstruction;
+import com.facebook.presto.bytecode.instruction.VariableInstruction;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.objectweb.asm.MethodVisitor;
+
+import static com.facebook.presto.bytecode.Access.STATIC;
+import static com.facebook.presto.bytecode.BytecodeUtils.checkArgument;
+import static com.facebook.presto.bytecode.ParameterizedType.type;
+import static com.facebook.presto.bytecode.instruction.Constant.loadBoolean;
+import static com.facebook.presto.bytecode.instruction.Constant.loadClass;
+import static com.facebook.presto.bytecode.instruction.Constant.loadDouble;
+import static com.facebook.presto.bytecode.instruction.Constant.loadFloat;
+import static com.facebook.presto.bytecode.instruction.Constant.loadInt;
+import static com.facebook.presto.bytecode.instruction.Constant.loadLong;
+import static com.facebook.presto.bytecode.instruction.Constant.loadNumber;
+import static com.facebook.presto.bytecode.instruction.FieldInstruction.getFieldInstruction;
+import static com.facebook.presto.bytecode.instruction.FieldInstruction.getStaticInstruction;
+import static com.facebook.presto.bytecode.instruction.FieldInstruction.putFieldInstruction;
+import static com.facebook.presto.bytecode.instruction.FieldInstruction.putStaticInstruction;
+import static com.facebook.presto.bytecode.instruction.TypeInstruction.cast;
+import static com.facebook.presto.bytecode.instruction.TypeInstruction.instanceOf;
+import static com.facebook.presto.bytecode.instruction.VariableInstruction.loadVariable;
+import static com.facebook.presto.bytecode.instruction.VariableInstruction.storeVariable;
+
+@SuppressWarnings(&quot;UnusedDeclaration&quot;)
+<span class="fc" id="L53">public class BytecodeBlock</span>
+    implements BytecodeNode {
+<span class="fc" id="L55">    private final List&lt;BytecodeNode&gt; nodes = new ArrayList&lt;&gt;();</span>
+
+    private String description;
+<span class="fc" id="L58">    private int currentLineNumber = -1;</span>
+
+    public String getDescription() {
+<span class="fc" id="L61">        return description;</span>
+    }
+
+    public BytecodeBlock setDescription(String description) {
+<span class="nc" id="L65">        this.description = description;</span>
+<span class="nc" id="L66">        return this;</span>
+    }
+
+    @Override
+    public List&lt;BytecodeNode&gt; getChildNodes() {
+<span class="fc" id="L71">        return List.copyOf(nodes);</span>
+    }
+
+    public BytecodeBlock append(BytecodeNode node) {
+<span class="fc" id="L75">        nodes.add(node);</span>
+<span class="fc" id="L76">        return this;</span>
+    }
+
+    public BytecodeBlock comment(String comment) {
+<span class="nc" id="L80">        nodes.add(new Comment(comment));</span>
+<span class="nc" id="L81">        return this;</span>
+    }
+
+    public BytecodeBlock comment(String comment, Object... args) {
+<span class="nc" id="L85">        nodes.add(new Comment(String.format(comment, args)));</span>
+<span class="nc" id="L86">        return this;</span>
+    }
+
+    public boolean isEmpty() {
+<span class="nc" id="L90">        return nodes.isEmpty();</span>
+    }
+
+    public BytecodeBlock visitLabel(LabelNode label) {
+<span class="fc" id="L94">        nodes.add(label);</span>
+<span class="fc" id="L95">        return this;</span>
+    }
+
+    public BytecodeBlock gotoLabel(LabelNode label) {
+<span class="fc" id="L99">        nodes.add(JumpInstruction.jump(label));</span>
+<span class="fc" id="L100">        return this;</span>
+    }
+
+    public BytecodeBlock ifFalseGoto(LabelNode label) {
+<span class="fc" id="L104">        return ifZeroGoto(label);</span>
+    }
+
+    public BytecodeBlock ifTrueGoto(LabelNode label) {
+<span class="fc" id="L108">        return ifNotZeroGoto(label);</span>
+    }
+
+    public BytecodeBlock ifZeroGoto(LabelNode label) {
+<span class="fc" id="L112">        nodes.add(JumpInstruction.jumpIfEqualZero(label));</span>
+<span class="fc" id="L113">        return this;</span>
+    }
+
+    public BytecodeBlock ifNotZeroGoto(LabelNode label) {
+<span class="fc" id="L117">        nodes.add(JumpInstruction.jumpIfNotEqualZero(label));</span>
+<span class="fc" id="L118">        return this;</span>
+    }
+
+    public BytecodeBlock ifNullGoto(LabelNode label) {
+<span class="nc" id="L122">        nodes.add(JumpInstruction.jumpIfNull(label));</span>
+<span class="nc" id="L123">        return this;</span>
+    }
+
+    public BytecodeBlock ifNotNullGoto(LabelNode label) {
+<span class="nc" id="L127">        nodes.add(JumpInstruction.jumpIfNotNull(label));</span>
+<span class="nc" id="L128">        return this;</span>
+    }
+
+    public BytecodeBlock intAdd() {
+<span class="nc" id="L132">        nodes.add(OpCode.IADD);</span>
+<span class="nc" id="L133">        return this;</span>
+    }
+
+    public BytecodeBlock longAdd() {
+<span class="nc" id="L137">        nodes.add(OpCode.LADD);</span>
+<span class="nc" id="L138">        return this;</span>
+    }
+
+    public BytecodeBlock longCompare() {
+<span class="nc" id="L142">        nodes.add(OpCode.LCMP);</span>
+<span class="nc" id="L143">        return this;</span>
+    }
+
+    /**
+     * Compare two doubles. If either is NaN comparison is -1.
+     */
+    public BytecodeBlock doubleCompareNanLess() {
+<span class="nc" id="L150">        nodes.add(OpCode.DCMPL);</span>
+<span class="nc" id="L151">        return this;</span>
+    }
+
+    /**
+     * Compare two doubles. If either is NaN comparison is 1.
+     */
+    public BytecodeBlock doubleCompareNanGreater() {
+<span class="nc" id="L158">        nodes.add(OpCode.DCMPG);</span>
+<span class="nc" id="L159">        return this;</span>
+    }
+
+    public BytecodeBlock intLeftShift() {
+<span class="nc" id="L163">        nodes.add(OpCode.ISHL);</span>
+<span class="nc" id="L164">        return this;</span>
+    }
+
+    public BytecodeBlock intRightShift() {
+<span class="nc" id="L168">        nodes.add(OpCode.ISHR);</span>
+<span class="nc" id="L169">        return this;</span>
+    }
+
+    public BytecodeBlock longLeftShift() {
+<span class="nc" id="L173">        nodes.add(OpCode.LSHL);</span>
+<span class="nc" id="L174">        return this;</span>
+    }
+
+    public BytecodeBlock longRightShift() {
+<span class="nc" id="L178">        nodes.add(OpCode.LSHR);</span>
+<span class="nc" id="L179">        return this;</span>
+    }
+
+    public BytecodeBlock unsignedIntRightShift() {
+<span class="nc" id="L183">        nodes.add(OpCode.IUSHR);</span>
+<span class="nc" id="L184">        return this;</span>
+    }
+
+    public BytecodeBlock unsignedLongRightShift() {
+<span class="nc" id="L188">        nodes.add(OpCode.LUSHR);</span>
+<span class="nc" id="L189">        return this;</span>
+    }
+
+    public BytecodeBlock intBitAnd() {
+<span class="nc" id="L193">        nodes.add(OpCode.IAND);</span>
+<span class="nc" id="L194">        return this;</span>
+    }
+
+    public BytecodeBlock intBitOr() {
+<span class="nc" id="L198">        nodes.add(OpCode.IOR);</span>
+<span class="nc" id="L199">        return this;</span>
+    }
+
+    public BytecodeBlock intBitXor() {
+<span class="nc" id="L203">        nodes.add(OpCode.IXOR);</span>
+<span class="nc" id="L204">        return this;</span>
+    }
+
+    public BytecodeBlock longBitAnd() {
+<span class="nc" id="L208">        nodes.add(OpCode.LAND);</span>
+<span class="nc" id="L209">        return this;</span>
+    }
+
+    public BytecodeBlock longBitOr() {
+<span class="nc" id="L213">        nodes.add(OpCode.LOR);</span>
+<span class="nc" id="L214">        return this;</span>
+    }
+
+    public BytecodeBlock longBitXor() {
+<span class="nc" id="L218">        nodes.add(OpCode.LXOR);</span>
+<span class="nc" id="L219">        return this;</span>
+    }
+
+    public BytecodeBlock intNegate() {
+<span class="nc" id="L223">        nodes.add(OpCode.INEG);</span>
+<span class="nc" id="L224">        return this;</span>
+    }
+
+    public BytecodeBlock intToLong() {
+<span class="nc" id="L228">        nodes.add(OpCode.I2L);</span>
+<span class="nc" id="L229">        return this;</span>
+    }
+
+    public BytecodeBlock longNegate() {
+<span class="nc" id="L233">        nodes.add(OpCode.LNEG);</span>
+<span class="nc" id="L234">        return this;</span>
+    }
+
+    public BytecodeBlock longToInt() {
+<span class="nc" id="L238">        nodes.add(OpCode.L2I);</span>
+<span class="nc" id="L239">        return this;</span>
+    }
+
+    public BytecodeBlock isInstanceOf(Class&lt;?&gt; type) {
+<span class="nc" id="L243">        nodes.add(instanceOf(type));</span>
+<span class="nc" id="L244">        return this;</span>
+    }
+
+    public BytecodeBlock isInstanceOf(ParameterizedType type) {
+<span class="nc" id="L248">        nodes.add(instanceOf(type));</span>
+<span class="nc" id="L249">        return this;</span>
+    }
+
+    public BytecodeBlock checkCast(Class&lt;?&gt; type) {
+<span class="fc" id="L253">        nodes.add(cast(type));</span>
+<span class="fc" id="L254">        return this;</span>
+    }
+
+    public BytecodeBlock checkCast(ParameterizedType type) {
+<span class="fc" id="L258">        nodes.add(cast(type));</span>
+<span class="fc" id="L259">        return this;</span>
+    }
+
+    public BytecodeBlock invokeStatic(Method method) {
+<span class="nc" id="L263">        nodes.add(InvokeInstruction.invokeStatic(method));</span>
+<span class="nc" id="L264">        return this;</span>
+    }
+
+    public BytecodeBlock invokeStatic(MethodDefinition method) {
+<span class="nc" id="L268">        nodes.add(InvokeInstruction.invokeStatic(method));</span>
+<span class="nc" id="L269">        return this;</span>
+    }
+
+    public BytecodeBlock invokeStatic(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType, Class&lt;?&gt;... parameterTypes) {
+<span class="fc" id="L273">        nodes.add(InvokeInstruction.invokeStatic(type, name, returnType, parameterTypes));</span>
+<span class="fc" id="L274">        return this;</span>
+    }
+
+    public BytecodeBlock invokeStatic(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L279">        nodes.add(InvokeInstruction.invokeStatic(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L280">        return this;</span>
+    }
+
+    public BytecodeBlock invokeStatic(ParameterizedType type, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="fc" id="L285">        nodes.add(InvokeInstruction.invokeStatic(type, name, returnType, parameterTypes));</span>
+<span class="fc" id="L286">        return this;</span>
+    }
+
+    public BytecodeBlock invokeStatic(ParameterizedType type, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L291">        nodes.add(InvokeInstruction.invokeStatic(type, name, returnType, parameterTypes));</span>
+<span class="fc" id="L292">        return this;</span>
+    }
+
+    public BytecodeBlock invokeVirtual(Method method) {
+<span class="nc" id="L296">        nodes.add(InvokeInstruction.invokeVirtual(method));</span>
+<span class="nc" id="L297">        return this;</span>
+    }
+
+    public BytecodeBlock invokeVirtual(MethodDefinition method) {
+<span class="nc" id="L301">        nodes.add(InvokeInstruction.invokeVirtual(method));</span>
+<span class="nc" id="L302">        return this;</span>
+    }
+
+    public BytecodeBlock invokeVirtual(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType, Class&lt;?&gt;... parameterTypes) {
+<span class="fc" id="L306">        nodes.add(InvokeInstruction.invokeVirtual(type, name, returnType, parameterTypes));</span>
+<span class="fc" id="L307">        return this;</span>
+    }
+
+    public BytecodeBlock invokeVirtual(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L312">        nodes.add(InvokeInstruction.invokeVirtual(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L313">        return this;</span>
+    }
+
+    public BytecodeBlock invokeVirtual(ParameterizedType type, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="fc" id="L318">        nodes.add(InvokeInstruction.invokeVirtual(type, name, returnType, parameterTypes));</span>
+<span class="fc" id="L319">        return this;</span>
+    }
+
+    public BytecodeBlock invokeVirtual(ParameterizedType type, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L324">        nodes.add(InvokeInstruction.invokeVirtual(type, name, returnType, parameterTypes));</span>
+<span class="fc" id="L325">        return this;</span>
+    }
+
+    public BytecodeBlock invokeInterface(Method method) {
+<span class="nc" id="L329">        nodes.add(InvokeInstruction.invokeInterface(method));</span>
+<span class="nc" id="L330">        return this;</span>
+    }
+
+    public BytecodeBlock invokeInterface(MethodDefinition method) {
+<span class="nc" id="L334">        nodes.add(InvokeInstruction.invokeInterface(method));</span>
+<span class="nc" id="L335">        return this;</span>
+    }
+
+    public BytecodeBlock invokeInterface(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType, Class&lt;?&gt;... parameterTypes) {
+<span class="nc" id="L339">        nodes.add(InvokeInstruction.invokeInterface(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L340">        return this;</span>
+    }
+
+    public BytecodeBlock invokeInterface(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L345">        nodes.add(InvokeInstruction.invokeInterface(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L346">        return this;</span>
+    }
+
+    public BytecodeBlock invokeInterface(ParameterizedType type, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="nc" id="L351">        nodes.add(InvokeInstruction.invokeInterface(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L352">        return this;</span>
+    }
+
+    public BytecodeBlock invokeInterface(ParameterizedType type, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="nc" id="L357">        nodes.add(InvokeInstruction.invokeInterface(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L358">        return this;</span>
+    }
+
+    public BytecodeBlock invokeConstructor(Constructor&lt;?&gt; constructor) {
+<span class="nc" id="L362">        nodes.add(InvokeInstruction.invokeConstructor(constructor));</span>
+<span class="nc" id="L363">        return this;</span>
+    }
+
+    public BytecodeBlock invokeConstructor(Class&lt;?&gt; type, Class&lt;?&gt;... parameterTypes) {
+<span class="nc" id="L367">        nodes.add(InvokeInstruction.invokeConstructor(type, parameterTypes));</span>
+<span class="nc" id="L368">        return this;</span>
+    }
+
+    public BytecodeBlock invokeConstructor(Class&lt;?&gt; type, Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L372">        nodes.add(InvokeInstruction.invokeConstructor(type, parameterTypes));</span>
+<span class="nc" id="L373">        return this;</span>
+    }
+
+    public BytecodeBlock invokeConstructor(ParameterizedType type, ParameterizedType... parameterTypes) {
+<span class="nc" id="L377">        nodes.add(InvokeInstruction.invokeConstructor(type, parameterTypes));</span>
+<span class="nc" id="L378">        return this;</span>
+    }
+
+    public BytecodeBlock invokeConstructor(ParameterizedType type, Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="fc" id="L382">        nodes.add(InvokeInstruction.invokeConstructor(type, parameterTypes));</span>
+<span class="fc" id="L383">        return this;</span>
+    }
+
+    public BytecodeBlock invokeSpecial(Method method) {
+<span class="nc" id="L387">        nodes.add(InvokeInstruction.invokeSpecial(method));</span>
+<span class="nc" id="L388">        return this;</span>
+    }
+
+    public BytecodeBlock invokeSpecial(MethodDefinition method) {
+<span class="nc" id="L392">        nodes.add(InvokeInstruction.invokeSpecial(method));</span>
+<span class="nc" id="L393">        return this;</span>
+    }
+
+    public BytecodeBlock invokeSpecial(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType, Class&lt;?&gt;... parameterTypes) {
+<span class="nc" id="L397">        nodes.add(InvokeInstruction.invokeSpecial(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L398">        return this;</span>
+    }
+
+    public BytecodeBlock invokeSpecial(Class&lt;?&gt; type, String name, Class&lt;?&gt; returnType,
+        Collection&lt;Class&lt;?&gt;&gt; parameterTypes) {
+<span class="nc" id="L403">        nodes.add(InvokeInstruction.invokeSpecial(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L404">        return this;</span>
+    }
+
+    public BytecodeBlock invokeSpecial(ParameterizedType type, String name, ParameterizedType returnType,
+        ParameterizedType... parameterTypes) {
+<span class="nc" id="L409">        nodes.add(InvokeInstruction.invokeSpecial(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L410">        return this;</span>
+    }
+
+    public BytecodeBlock invokeSpecial(ParameterizedType type, String name, ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes) {
+<span class="nc" id="L415">        nodes.add(InvokeInstruction.invokeSpecial(type, name, returnType, parameterTypes));</span>
+<span class="nc" id="L416">        return this;</span>
+    }
+
+    public BytecodeBlock invokeDynamic(String name, MethodType methodType, Method bootstrapMethod,
+        Object... defaultBootstrapArguments) {
+<span class="nc" id="L421">        nodes.add(InvokeInstruction.invokeDynamic(name, methodType, bootstrapMethod, defaultBootstrapArguments));</span>
+<span class="nc" id="L422">        return this;</span>
+    }
+
+    public BytecodeNode invokeDynamic(String name,
+        ParameterizedType returnType,
+        Collection&lt;ParameterizedType&gt; parameterTypes,
+        Method bootstrapMethod,
+        List&lt;Object&gt; bootstrapArgs) {
+<span class="fc" id="L430">        nodes.add(InvokeInstruction.invokeDynamic(name, returnType, parameterTypes, bootstrapMethod, bootstrapArgs));</span>
+<span class="fc" id="L431">        return this;</span>
+    }
+
+    public BytecodeBlock ret(Class&lt;?&gt; type) {
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        if (type == long.class) {</span>
+<span class="nc" id="L436">            retLong();</span>
+        }
+<span class="nc bnc" id="L438" title="All 2 branches missed.">        else if (type == boolean.class) {</span>
+<span class="nc" id="L439">            retBoolean();</span>
+        }
+<span class="nc bnc" id="L441" title="All 8 branches missed.">        else if (type == int.class || type == byte.class || type == char.class || type == short.class) {</span>
+<span class="nc" id="L442">            retInt();</span>
+        }
+<span class="nc bnc" id="L444" title="All 2 branches missed.">        else if (type == float.class) {</span>
+<span class="nc" id="L445">            retFloat();</span>
+        }
+<span class="nc bnc" id="L447" title="All 2 branches missed.">        else if (type == double.class) {</span>
+<span class="nc" id="L448">            retDouble();</span>
+        }
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        else if (type == void.class) {</span>
+<span class="nc" id="L451">            ret();</span>
+        }
+<span class="nc bnc" id="L453" title="All 2 branches missed.">        else if (!type.isPrimitive()) {</span>
+<span class="nc" id="L454">            retObject();</span>
+        }
+        else {
+<span class="nc" id="L457">            throw new IllegalArgumentException(&quot;Unsupported type: &quot; + type.getName());</span>
+        }
+
+<span class="nc" id="L460">        return this;</span>
+    }
+
+    public BytecodeBlock ret() {
+<span class="nc" id="L464">        nodes.add(OpCode.RETURN);</span>
+<span class="nc" id="L465">        return this;</span>
+    }
+
+    public BytecodeBlock retObject() {
+<span class="nc" id="L469">        nodes.add(OpCode.ARETURN);</span>
+<span class="nc" id="L470">        return this;</span>
+    }
+
+    public BytecodeBlock retFloat() {
+<span class="nc" id="L474">        nodes.add(OpCode.FRETURN);</span>
+<span class="nc" id="L475">        return this;</span>
+    }
+
+    public BytecodeBlock retDouble() {
+<span class="nc" id="L479">        nodes.add(OpCode.DRETURN);</span>
+<span class="nc" id="L480">        return this;</span>
+    }
+
+    public BytecodeBlock retBoolean() {
+<span class="nc" id="L484">        nodes.add(OpCode.IRETURN);</span>
+<span class="nc" id="L485">        return this;</span>
+    }
+
+    public BytecodeBlock retLong() {
+<span class="nc" id="L489">        nodes.add(OpCode.LRETURN);</span>
+<span class="nc" id="L490">        return this;</span>
+    }
+
+    public BytecodeBlock retInt() {
+<span class="fc" id="L494">        nodes.add(OpCode.IRETURN);</span>
+<span class="fc" id="L495">        return this;</span>
+    }
+
+    public BytecodeBlock throwObject() {
+<span class="nc" id="L499">        nodes.add(OpCode.ATHROW);</span>
+<span class="nc" id="L500">        return this;</span>
+    }
+
+    public BytecodeBlock newObject(Class&lt;?&gt; type) {
+<span class="nc" id="L504">        nodes.add(TypeInstruction.newObject(type));</span>
+<span class="nc" id="L505">        return this;</span>
+    }
+
+    public BytecodeBlock newObject(ParameterizedType type) {
+<span class="fc" id="L509">        nodes.add(TypeInstruction.newObject(type));</span>
+<span class="fc" id="L510">        return this;</span>
+    }
+
+    public BytecodeBlock newArray(Class&lt;?&gt; type) {
+<span class="nc" id="L514">        nodes.add(TypeInstruction.newObjectArray(type));</span>
+<span class="nc" id="L515">        return this;</span>
+    }
+
+    public BytecodeBlock dup() {
+<span class="fc" id="L519">        nodes.add(OpCode.DUP);</span>
+<span class="fc" id="L520">        return this;</span>
+    }
+
+    public BytecodeBlock dup(Class&lt;?&gt; type) {
+<span class="nc bnc" id="L524" title="All 4 branches missed.">        if (type == long.class || type == double.class) {</span>
+<span class="nc" id="L525">            nodes.add(OpCode.DUP2);</span>
+        }
+<span class="nc bnc" id="L527" title="All 2 branches missed.">        else if (type != void.class) {</span>
+<span class="nc" id="L528">            nodes.add(OpCode.DUP);</span>
+        }
+<span class="nc" id="L530">        return this;</span>
+    }
+
+    public BytecodeBlock pop() {
+<span class="nc" id="L534">        nodes.add(OpCode.POP);</span>
+<span class="nc" id="L535">        return this;</span>
+    }
+
+    public BytecodeBlock pop(Class&lt;?&gt; type) {
+<span class="nc bnc" id="L539" title="All 4 branches missed.">        if (type == long.class || type == double.class) {</span>
+<span class="nc" id="L540">            nodes.add(OpCode.POP2);</span>
+        }
+<span class="nc bnc" id="L542" title="All 2 branches missed.">        else if (type != void.class) {</span>
+<span class="nc" id="L543">            nodes.add(OpCode.POP);</span>
+        }
+<span class="nc" id="L545">        return this;</span>
+    }
+
+    public BytecodeBlock pop(ParameterizedType type) {
+<span class="fc" id="L549">        Class&lt;?&gt; primitiveType = type.getPrimitiveType();</span>
+<span class="pc bpc" id="L550" title="1 of 4 branches missed.">        if (primitiveType == long.class || primitiveType == double.class) {</span>
+<span class="fc" id="L551">            nodes.add(OpCode.POP2);</span>
+        }
+<span class="pc bpc" id="L553" title="1 of 2 branches missed.">        else if (primitiveType != void.class) {</span>
+<span class="fc" id="L554">            nodes.add(OpCode.POP);</span>
+        }
+<span class="fc" id="L556">        return this;</span>
+    }
+
+    public BytecodeBlock swap() {
+<span class="nc" id="L560">        nodes.add(OpCode.SWAP);</span>
+<span class="nc" id="L561">        return this;</span>
+    }
+
+    //
+    // Fields (non-static)
+    //
+
+    public BytecodeBlock getField(Field field) {
+<span class="nc" id="L569">        return getField(field.getDeclaringClass(), field.getName(), field.getType());</span>
+    }
+
+    public BytecodeBlock getField(FieldDefinition field) {
+<span class="nc" id="L573">        getField(field.getDeclaringClass().getType(), field.getName(), field.getType());</span>
+<span class="nc" id="L574">        return this;</span>
+    }
+
+    public BytecodeBlock getField(Class&lt;?&gt; target, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc" id="L578">        getField(type(target), fieldName, type(fieldType));</span>
+<span class="nc" id="L579">        return this;</span>
+    }
+
+    public BytecodeBlock getField(ParameterizedType target, String fieldName, ParameterizedType fieldType) {
+<span class="fc" id="L583">        nodes.add(getFieldInstruction(target, fieldName, fieldType));</span>
+<span class="fc" id="L584">        return this;</span>
+    }
+
+    public BytecodeBlock putField(Field field) {
+<span class="nc" id="L588">        return putField(field.getDeclaringClass(), field.getName(), field.getType());</span>
+    }
+
+    public BytecodeBlock putField(Class&lt;?&gt; target, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc" id="L592">        putField(type(target), fieldName, type(fieldType));</span>
+<span class="nc" id="L593">        return this;</span>
+    }
+
+    public BytecodeBlock putField(FieldDefinition field) {
+<span class="nc bnc" id="L597" title="All 2 branches missed.">        checkArgument(!field.getAccess().contains(STATIC), &quot;Field is static: %s&quot;, field);</span>
+<span class="nc" id="L598">        putField(field.getDeclaringClass().getType(), field.getName(), field.getType());</span>
+<span class="nc" id="L599">        return this;</span>
+    }
+
+    public BytecodeBlock putField(ParameterizedType target, String fieldName, ParameterizedType fieldType) {
+<span class="fc" id="L603">        nodes.add(putFieldInstruction(target, fieldName, fieldType));</span>
+<span class="fc" id="L604">        return this;</span>
+    }
+
+    //
+    // Static fields
+    //
+
+    public BytecodeBlock getStaticField(FieldDefinition field) {
+<span class="nc" id="L612">        getStaticField(field.getDeclaringClass().getType(), field.getName(), field.getType());</span>
+<span class="nc" id="L613">        return this;</span>
+    }
+
+    public BytecodeBlock getStaticField(Field field) {
+<span class="nc" id="L617">        checkArgument(Modifier.isStatic(field.getModifiers()), &quot;Field is not static: %s&quot;, field);</span>
+<span class="nc" id="L618">        getStaticField(type(field.getDeclaringClass()), field.getName(), type(field.getType()));</span>
+<span class="nc" id="L619">        return this;</span>
+    }
+
+    public BytecodeBlock getStaticField(Class&lt;?&gt; target, String fieldName, Class&lt;?&gt; fieldType) {
+<span class="nc" id="L623">        nodes.add(getStaticInstruction(target, fieldName, fieldType));</span>
+<span class="nc" id="L624">        return this;</span>
+    }
+
+    public BytecodeBlock getStaticField(ParameterizedType target, String fieldName, ParameterizedType fieldType) {
+<span class="nc" id="L628">        nodes.add(getStaticInstruction(target, fieldName, fieldType));</span>
+<span class="nc" id="L629">        return this;</span>
+    }
+
+    public BytecodeBlock getStaticField(ParameterizedType target, FieldDefinition field) {
+<span class="nc" id="L633">        nodes.add(getStaticInstruction(target, field.getName(), field.getType()));</span>
+<span class="nc" id="L634">        return this;</span>
+    }
+
+    public BytecodeBlock putStaticField(FieldDefinition field) {
+<span class="nc" id="L638">        putStaticField(field.getDeclaringClass().getType(), field.getName(), field.getType());</span>
+<span class="nc" id="L639">        return this;</span>
+    }
+
+    public BytecodeBlock putStaticField(ParameterizedType target, FieldDefinition field) {
+<span class="nc" id="L643">        checkArgument(field.getAccess().contains(STATIC), &quot;Field is not static: %s&quot;, field);</span>
+<span class="nc" id="L644">        putStaticField(target, field.getName(), field.getType());</span>
+<span class="nc" id="L645">        return this;</span>
+    }
+
+    public BytecodeBlock putStaticField(ParameterizedType target, String fieldName, ParameterizedType fieldType) {
+<span class="fc" id="L649">        nodes.add(putStaticInstruction(target, fieldName, fieldType));</span>
+<span class="fc" id="L650">        return this;</span>
+    }
+
+    //
+    // Load constants
+    //
+
+    public BytecodeBlock pushNull() {
+<span class="nc" id="L658">        nodes.add(OpCode.ACONST_NULL);</span>
+<span class="nc" id="L659">        return this;</span>
+    }
+
+    public BytecodeBlock push(Class&lt;?&gt; type) {
+<span class="nc" id="L663">        nodes.add(loadClass(type));</span>
+<span class="nc" id="L664">        return this;</span>
+    }
+
+    public BytecodeBlock push(ParameterizedType type) {
+<span class="nc" id="L668">        nodes.add(loadClass(type));</span>
+<span class="nc" id="L669">        return this;</span>
+    }
+
+    public BytecodeBlock push(String value) {
+<span class="nc" id="L673">        nodes.add(Constant.loadString(value));</span>
+<span class="nc" id="L674">        return this;</span>
+    }
+
+    public BytecodeBlock push(Number value) {
+<span class="nc" id="L678">        nodes.add(loadNumber(value));</span>
+<span class="nc" id="L679">        return this;</span>
+    }
+
+    public BytecodeBlock push(int value) {
+<span class="nc" id="L683">        nodes.add(loadInt(value));</span>
+<span class="nc" id="L684">        return this;</span>
+    }
+
+    public BytecodeBlock push(boolean value) {
+<span class="fc" id="L688">        nodes.add(loadBoolean(value));</span>
+<span class="fc" id="L689">        return this;</span>
+    }
+
+    public BytecodeBlock pushJavaDefault(Class&lt;?&gt; type) {
+<span class="nc bnc" id="L693" title="All 2 branches missed.">        if (type == void.class) {</span>
+<span class="nc" id="L694">            return this;</span>
+        }
+<span class="nc bnc" id="L696" title="All 10 branches missed.">        if (type == boolean.class || type == byte.class || type == char.class || type == short.class || type == int.class) {</span>
+<span class="nc" id="L697">            return push(0);</span>
+        }
+<span class="nc bnc" id="L699" title="All 2 branches missed.">        if (type == long.class) {</span>
+<span class="nc" id="L700">            return push(0L);</span>
+        }
+<span class="nc bnc" id="L702" title="All 2 branches missed.">        if (type == float.class) {</span>
+<span class="nc" id="L703">            return push(0.0f);</span>
+        }
+<span class="nc bnc" id="L705" title="All 2 branches missed.">        if (type == double.class) {</span>
+<span class="nc" id="L706">            return push(0.0d);</span>
+        }
+<span class="nc" id="L708">        return pushNull();</span>
+    }
+
+    public BytecodeBlock initializeVariable(Variable variable) {
+<span class="nc" id="L712">        ParameterizedType type = variable.getType();</span>
+<span class="nc bnc" id="L713" title="All 2 branches missed.">        if (type.getType().length() == 1) {</span>
+<span class="nc bnc" id="L714" title="All 5 branches missed.">            switch (type.getType().charAt(0)) {</span>
+                case 'B':
+                case 'Z':
+                case 'S':
+                case 'C':
+                case 'I':
+<span class="nc" id="L720">                    nodes.add(loadInt(0));</span>
+<span class="nc" id="L721">                    break;</span>
+                case 'F':
+<span class="nc" id="L723">                    nodes.add(loadFloat(0));</span>
+<span class="nc" id="L724">                    break;</span>
+                case 'D':
+<span class="nc" id="L726">                    nodes.add(loadDouble(0));</span>
+<span class="nc" id="L727">                    break;</span>
+                case 'J':
+<span class="nc" id="L729">                    nodes.add(loadLong(0));</span>
+<span class="nc" id="L730">                    break;</span>
+                default:
+<span class="nc" id="L732">                    checkArgument(false, &quot;Unknown type '%s'&quot;, variable.getType());</span>
+            }
+        }
+        else {
+<span class="nc" id="L736">            nodes.add(Constant.loadNull());</span>
+        }
+
+<span class="nc" id="L739">        nodes.add(storeVariable(variable));</span>
+
+<span class="nc" id="L741">        return this;</span>
+    }
+
+    public BytecodeBlock getVariable(Variable variable) {
+<span class="nc" id="L745">        nodes.add(loadVariable(variable));</span>
+<span class="nc" id="L746">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable) {
+<span class="fc" id="L750">        nodes.add(storeVariable(variable));</span>
+<span class="fc" id="L751">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable, Class&lt;?&gt; type) {
+<span class="nc" id="L755">        nodes.add(loadClass(type));</span>
+<span class="nc" id="L756">        putVariable(variable);</span>
+<span class="nc" id="L757">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable, ParameterizedType type) {
+<span class="nc" id="L761">        nodes.add(loadClass(type));</span>
+<span class="nc" id="L762">        putVariable(variable);</span>
+<span class="nc" id="L763">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable, String value) {
+<span class="nc" id="L767">        nodes.add(Constant.loadString(value));</span>
+<span class="nc" id="L768">        putVariable(variable);</span>
+<span class="nc" id="L769">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable, Number value) {
+<span class="nc" id="L773">        nodes.add(loadNumber(value));</span>
+<span class="nc" id="L774">        putVariable(variable);</span>
+<span class="nc" id="L775">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable, int value) {
+<span class="nc" id="L779">        nodes.add(loadInt(value));</span>
+<span class="nc" id="L780">        putVariable(variable);</span>
+<span class="nc" id="L781">        return this;</span>
+    }
+
+    public BytecodeBlock putVariable(Variable variable, boolean value) {
+<span class="nc" id="L785">        nodes.add(loadBoolean(value));</span>
+<span class="nc" id="L786">        putVariable(variable);</span>
+<span class="nc" id="L787">        return this;</span>
+    }
+
+    public BytecodeBlock incrementVariable(Variable variable, byte increment) {
+<span class="nc" id="L791">        String type = variable.getType().getClassName();</span>
+<span class="nc" id="L792">        checkArgument(List.of(&quot;byte&quot;, &quot;short&quot;, &quot;int&quot;).contains(type), &quot;variable must be an byte, short or int, but is %s&quot;, type);</span>
+<span class="nc" id="L793">        nodes.add(VariableInstruction.incrementVariable(variable, increment));</span>
+<span class="nc" id="L794">        return this;</span>
+    }
+
+    public BytecodeBlock getObjectArrayElement() {
+<span class="nc" id="L798">        nodes.add(OpCode.AALOAD);</span>
+<span class="nc" id="L799">        return this;</span>
+    }
+
+    public BytecodeBlock putObjectArrayElement() {
+<span class="nc" id="L803">        nodes.add(OpCode.AASTORE);</span>
+<span class="nc" id="L804">        return this;</span>
+    }
+
+    public BytecodeBlock getIntArrayElement() {
+<span class="nc" id="L808">        nodes.add(OpCode.IALOAD);</span>
+<span class="nc" id="L809">        return this;</span>
+    }
+
+    public BytecodeBlock putIntArrayElement() {
+<span class="nc" id="L813">        nodes.add(OpCode.IASTORE);</span>
+<span class="nc" id="L814">        return this;</span>
+    }
+
+    public BytecodeBlock visitLineNumber(int currentLineNumber) {
+<span class="nc bnc" id="L818" title="All 2 branches missed.">        checkArgument(currentLineNumber &gt;= 0, &quot;currentLineNumber must be positive&quot;);</span>
+<span class="nc bnc" id="L819" title="All 2 branches missed.">        if (this.currentLineNumber != currentLineNumber) {</span>
+<span class="nc" id="L820">            nodes.add(new LineNumberNode(currentLineNumber));</span>
+<span class="nc" id="L821">            this.currentLineNumber = currentLineNumber;</span>
+        }
+<span class="nc" id="L823">        return this;</span>
+    }
+
+    @Override
+    public void accept(MethodVisitor visitor, MethodGenerationContext generationContext) {
+<span class="fc bfc" id="L828" title="All 2 branches covered.">        for (BytecodeNode node : nodes) {</span>
+<span class="fc" id="L829">            node.accept(visitor, generationContext);</span>
+<span class="fc" id="L830">        }</span>
+<span class="fc" id="L831">    }</span>
+
+    @Override
+    public &lt;T&gt; T accept(BytecodeNode parent, BytecodeVisitor&lt;T&gt; visitor) {
+<span class="fc" id="L835">        return visitor.visitBlock(parent, this);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

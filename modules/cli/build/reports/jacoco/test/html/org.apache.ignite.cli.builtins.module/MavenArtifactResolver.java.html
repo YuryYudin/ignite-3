@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MavenArtifactResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cli</a> &gt; <a href="index.source.html" class="el_package">org.apache.ignite.cli.builtins.module</a> &gt; <span class="el_source">MavenArtifactResolver.java</span></div><h1>MavenArtifactResolver.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.ignite.cli.builtins.module;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.ParseException;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.apache.ignite.cli.IgniteCLIException;
+import org.apache.ignite.cli.builtins.SystemPathResolver;
+import org.apache.ignite.cli.ui.ProgressBar;
+import org.apache.ivy.Ivy;
+import org.apache.ivy.core.IvyContext;
+import org.apache.ivy.core.event.EventManager;
+import org.apache.ivy.core.event.download.EndArtifactDownloadEvent;
+import org.apache.ivy.core.event.resolve.EndResolveDependencyEvent;
+import org.apache.ivy.core.event.resolve.EndResolveEvent;
+import org.apache.ivy.core.event.retrieve.EndRetrieveArtifactEvent;
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
+import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.core.report.ResolveReport;
+import org.apache.ivy.core.resolve.ResolveOptions;
+import org.apache.ivy.core.retrieve.RetrieveOptions;
+import org.apache.ivy.core.retrieve.RetrieveReport;
+import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.resolver.ChainResolver;
+import org.apache.ivy.plugins.resolver.IBiblioResolver;
+import org.apache.ivy.util.AbstractMessageLogger;
+import org.apache.ivy.util.Message;
+import org.jline.terminal.Terminal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Resolver of maven artifacts with Ivy.
+ */
+@Singleton
+public class MavenArtifactResolver {
+    /** Pattern for naming artifact files. **/
+    private static final String FILE_ARTIFACT_PATTERN = &quot;[artifact](-[classifier]).[revision].[ext]&quot;;
+
+    /** Resolver of system paths. **/
+    private final SystemPathResolver pathRslvr;
+
+    /** System terminal instance, needed for receiving info about terminal settings. **/
+    private final Terminal terminal;
+
+    /** Console writer for output user messages. **/
+    private PrintWriter out;
+
+    /**
+     * Creates resolver
+     *
+     * @param pathRslvr Resolver of system paths like home directory and etc.
+     * @param terminal User system terminal.
+     */
+    @Inject
+<span class="nc" id="L82">    public MavenArtifactResolver(SystemPathResolver pathRslvr, Terminal terminal) {</span>
+<span class="nc" id="L83">        this.pathRslvr = pathRslvr;</span>
+<span class="nc" id="L84">        this.terminal = terminal;</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Sets writer for user messages.
+     *
+     * @param out PrintWriter
+     */
+    public void setOut(PrintWriter out) {
+<span class="nc" id="L93">        this.out = out;</span>
+<span class="nc" id="L94">    }</span>
+
+    /**
+     * Downloads and copies artifact and its dependencies to {mavenRoot}.
+     *
+     * @param mavenRoot Path where artifacts will be copied to.
+     * @param grpId Maven group id of the artifact.
+     * @param artifactId Maven artifact id of the artifact.
+     * @param ver Maven version of the artifact.
+     * @param customRepositories Urls with custom maven repositories to resolve artifact.
+     * @return Result of resolving with files' paths of resolved artifact + dependencies.
+     * @throws IOException if connection issues occurred during resolving
+     *                     or if r/w issues occurred during the retrieving of artifacts
+     */
+    public ResolveResult resolve(
+        Path mavenRoot,
+        String grpId,
+        String artifactId,
+        String ver,
+        List&lt;URL&gt; customRepositories
+    ) throws IOException {
+<span class="nc" id="L115">        Ivy ivy = ivyInstance(customRepositories); // needed for init right output logger before any operations</span>
+
+<span class="nc" id="L117">        out.println(&quot;Installing &quot; + String.join(&quot;:&quot;, grpId, artifactId, ver) + &quot;...&quot;);</span>
+
+<span class="nc" id="L119">        try (ProgressBar bar = new ProgressBar(out, 100, terminal.getWidth())) {</span>
+<span class="nc" id="L120">            ivy.getEventManager().addIvyListener(event -&gt; {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                if (event instanceof EndResolveEvent) {</span>
+<span class="nc" id="L122">                    int cnt = ((EndResolveEvent)event).getReport().getArtifacts().size();</span>
+
+<span class="nc" id="L124">                    bar.setMax(cnt * 3);</span>
+<span class="nc" id="L125">                }</span>
+<span class="nc bnc" id="L126" title="All 6 branches missed.">                else if (event instanceof EndArtifactDownloadEvent ||</span>
+                    event instanceof EndResolveDependencyEvent ||
+                    event instanceof EndRetrieveArtifactEvent)
+<span class="nc" id="L129">                    bar.step();</span>
+<span class="nc" id="L130">            });</span>
+
+<span class="nc" id="L132">            ModuleDescriptor md = rootModuleDescriptor(grpId, artifactId, ver);</span>
+
+            // Step 1: you always need to resolve before you can retrieve
+            //
+<span class="nc" id="L136">            ResolveOptions ro = new ResolveOptions();</span>
+            // this seems to have no impact, if you resolve by module descriptor
+            //
+            // (in contrast to resolve by ModuleRevisionId)
+<span class="nc" id="L140">            ro.setTransitive(true);</span>
+            // if set to false, nothing will be downloaded
+<span class="nc" id="L142">            ro.setDownload(true);</span>
+
+            try {
+                // now resolve
+<span class="nc" id="L146">                ResolveReport rr = ivy.resolve(md, ro);</span>
+
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                if (rr.hasError())</span>
+<span class="nc" id="L149">                    throw new IgniteCLIException(rr.getAllProblemMessages().toString());</span>
+
+                // Step 2: retrieve
+<span class="nc" id="L152">                ModuleDescriptor m = rr.getModuleDescriptor();</span>
+
+<span class="nc" id="L154">                RetrieveReport retrieveReport = ivy.retrieve(</span>
+<span class="nc" id="L155">                    m.getModuleRevisionId(),</span>
+                    new RetrieveOptions()
+                        // this is from the envelop module
+<span class="nc" id="L158">                        .setConfs(new String[] {&quot;default&quot;})</span>
+<span class="nc" id="L159">                        .setDestArtifactPattern(</span>
+<span class="nc" id="L160">                            mavenRoot.resolve(&quot;[artifact](-[classifier]).[revision].[ext]&quot;).toFile().getAbsolutePath())</span>
+                );
+
+<span class="nc" id="L163">                return new ResolveResult(</span>
+<span class="nc" id="L164">                    retrieveReport.getRetrievedFiles().stream().map(File::toPath).collect(Collectors.toList())</span>
+                );
+            }
+<span class="nc" id="L167">            catch (ParseException e) {</span>
+<span class="nc" id="L168">                throw new IOException(e);</span>
+            }
+        }
+    }
+
+    /**
+     * Gets artifact file name by artifactId and version
+     * &lt;p&gt;
+     * Note: Current implementation doesn't support artifacts with classifiers or non-jar packaging
+     *
+     * @param artifactId Maven artifact id.
+     * @param ver Maven version
+     * @return File name
+     */
+    public static String fileNameByArtifactPattern(
+        String artifactId,
+        String ver) {
+<span class="nc" id="L185">        return FILE_ARTIFACT_PATTERN</span>
+<span class="nc" id="L186">            .replace(&quot;[artifact]&quot;, artifactId)</span>
+<span class="nc" id="L187">            .replace(&quot;(-[classifier])&quot;, &quot;&quot;)</span>
+<span class="nc" id="L188">            .replace(&quot;[revision]&quot;, ver)</span>
+<span class="nc" id="L189">            .replace(&quot;[ext]&quot;, &quot;jar&quot;);</span>
+    }
+
+    /**
+     * Prepares Ivy instance for artifact resolving.
+     *
+     * @param repositories Additional maven repositories
+     * @return Ivy instance
+     */
+    private Ivy ivyInstance(List&lt;URL&gt; repositories) {
+        File tmpDir;
+
+        try {
+<span class="nc" id="L202">            tmpDir = Files.createTempDirectory(&quot;ignite-installer-cache&quot;).toFile();</span>
+        }
+<span class="nc" id="L204">        catch (IOException e) {</span>
+<span class="nc" id="L205">            throw new IgniteCLIException(&quot;Can't create temp directory for ivy&quot;);</span>
+<span class="nc" id="L206">        }</span>
+
+<span class="nc" id="L208">        tmpDir.deleteOnExit();</span>
+
+<span class="nc" id="L210">        EventManager evtMgr = new EventManager();</span>
+
+<span class="nc" id="L212">        IvySettings ivySettings = new IvySettings();</span>
+<span class="nc" id="L213">        ivySettings.setDefaultCache(tmpDir);</span>
+<span class="nc" id="L214">        ivySettings.setDefaultCacheArtifactPattern(FILE_ARTIFACT_PATTERN);</span>
+
+<span class="nc" id="L216">        ChainResolver chainRslvr = new ChainResolver();</span>
+<span class="nc" id="L217">        chainRslvr.setName(&quot;chainResolver&quot;);</span>
+<span class="nc" id="L218">        chainRslvr.setEventManager(evtMgr);</span>
+
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (URL repoUrl : repositories) {</span>
+<span class="nc" id="L221">            IBiblioResolver br = new IBiblioResolver();</span>
+<span class="nc" id="L222">            br.setEventManager(evtMgr);</span>
+<span class="nc" id="L223">            br.setM2compatible(true);</span>
+<span class="nc" id="L224">            br.setUsepoms(true);</span>
+<span class="nc" id="L225">            br.setRoot(repoUrl.toString());</span>
+<span class="nc" id="L226">            br.setName(repoUrl.getPath());</span>
+
+<span class="nc" id="L228">            chainRslvr.add(br);</span>
+<span class="nc" id="L229">        }</span>
+
+        // use the biblio resolver, if you consider resolving
+        // POM declared dependencies
+<span class="nc" id="L233">        IBiblioResolver br = new IBiblioResolver();</span>
+<span class="nc" id="L234">        br.setEventManager(evtMgr);</span>
+<span class="nc" id="L235">        br.setM2compatible(true);</span>
+<span class="nc" id="L236">        br.setUsepoms(true);</span>
+<span class="nc" id="L237">        br.setName(&quot;central&quot;);</span>
+
+<span class="nc" id="L239">        chainRslvr.add(br);</span>
+
+<span class="nc" id="L241">        IBiblioResolver locBr = new IBiblioResolver();</span>
+<span class="nc" id="L242">        locBr.setEventManager(evtMgr);</span>
+<span class="nc" id="L243">        locBr.setM2compatible(true);</span>
+<span class="nc" id="L244">        locBr.setUsepoms(true);</span>
+<span class="nc" id="L245">        locBr.setRoot(&quot;file:///&quot; + pathRslvr.osHomeDirectoryPath().resolve(&quot;.m2&quot;).resolve(&quot;repository/&quot;));</span>
+<span class="nc" id="L246">        locBr.setName(&quot;local&quot;);</span>
+
+<span class="nc" id="L248">        chainRslvr.add(locBr);</span>
+
+<span class="nc" id="L250">        ivySettings.addResolver(chainRslvr);</span>
+<span class="nc" id="L251">        ivySettings.setDefaultResolver(chainRslvr.getName());</span>
+
+<span class="nc" id="L253">        Ivy ivy = new Ivy();</span>
+
+<span class="nc" id="L255">        ivy.getLoggerEngine().setDefaultLogger(new IvyLogger());</span>
+
+        // needed for setting the message logger before logging info from loading settings
+<span class="nc" id="L258">        IvyContext.getContext().setIvy(ivy);</span>
+
+<span class="nc" id="L260">        ivy.setSettings(ivySettings);</span>
+
+<span class="nc" id="L262">        ivy.bind();</span>
+
+<span class="nc" id="L264">        return ivy;</span>
+    }
+
+    /**
+     * Prepares Ivy module descriptor with target maven artifact as a dependency.
+     * Then descriptor can be used for further resolving the artifact dependencies.
+     * Existence of this descriptor is Ivy's requirement.
+     *
+     * @param grpId Maven group id.
+     * @param artifactId Maven artifact id.
+     * @param ver Maven artifact version.
+     * @return Prepared for resolving module descriptor.
+     */
+    private ModuleDescriptor rootModuleDescriptor(String grpId, String artifactId, String ver) {
+        // 1st create an ivy module (this always(!) has a &quot;default&quot; configuration already)
+<span class="nc" id="L279">        DefaultModuleDescriptor md = DefaultModuleDescriptor.newDefaultInstance(</span>
+            // give it some related name (so it can be cached)
+<span class="nc" id="L281">            ModuleRevisionId.newInstance(</span>
+                &quot;org.apache.ignite&quot;,
+                &quot;installer-envelope&quot;,
+                &quot;working&quot;
+            )
+        );
+
+        // 2. add dependencies for what we are really looking for
+<span class="nc" id="L289">        ModuleRevisionId ri = ModuleRevisionId.newInstance(</span>
+            grpId,
+            artifactId,
+            ver
+        );
+
+        // don't go transitive here, if you want the single artifact
+<span class="nc" id="L296">        DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor(md, ri, false, true, true);</span>
+
+        // map to master to just get the code jar. See generated ivy module xmls from maven repo
+        // on how configurations are mapped into ivy. Or check
+        // e.g. http://lightguard-jp.blogspot.de/2009/04/ivy-configurations-when-pulling-from.html
+<span class="nc" id="L301">        dd.addDependencyConfiguration(&quot;default&quot;, &quot;master&quot;);</span>
+<span class="nc" id="L302">        dd.addDependencyConfiguration(&quot;default&quot;, &quot;runtime&quot;);</span>
+<span class="nc" id="L303">        dd.addDependencyConfiguration(&quot;default&quot;, &quot;compile&quot;);</span>
+
+<span class="nc" id="L305">        md.addDependency(dd);</span>
+
+<span class="nc" id="L307">        return md;</span>
+    }
+
+    /**
+     * Ivy logger for routing all ivy logs to general logging system of CLI.
+     */
+<span class="nc" id="L313">    private static class IvyLogger extends AbstractMessageLogger {</span>
+        /** Common loogger */
+<span class="nc" id="L315">        private final Logger log = LoggerFactory.getLogger(IvyLogger.class);</span>
+
+        /** {@inheritDoc} */
+        @Override protected void doProgress() {
+            // no-op
+<span class="nc" id="L320">        }</span>
+
+        /** {@inheritDoc} */
+        @Override protected void doEndProgress(String msg) {
+            // no-op
+<span class="nc" id="L325">        }</span>
+
+        /** {@inheritDoc} */
+        @Override public void log(String msg, int level) {
+<span class="nc bnc" id="L329" title="All 6 branches missed.">            switch (level) {</span>
+                case Message.MSG_ERR:
+<span class="nc" id="L331">                    log.error(msg);</span>
+<span class="nc" id="L332">                    break;</span>
+
+                case Message.MSG_WARN:
+<span class="nc" id="L335">                    log.warn(msg);</span>
+<span class="nc" id="L336">                    break;</span>
+
+                case Message.MSG_INFO:
+<span class="nc" id="L339">                    log.info(msg);</span>
+<span class="nc" id="L340">                    break;</span>
+
+                case Message.MSG_VERBOSE:
+<span class="nc" id="L343">                    log.debug(msg);</span>
+<span class="nc" id="L344">                    break;</span>
+
+                case Message.MSG_DEBUG:
+<span class="nc" id="L347">                    log.trace(msg);</span>
+                    break;
+            }
+<span class="nc" id="L350">        }</span>
+
+        /** {@inheritDoc} */
+        @Override public void rawlog(String msg, int level) {
+<span class="nc" id="L354">            log(msg, level);</span>
+<span class="nc" id="L355">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

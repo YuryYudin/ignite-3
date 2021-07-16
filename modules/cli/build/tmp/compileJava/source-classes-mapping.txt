@@ -1,0 +1,101 @@
+org/apache/ignite/cli/spec/NodeCommandSpec.java
+ org.apache.ignite.cli.spec.NodeCommandSpec
+ org.apache.ignite.cli.spec.NodeCommandSpec$ListNodesCommandSpec
+ org.apache.ignite.cli.spec.NodeCommandSpec$NodesClasspathCommandSpec
+ org.apache.ignite.cli.spec.NodeCommandSpec$StartNodeCommandSpec
+ org.apache.ignite.cli.spec.NodeCommandSpec$StopNodeCommandSpec
+org/apache/ignite/cli/CliVersionInfo.java
+ org.apache.ignite.cli.CliVersionInfo
+org/apache/ignite/cli/spec/CategorySpec.java
+ org.apache.ignite.cli.spec.CategorySpec
+org/apache/ignite/cli/builtins/module/package-info.java
+ org.apache.ignite.cli.builtins.module.package-info
+org/apache/ignite/cli/spec/IgniteCliSpec.java
+ org.apache.ignite.cli.spec.IgniteCliSpec
+org/apache/ignite/cli/ui/TerminalFactory.java
+ org.apache.ignite.cli.ui.TerminalFactory
+org/apache/ignite/cli/VersionProvider.java
+ org.apache.ignite.cli.VersionProvider
+org/apache/ignite/cli/builtins/module/StandardModuleDefinition.java
+ org.apache.ignite.cli.builtins.module.StandardModuleDefinition
+org/apache/ignite/cli/spec/SpecAdapter.java
+ org.apache.ignite.cli.spec.SpecAdapter
+org/apache/ignite/cli/builtins/node/NodeManager.java
+ org.apache.ignite.cli.builtins.node.NodeManager
+ org.apache.ignite.cli.builtins.node.NodeManager$RunningNode
+org/apache/ignite/cli/spec/ModuleCommandSpec.java
+ org.apache.ignite.cli.spec.ModuleCommandSpec
+ org.apache.ignite.cli.spec.ModuleCommandSpec$AddModuleCommandSpec
+ org.apache.ignite.cli.spec.ModuleCommandSpec$ListModuleCommandSpec
+ org.apache.ignite.cli.spec.ModuleCommandSpec$ListModuleCommandSpec$StandardModuleView
+ org.apache.ignite.cli.spec.ModuleCommandSpec$RemoveModuleCommandSpec
+org/apache/ignite/cli/builtins/config/package-info.java
+ org.apache.ignite.cli.builtins.config.package-info
+org/apache/ignite/cli/spec/package-info.java
+ org.apache.ignite.cli.spec.package-info
+org/apache/ignite/cli/Table.java
+ org.apache.ignite.cli.Table
+ org.apache.ignite.cli.Table$DataRow
+ org.apache.ignite.cli.Table$Row
+ org.apache.ignite.cli.Table$SectionTitle
+org/apache/ignite/cli/spec/CommandSpec.java
+ org.apache.ignite.cli.spec.CommandSpec
+org/apache/ignite/cli/IgniteCliApp.java
+ org.apache.ignite.cli.IgniteCliApp
+org/apache/ignite/cli/IgnitePaths.java
+ org.apache.ignite.cli.IgnitePaths
+org/apache/ignite/cli/builtins/config/HttpClientFactory.java
+ org.apache.ignite.cli.builtins.config.HttpClientFactory
+org/apache/ignite/cli/ui/Spinner.java
+ org.apache.ignite.cli.ui.Spinner
+org/apache/ignite/cli/ui/ProgressBar.java
+ org.apache.ignite.cli.ui.ProgressBar
+org/apache/ignite/cli/CliPathsConfigLoader.java
+ org.apache.ignite.cli.CliPathsConfigLoader
+org/apache/ignite/cli/ErrorHandler.java
+ org.apache.ignite.cli.ErrorHandler
+org/apache/ignite/cli/spec/ConfigCommandSpec.java
+ org.apache.ignite.cli.spec.ConfigCommandSpec
+ org.apache.ignite.cli.spec.ConfigCommandSpec$CfgHostnameOptions
+ org.apache.ignite.cli.spec.ConfigCommandSpec$GetConfigCommandSpec
+ org.apache.ignite.cli.spec.ConfigCommandSpec$SetConfigCommandSpec
+org/apache/ignite/cli/HelpFactoryImpl.java
+ org.apache.ignite.cli.HelpFactoryImpl
+org/apache/ignite/cli/builtins/config/ConfigurationClient.java
+ org.apache.ignite.cli.builtins.config.ConfigurationClient
+org/apache/ignite/cli/builtins/module/MavenCoordinates.java
+ org.apache.ignite.cli.builtins.module.MavenCoordinates
+org/apache/ignite/cli/IgniteCLIException.java
+ org.apache.ignite.cli.IgniteCLIException
+org/apache/ignite/cli/spec/InitIgniteCommandSpec.java
+ org.apache.ignite.cli.spec.InitIgniteCommandSpec
+org/apache/ignite/cli/CommandFactory.java
+ org.apache.ignite.cli.CommandFactory
+org/apache/ignite/cli/builtins/SystemPathResolver.java
+ org.apache.ignite.cli.builtins.SystemPathResolver
+ org.apache.ignite.cli.builtins.SystemPathResolver$DefaultPathResolver
+org/apache/ignite/cli/InteractiveWrapper.java
+ org.apache.ignite.cli.InteractiveWrapper
+ org.apache.ignite.cli.InteractiveWrapper$1
+org/apache/ignite/cli/package-info.java
+ org.apache.ignite.cli.package-info
+org/apache/ignite/cli/builtins/module/ResolveResult.java
+ org.apache.ignite.cli.builtins.module.ResolveResult
+org/apache/ignite/cli/builtins/module/ModuleRegistry.java
+ org.apache.ignite.cli.builtins.module.ModuleRegistry
+ org.apache.ignite.cli.builtins.module.ModuleRegistry$ModuleDefinition
+ org.apache.ignite.cli.builtins.module.ModuleRegistry$ModuleDefinitionsList
+ org.apache.ignite.cli.builtins.module.ModuleRegistry$SourceType
+org/apache/ignite/cli/builtins/module/MavenArtifactResolver.java
+ org.apache.ignite.cli.builtins.module.MavenArtifactResolver
+ org.apache.ignite.cli.builtins.module.MavenArtifactResolver$IvyLogger
+org/apache/ignite/cli/builtins/node/package-info.java
+ org.apache.ignite.cli.builtins.node.package-info
+org/apache/ignite/cli/builtins/init/package-info.java
+ org.apache.ignite.cli.builtins.init.package-info
+org/apache/ignite/cli/builtins/package-info.java
+ org.apache.ignite.cli.builtins.package-info
+org/apache/ignite/cli/builtins/module/ModuleManager.java
+ org.apache.ignite.cli.builtins.module.ModuleManager
+org/apache/ignite/cli/builtins/init/InitIgniteCommand.java
+ org.apache.ignite.cli.builtins.init.InitIgniteCommand

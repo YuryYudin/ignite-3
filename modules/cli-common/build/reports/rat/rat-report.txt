@@ -1,0 +1,31 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2021-07-02T22:04:52+01:00
+
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 5
+
+Apache Licensed: 5
+Generated Documents: 0
+
+JavaDocs are generated, thus a license header is optional.
+Generated files do not require license headers.
+
+0 Unknown Licenses
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require any license headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc. will be marked N
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli-common/src/main/java/org/apache/ignite/cli/common/IgniteCommand.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli-common/src/main/java/org/apache/ignite/cli/common/package-info.java
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli-common/build.gradle
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli-common/.flattened-pom.xml
+  AL    /home/jjb/Work/GridGain/ignite-3/modules/cli-common/pom.xml
+ 
+*****************************************************

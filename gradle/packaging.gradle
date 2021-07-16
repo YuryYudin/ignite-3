@@ -1,0 +1,178 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
+ext {
+  packageNameToken = "#{project.name}"
+  remotePackageNameToken = "#{project.name}-remote-server"
+  packagePrefix = "/opt/ignite"
+  wdHiveMigratorInstallDir = "$packagePrefix/${rootProject.name}"
+  wdHiveMigratorRemoteServerInstallDir = "$packagePrefix/${rootProject.name}-remote-server"
+  wdHiveMigratorConfigDir = "/etc/ignite/${rootProject.name}"
+  wdHiveMigratorRemoteServerConfigDir = "/etc/ignite/${rootProject.name}-remote-server"
+
+  packageInstallDirTemplate = "$packagePrefix/${rootProject.name}-${packageNameToken}"
+
+  ospackageDir = "packaging/ospackage"
+  projectScriptDir = "${ospackageDir}/scripts"
+  sourceRootDir = "${rootProject.projectDir}/${ospackageDir}"
+  scriptDir = "${rootProject.projectDir}/${projectScriptDir}"
+  remoteScriptDir = "${rootProject.projectDir}/remote-server/${projectScriptDir}"
+
+  rpmScriptDir = scriptDir + "/rpm"
+  rpmPostInstall = rpmScriptDir + "/postInstall.sh"
+  rpmPreUninstall = rpmScriptDir + "/preUninstall.sh"
+  rpmPostUninstall = rpmScriptDir + "/postUninstall.sh"
+
+  debScriptDir = scriptDir + "/deb"
+  debPostInstall = debScriptDir + "/postInstall.sh"
+  debPreUninstall = debScriptDir + "/preUninstall.sh"
+  debPostUninstall = debScriptDir + "/postUninstall.sh"
+
+  appServiceScript = "${scriptDir}/${rootProject.name}"
+  appServiceDescriptionScript = "${projectScriptDir}/${packageNameToken}.service"
+  appServiceConfiguration = "${projectScriptDir}/${packageNameToken}.conf"
+
+  configDir = sourceRootDir + "/config"
+
+  osPackageTempDir = "build/ospackage"
+  tempScriptDir = osPackageTempDir + "/scripts"
+  tempConfigDir = osPackageTempDir + "/config"
+
+  currentOs = new LinuxDistro()
+
+  getVersionString = { String ver, delim, isRpm ->
+    def versionString = ver
+    if (ver.contains(delim)) {
+      versionString = ver.substring(0, ver.indexOf(delim))
+    }
+    Pattern suffixPattern = Pattern.compile(".*-(.*)\$")
+    Matcher suffixMatcher = suffixPattern.matcher(ver)
+    if (suffixMatcher.matches()) {
+      String suffix = suffixMatcher.group(1)
+      versionString += (isRpm ? "_" : "-") + suffix
+    }
+    return versionString
+  }
+
+  getCommitHash = {
+    "git rev-parse --short HEAD".execute().text.toString().trim()
+  }
+  getCommitNum = {
+    "git rev-list --count HEAD".execute().text.toString().trim()
+  }
+
+  distRpmVersion = getVersionString(project.version, "-", true)
+  distDebVersion = getVersionString(project.version, "-", false)
+
+  commonPackageSummary = "Apache Ignite In-Memory Computing, Database and Caching Platform"
+  commonPackageDescription = "Apache Ignite is a distributed database for high-performance computing with in-memory speed."
+  packageLicense = "ASL 2.0"
+  packageGroup = "Development/System"
+  packageUrl = "https://ignite.apache.org"
+  packageInstallationUser = "root"
+  packageOwner = "Apache Ignite <support@blabla.com>"
+}
+
+
+class DistroVersion {
+  def major
+  def minor
+
+  DistroVersion(String versionString) {
+    def m = versionString =~ /(\d+)\.(\d+).*/
+    if (m.find()) {
+      major = m.group(1).toInteger()
+      minor = m.group(2).toInteger()
+    }
+  }
+
+  String toString() {
+    return "${major}.${minor}"
+  }
+}
+
+class LinuxDistro {
+  def name
+  def version
+
+  LinuxDistro() {
+    if (lsb_release()) {
+      return
+    }
+    if (redhat_release()) {
+      return
+    }
+    if (debian_version()) {
+      return
+    }
+  }
+
+  boolean lsb_release() {
+    def lsbProc
+    try {
+      lsbProc = "lsb_release -si".execute()
+    } catch (IOException e) {
+      return false
+    }
+    name = lsbProc.text.split(System.lineSeparator())[0]
+    try {
+      lsbProc = "lsb_release -sr".execute()
+    } catch (IOException e) {
+      return false
+    }
+    version = new DistroVersion(lsbProc.text
+        .split(System.lineSeparator())[0])
+    return true
+  }
+
+  boolean redhat_release() {
+    def versionText
+    try {
+      versionText = new File("/etc", "redhat-release").text
+          .split(System.lineSeparator())[0]
+    } catch (IOException e) {
+      return false
+    }
+    def m = versionText =~ /(\w+)\s+\w+\s+([\d\.]+).*/
+    if (!m.find()) {
+      return false
+    }
+    name = m.group(1).toLowerCase()
+    version = new DistroVersion(m.group(2))
+    return true
+  }
+
+  boolean debian_version() {
+    def versionText
+    try {
+      versionText = new File("/etc", "debian_version").text
+          .split(System.lineSeparator())[0]
+    } catch (IOException e) {
+      return false
+    }
+    name = 'debian'
+    version = new DistroVersion(versionText)
+    return true
+  }
+
+  String toString() {
+    return "${name} ${version}"
+  }
+}
